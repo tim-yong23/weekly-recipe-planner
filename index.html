@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A0912">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kitchen">
+<meta name="robots" content="noindex">
+<title>Yong Kitchen</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9B%92%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0A0912;
+    --surface: rgba(255, 255, 255, 0.055);
+    --surface-strong: rgba(255, 255, 255, 0.1);
+    --surface-press: rgba(255, 255, 255, 0.14);
+    --border: rgba(255, 255, 255, 0.11);
+    --border-strong: rgba(255, 255, 255, 0.2);
+    --text: #F5F3FF;
+    --muted: rgba(245, 243, 255, 0.62);
+    --faint: rgba(245, 243, 255, 0.38);
+    --hot: #FF4F8B;
+    --orange: #FF8A3D;
+    --sun: #FFCB47;
+    --mint: #2EE6B8;
+    --lime: #9BF25F;
+    --danger: #FF6B6B;
+    --grad-hot: linear-gradient(135deg, var(--hot) 0%, var(--orange) 55%, var(--sun) 100%);
+    --grad-fresh: linear-gradient(135deg, var(--mint) 0%, var(--lime) 100%);
+    --radius: 20px;
+    --radius-sm: 14px;
+    --blur: blur(22px) saturate(160%);
+    --font-display: "Outfit", system-ui, sans-serif;
+    --font-ui: "DM Sans", system-ui, sans-serif;
+    --font-mono: "DM Mono", ui-monospace, monospace;
+    --tabbar-h: 72px;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-ui);
+    font-size: 17px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+  button, input { font: inherit; color: inherit; }
+  button { cursor: pointer; border: 0; background: none; padding: 0; touch-action: manipulation; }
+  [hidden] { display: none !important; }
+
+  /* Glowing gradient blobs behind the glass */
+  .aurora { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .aurora span { position: absolute; border-radius: 50%; filter: blur(70px); opacity: 0.55; }
+  .aurora .a1 { width: 70vw; height: 70vw; max-width: 460px; max-height: 460px; background: var(--hot); top: -18%; left: -22%; }
+  .aurora .a2 { width: 60vw; height: 60vw; max-width: 400px; max-height: 400px; background: var(--orange); top: 8%; right: -30%; opacity: 0.4; }
+  .aurora .a3 { width: 80vw; height: 80vw; max-width: 520px; max-height: 520px; background: #6B4BFF; bottom: -25%; left: -10%; opacity: 0.35; }
+  .aurora .a4 { width: 50vw; height: 50vw; max-width: 320px; max-height: 320px; background: var(--mint); bottom: 10%; right: -20%; opacity: 0.22; }
+  @media (prefers-reduced-motion: no-preference) {
+    .aurora .a1 { animation: drift 22s ease-in-out infinite alternate; }
+    .aurora .a3 { animation: drift 28s ease-in-out infinite alternate-reverse; }
+  }
+  @keyframes drift { to { transform: translate(12vw, 8vh) scale(1.1); } }
+
+  .glass {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    -webkit-backdrop-filter: var(--blur);
+    backdrop-filter: var(--blur);
+  }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 560px;
+    margin: 0 auto;
+    padding: calc(env(safe-area-inset-top) + 20px) 16px calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 32px);
+  }
+
+  /* Header */
+  .top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+  .eyebrow {
+    margin: 0 0 2px;
+    font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+    background: var(--grad-hot); -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  h1 { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 34px; line-height: 1.05; letter-spacing: -0.02em; }
+  .icon-btn {
+    width: 48px; height: 48px; flex: none;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    color: var(--muted);
+  }
+  .icon-btn:active { background: var(--surface-press); }
+  .icon-btn svg { width: 22px; height: 22px; }
+
+  /* Summary card */
+  .hero {
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 12px;
+    padding: 18px 20px; border-radius: var(--radius); margin-bottom: 14px;
+  }
+  .count { display: flex; align-items: baseline; gap: 10px; }
+  .count-num {
+    font-family: var(--font-mono); font-weight: 500; font-size: 52px; line-height: 1; letter-spacing: -0.04em;
+    background: var(--grad-hot); -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .count-label { font-size: 17px; color: var(--muted); font-weight: 500; }
+  .sync { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--faint); padding-bottom: 6px; }
+  .sync .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); }
+  .sync[data-state="ok"] .dot { background: var(--mint); box-shadow: 0 0 10px var(--mint); }
+  .sync[data-state="offline"] { color: var(--sun); }
+  .sync[data-state="offline"] .dot { background: var(--sun); }
+
+  /* Add box */
+  .add { display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 18px; border-radius: 999px; margin-bottom: 22px; }
+  .add:focus-within { border-color: var(--border-strong); background: var(--surface-strong); }
+  .add input { flex: 1; min-width: 0; height: 48px; border: 0; outline: 0; background: none; font-size: 17px; }
+  .add input::placeholder { color: var(--faint); }
+  .add-btn {
+    width: 48px; height: 48px; flex: none; border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--grad-hot); color: #1A0A12;
+    box-shadow: 0 6px 20px -6px var(--hot);
+  }
+  .add-btn:active { transform: scale(0.94); }
+  .add-btn svg { width: 22px; height: 22px; }
+
+  /* Items */
+  .items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .item {
+    width: 100%; min-height: 60px;
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 16px; border-radius: var(--radius-sm);
+    text-align: left;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .item:active { background: var(--surface-press); transform: scale(0.99); }
+  .check {
+    width: 28px; height: 28px; flex: none; border-radius: 50%;
+    border: 2px solid var(--border-strong);
+    display: grid; place-items: center;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .check svg { width: 16px; height: 16px; color: #062019; opacity: 0; transform: scale(0.5); transition: opacity 0.15s, transform 0.2s; }
+  .item-body { flex: 1; min-width: 0; }
+  .item-text { display: block; font-size: 17px; font-weight: 500; overflow-wrap: anywhere; }
+  .item-meta { display: block; font-size: 13px; color: var(--faint); margin-top: 1px; }
+  .item[aria-pressed="true"] { background: rgba(255, 255, 255, 0.025); border-color: rgba(255, 255, 255, 0.05); }
+  .item[aria-pressed="true"] .check { background: var(--grad-fresh); border-color: transparent; }
+  .item[aria-pressed="true"] .check svg { opacity: 1; transform: none; }
+  .item[aria-pressed="true"] .item-text { color: var(--faint); text-decoration: line-through; text-decoration-color: rgba(255,255,255,0.3); }
+  .item.pending { opacity: 0.6; }
+
+  .section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 28px 4px 10px; }
+  h2 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 20px; letter-spacing: -0.01em; }
+  h2 .mono { font-family: var(--font-mono); font-weight: 400; font-size: 16px; color: var(--faint); margin-left: 6px; }
+  .ghost-btn {
+    min-height: 44px; padding: 0 18px; border-radius: 999px;
+    font-size: 15px; font-weight: 600;
+    background: var(--surface-strong); border: 1px solid var(--border);
+  }
+  .ghost-btn:active { background: var(--surface-press); }
+  .ghost-btn.confirm { background: var(--danger); border-color: transparent; color: #2A0707; }
+
+  .empty { text-align: center; padding: 40px 20px; border-radius: var(--radius); }
+  .empty-emoji { font-size: 44px; line-height: 1; margin-bottom: 12px; }
+  .empty h2 { margin-bottom: 6px; }
+  .empty p { margin: 0; color: var(--muted); font-size: 15px; }
+
+  /* Tab bar */
+  .tabs {
+    position: fixed; z-index: 5;
+    left: 50%; transform: translateX(-50%);
+    bottom: calc(env(safe-area-inset-bottom) + 12px);
+    width: calc(100% - 32px); max-width: 420px; height: var(--tabbar-h);
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+    padding: 6px; border-radius: 26px;
+    background: rgba(20, 18, 32, 0.6);
+    box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.6);
+  }
+  .tab {
+    border-radius: 20px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    font-size: 13px; font-weight: 600; color: var(--faint);
+  }
+  .tab svg { width: 24px; height: 24px; }
+  .tab[aria-selected="true"] { color: var(--text); background: var(--surface-strong); }
+  .tab[aria-selected="true"] svg { color: var(--orange); }
+
+  /* Lock screen */
+  .lock {
+    position: fixed; inset: 0; z-index: 20;
+    display: grid; place-items: center;
+    padding: calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 16px);
+    overflow-y: auto;
+    background: rgba(10, 9, 18, 0.72);
+    -webkit-backdrop-filter: blur(30px);
+    backdrop-filter: blur(30px);
+  }
+  .lock-card { width: 100%; max-width: 400px; padding: 28px 22px; border-radius: 28px; }
+  .lock-logo {
+    width: 64px; height: 64px; border-radius: 20px; margin-bottom: 18px;
+    display: grid; place-items: center; font-size: 32px;
+    background: var(--grad-hot); box-shadow: 0 12px 30px -10px var(--hot);
+  }
+  .lock-card h1 { margin-bottom: 8px; }
+  .lock-card > p { margin: 0 0 22px; color: var(--muted); font-size: 15px; }
+  .field { display: block; margin-bottom: 14px; }
+  .field span { display: block; font-size: 14px; font-weight: 600; color: var(--muted); margin: 0 0 6px 4px; }
+  .field input {
+    width: 100%; height: 54px; padding: 0 16px;
+    border-radius: var(--radius-sm); outline: 0;
+    background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border);
+    font-size: 17px;
+  }
+  .field input:focus { border-color: var(--orange); }
+  .error { min-height: 20px; margin: 0 0 10px 4px; color: var(--danger); font-size: 14px; font-weight: 500; }
+  .primary {
+    width: 100%; height: 56px; border-radius: 999px;
+    font-family: var(--font-display); font-size: 18px; font-weight: 700; color: #1A0A12;
+    background: var(--grad-hot); box-shadow: 0 10px 28px -10px var(--hot);
+  }
+  .primary:active { transform: scale(0.98); }
+  .primary:disabled { opacity: 0.6; }
+
+  /* Toast */
+  .toast {
+    position: fixed; z-index: 30; left: 50%;
+    bottom: calc(env(safe-area-inset-bottom) + var(--tabbar-h) + 24px);
+    transform: translate(-50%, 12px); opacity: 0;
+    width: max-content; max-width: calc(100% - 32px);
+    padding: 12px 18px; border-radius: 16px;
+    background: rgba(30, 27, 46, 0.85);
+    font-size: 15px; font-weight: 500;
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .items li { animation: rise 0.25s ease-out both; }
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
+</style>
+</head>
+<body>
+<div class="aurora" aria-hidden="true"><span class="a1"></span><span class="a2"></span><span class="a3"></span><span class="a4"></span></div>
+
+<main class="app">
+  <header class="top">
+    <div>
+      <p class="eyebrow">Yong Kitchen</p>
+      <h1 id="title">Shopping list</h1>
+    </div>
+    <button class="icon-btn" id="lockBtn" aria-label="Lock this phone">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="10.5" rx="2.5"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>
+    </button>
+  </header>
+
+  <section id="view-list">
+    <div class="hero glass">
+      <div class="count"><span class="count-num" id="countNum">0</span><span class="count-label" id="countLabel">to get</span></div>
+      <div class="sync" id="sync" data-state="loading"><span class="dot"></span><span id="syncText">Syncing…</span></div>
+    </div>
+
+    <form class="add glass" id="addForm" autocomplete="off">
+      <input id="addInput" type="text" placeholder="Add items: milk, eggs…" enterkeyhint="done" maxlength="500" aria-label="Add items">
+      <button class="add-btn" type="submit" aria-label="Add to list">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+    </form>
+
+    <ul class="items" id="todo"></ul>
+
+    <div class="empty glass" id="empty" hidden>
+      <div class="empty-emoji" id="emptyEmoji">🧺</div>
+      <h2 id="emptyTitle">Nothing on the list</h2>
+      <p id="emptyText">Text the bot or add something above.</p>
+    </div>
+
+    <section id="doneSection" hidden>
+      <div class="section-head">
+        <h2>In the trolley<span class="mono" id="doneCount"></span></h2>
+        <button class="ghost-btn" id="clearBtn" type="button">Clear ticked</button>
+      </div>
+      <ul class="items" id="done"></ul>
+    </section>
+  </section>
+
+  <section id="view-dinners" hidden>
+    <div class="empty glass">
+      <div class="empty-emoji">🍝</div>
+      <h2>Dinners are on the way</h2>
+      <p>The meal library and weekly planner arrive in the next step.</p>
+    </div>
+  </section>
+</main>
+
+<nav class="tabs glass" role="tablist" aria-label="Sections">
+  <button class="tab" role="tab" data-tab="list" aria-selected="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2.2l2.4 11.2a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.1L21 8H6.1"/><circle cx="9.5" cy="20" r="1.3"/><circle cx="17.5" cy="20" r="1.3"/></svg>
+    <span>List</span>
+  </button>
+  <button class="tab" role="tab" data-tab="dinners" aria-selected="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="7"/><circle cx="12" cy="13" r="3.5"/><path d="M3 3v5a2 2 0 0 0 2 2M3 3v7M21 3c-1.5 1-2 3-2 5s1 2 1 2v11"/></svg>
+    <span>Dinners</span>
+  </button>
+</nav>
+
+<div class="lock" id="lock" hidden>
+  <form class="lock-card glass" id="lockForm">
+    <div class="lock-logo" aria-hidden="true">🛒</div>
+    <h1>Yong Kitchen</h1>
+    <p>Enter the household passcode. This phone will remember it.</p>
+    <label class="field">
+      <span>Passcode</span>
+      <input id="passInput" type="password" autocomplete="current-password" required>
+    </label>
+    <label class="field">
+      <span>Your name (optional)</span>
+      <input id="nameInput" type="text" maxlength="30" placeholder="e.g. Tim" autocomplete="given-name">
+    </label>
+    <p class="error" id="lockError" role="alert"></p>
+    <button class="primary" id="unlockBtn" type="submit">Unlock</button>
+  </form>
+</div>
+
+<div class="toast glass" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  // The page never talks to the database directly: every read and write goes
+  // through the kitchen-api Edge Function, which checks the household passcode.
+  const API_URL = "https://enwktqmodzoyjcyhxbhr.supabase.co/functions/v1/kitchen-api";
+  const POLL_MS = 5000;
+
+  const $ = (id) => document.getElementById(id);
+
+  // localStorage can be blocked (private browsing), so never let it crash the page.
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+    remove(k) { try { localStorage.removeItem(k); } catch {} },
+  };
+
+  let passcode = store.get("kitchen.passcode");
+  let myName = store.get("kitchen.name") || "";
+  let items = [];
+  let lastRendered = "";
+  let pending = 0;   // mutations in flight
+  let epoch = 0;     // bumps on every mutation so stale polls are ignored
+  let pollTimer = null;
+  let tempId = -1;
+
+  class AuthError extends Error {}
+
+  async function api(action, body = {}, code = passcode) {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-kitchen-passcode": code || "" },
+      body: JSON.stringify({ action, ...body }),
+    });
+    let data = {};
+    try { data = await res.json(); } catch {}
+    if (res.status === 401) throw new AuthError(data.error || "Wrong passcode.");
+    if (!res.ok) throw new Error(data.error || `Server error (${res.status}).`);
+    return data;
+  }
+
+  // Same splitting rules as the bot, so optimistic items look right straight away.
+  function parseItems(text) {
+    return text.split(/[,;\n]+/)
+      .map((s) => s.replace(/^\s*(?:[-•*]\s*|\d+[.)]\s+)/, "").replace(/\s+/g, " ").trim().slice(0, 200))
+      .filter(Boolean);
+  }
+
+  /* ---------- Rendering ---------- */
+
+  const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+  function itemEl(item) {
+    const li = document.createElement("li");
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "item glass" + (item.id < 0 ? " pending" : "");
+    btn.setAttribute("aria-pressed", String(item.ticked));
+    btn.dataset.id = item.id;
+
+    const check = document.createElement("span");
+    check.className = "check";
+    check.innerHTML = CHECK_SVG;
+
+    const body = document.createElement("span");
+    body.className = "item-body";
+    const text = document.createElement("span");
+    text.className = "item-text";
+    text.textContent = item.text;
+    body.append(text);
+    if (item.added_by) {
+      const meta = document.createElement("span");
+      meta.className = "item-meta";
+      meta.textContent = item.added_by;
+      body.append(meta);
+    }
+
+    btn.append(check, body);
+    li.append(btn);
+    return li;
+  }
+
+  function render() {
+    // Only touch the DOM when something changed, so a poll never swallows a tap.
+    const snapshot = JSON.stringify(items);
+    if (snapshot === lastRendered) return;
+    lastRendered = snapshot;
+
+    const todo = items.filter((i) => !i.ticked);
+    const done = items.filter((i) => i.ticked)
+      .sort((a, b) => (b.ticked_at || "").localeCompare(a.ticked_at || ""));
+
+    $("todo").replaceChildren(...todo.map(itemEl));
+    $("done").replaceChildren(...done.map(itemEl));
+    $("countNum").textContent = todo.length;
+    $("countLabel").textContent = todo.length === 1 ? "thing to get" : "to get";
+    $("doneCount").textContent = done.length;
+    $("doneSection").hidden = done.length === 0;
+
+    const empty = todo.length === 0;
+    $("empty").hidden = !empty;
+    if (empty && done.length) {
+      $("emptyEmoji").textContent = "🎉";
+      $("emptyTitle").textContent = "All ticked off";
+      $("emptyText").textContent = "Clear the trolley when you're done.";
+    } else {
+      $("emptyEmoji").textContent = "🧺";
+      $("emptyTitle").textContent = "Nothing on the list";
+      $("emptyText").textContent = "Text the bot or add something above.";
+    }
+  }
+
+  function setSync(state) {
+    $("sync").dataset.state = state;
+    $("syncText").textContent = state === "ok" ? "Live" : state === "offline" ? "Offline, retrying" : "Syncing…";
+  }
+
+  let toastTimer;
+  function toast(message) {
+    const el = $("toast");
+    el.textContent = message;
+    el.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove("show"), 3200);
+  }
+
+  /* ---------- Data ---------- */
+
+  function handleError(err, quiet) {
+    if (err instanceof AuthError) {
+      showLock("The passcode was changed. Please enter the new one.");
+      return;
+    }
+    console.error(err);
+    setSync("offline");
+    if (!quiet) toast(err instanceof TypeError ? "No connection. Check your signal." : "⚠️ " + err.message);
+  }
+
+  async function refresh() {
+    if (!passcode || pending) return;
+    const startEpoch = epoch;
+    try {
+      const data = await api("list");
+      if (pending || startEpoch !== epoch) return; // a tap happened meanwhile; its reply wins
+      items = data.items;
+      render();
+      setSync("ok");
+    } catch (err) {
+      handleError(err, true);
+    }
+  }
+
+  async function mutate(action, body, optimistic) {
+    epoch++;
+    pending++;
+    if (optimistic) { optimistic(); render(); }
+    try {
+      const data = await api(action, body);
+      pending--;
+      if (!pending) { items = data.items; render(); }
+      setSync("ok");
+      return data;
+    } catch (err) {
+      pending--;
+      handleError(err);
+      if (!pending) refresh(); // undo the optimistic change
+      return null;
+    }
+  }
+
+  function startPolling() {
+    stopPolling();
+    refresh();
+    pollTimer = setInterval(() => { if (!document.hidden) refresh(); }, POLL_MS);
+  }
+  function stopPolling() { clearInterval(pollTimer); pollTimer = null; }
+
+  /* ---------- Actions ---------- */
+
+  $("todo").addEventListener("click", onItemTap);
+  $("done").addEventListener("click", onItemTap);
+  function onItemTap(e) {
+    const btn = e.target.closest(".item");
+    if (!btn) return;
+    const id = Number(btn.dataset.id);
+    const item = items.find((i) => i.id === id);
+    if (!item || id < 0) return;
+    const ticked = !item.ticked;
+    if (navigator.vibrate) navigator.vibrate(8);
+    mutate("tick", { id, ticked }, () => {
+      items = items.map((i) => i.id === id ? { ...i, ticked, ticked_at: ticked ? new Date().toISOString() : null } : i);
+    });
+  }
+
+  $("addForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const input = $("addInput");
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = "";
+    const data = await mutate("add", { text, by: myName }, () => {
+      const known = new Set(items.filter((i) => !i.ticked).map((i) => i.text.toLowerCase()));
+      for (const t of parseItems(text)) {
+        if (known.has(t.toLowerCase())) continue;
+        known.add(t.toLowerCase());
+        items = [...items, { id: tempId--, text: t, ticked: false, added_by: myName || "Web", created_at: new Date().toISOString() }];
+      }
+    });
+    if (data?.skipped?.length) toast("👍 Already on the list: " + data.skipped.join(", "));
+  });
+
+  // Two taps to clear, so a stray thumb in the supermarket doesn't wipe the trolley.
+  let clearArmed = null;
+  $("clearBtn").addEventListener("click", async () => {
+    const btn = $("clearBtn");
+    if (!clearArmed) {
+      btn.classList.add("confirm");
+      btn.textContent = "Tap to confirm";
+      clearArmed = setTimeout(disarmClear, 3000);
+      return;
+    }
+    disarmClear();
+    const data = await mutate("clear", {}, () => { items = items.filter((i) => !i.ticked); });
+    if (data) toast(`🧹 Cleared ${data.cleared} item${data.cleared === 1 ? "" : "s"}`);
+  });
+  function disarmClear() {
+    clearTimeout(clearArmed);
+    clearArmed = null;
+    $("clearBtn").classList.remove("confirm");
+    $("clearBtn").textContent = "Clear ticked";
+  }
+
+  /* ---------- Tabs ---------- */
+
+  const TITLES = { list: "Shopping list", dinners: "Dinners" };
+  function showTab(name) {
+    if (!TITLES[name]) name = "list";
+    document.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === name)));
+    $("view-list").hidden = name !== "list";
+    $("view-dinners").hidden = name !== "dinners";
+    $("title").textContent = TITLES[name];
+    store.set("kitchen.tab", name);
+  }
+  document.querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () => showTab(t.dataset.tab)));
+
+  /* ---------- Passcode ---------- */
+
+  function showLock(message = "") {
+    stopPolling();
+    passcode = null;
+    store.remove("kitchen.passcode");
+    $("lockError").textContent = message;
+    $("nameInput").value = myName;
+    $("lock").hidden = false;
+    $("passInput").value = "";
+    setTimeout(() => $("passInput").focus(), 50);
+  }
+
+  $("lockForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const code = $("passInput").value.trim();
+    if (!code) return;
+    const btn = $("unlockBtn");
+    btn.disabled = true;
+    btn.textContent = "Checking…";
+    $("lockError").textContent = "";
+    try {
+      const data = await api("list", {}, code);
+      passcode = code;
+      myName = $("nameInput").value.trim();
+      store.set("kitchen.passcode", code);
+      store.set("kitchen.name", myName);
+      $("lock").hidden = true;
+      items = data.items;
+      render();
+      setSync("ok");
+      startPolling();
+    } catch (err) {
+      $("lockError").textContent = err instanceof AuthError
+        ? "That passcode didn't work. Try again."
+        : "Couldn't reach the server. Check your signal and try again.";
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Unlock";
+    }
+  });
+
+  $("lockBtn").addEventListener("click", () => {
+    if (confirm("Lock this phone? You'll need the passcode again.")) showLock();
+  });
+
+  /* ---------- Start ---------- */
+
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) refresh(); });
+  window.addEventListener("focus", refresh);
+  window.addEventListener("online", refresh);
+
+  showTab(store.get("kitchen.tab") || "list");
+  if (passcode) startPolling(); else showLock();
+</script>
+</body>
+</html>
