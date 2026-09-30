@@ -214,7 +214,7 @@
     left: 50%; transform: translateX(-50%);
     bottom: calc(env(safe-area-inset-bottom) + 12px);
     width: calc(100% - 32px); max-width: 420px; height: var(--tabbar-h);
-    display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;
     padding: 6px; border-radius: 26px;
     background: rgba(20, 18, 32, 0.6);
     box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.6);
@@ -227,6 +227,120 @@
   .tab svg { width: 24px; height: 24px; }
   .tab[aria-selected="true"] { color: var(--text); background: var(--surface-strong); }
   .tab[aria-selected="true"] svg { color: var(--orange); }
+
+  /* Dinners */
+  .add-meal-btn {
+    display: flex; align-items: center; gap: 6px;
+    height: 48px; padding: 0 18px 0 14px; border-radius: 999px;
+    font-weight: 600; color: #1A0A12;
+    background: var(--grad-hot); box-shadow: 0 6px 20px -6px var(--hot);
+  }
+  .add-meal-btn svg { width: 20px; height: 20px; }
+  .add-meal-btn:active { transform: scale(0.96); }
+  .meals { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .meal { border-radius: var(--radius); overflow: hidden; }
+  .meal-main { width: 100%; display: flex; align-items: center; gap: 14px; padding: 12px; text-align: left; }
+  .meal-main:active { background: var(--surface-press); }
+  .meal-photo {
+    width: 76px; height: 76px; flex: none; border-radius: 14px; overflow: hidden;
+    display: grid; place-items: center; font-size: 30px;
+    background: linear-gradient(135deg, rgba(255, 79, 139, 0.35), rgba(255, 138, 61, 0.35));
+  }
+  .meal-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .meal-body { flex: 1; min-width: 0; }
+  .meal-name { display: block; font-family: var(--font-display); font-weight: 600; font-size: 19px; line-height: 1.2; overflow-wrap: anywhere; }
+  .meal-meta { display: block; margin-top: 4px; font-size: 14px; color: var(--muted); }
+  .meal-meta .mono { font-family: var(--font-mono); }
+  .meal-foot { display: flex; justify-content: flex-end; padding: 0 12px 12px; margin-top: -4px; }
+  .recipe-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    min-height: 44px; padding: 0 16px; border-radius: 999px;
+    font-size: 15px; font-weight: 600; color: var(--text); text-decoration: none;
+    background: var(--surface-strong); border: 1px solid var(--border);
+  }
+  .recipe-link:active { background: var(--surface-press); }
+  .recipe-link svg { width: 16px; height: 16px; color: var(--orange); }
+
+  /* Meal editor */
+  .sheet {
+    position: fixed; inset: 0; z-index: 15;
+    overflow-y: auto; overscroll-behavior: contain;
+    background: rgba(10, 9, 18, 0.82);
+    -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px);
+  }
+  .sheet-inner {
+    max-width: 560px; margin: 0 auto;
+    padding: calc(env(safe-area-inset-top) + 8px) 16px calc(env(safe-area-inset-bottom) + 32px);
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .sheet-head { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; min-height: 56px; }
+  .sheet-head h2 { font-size: 20px; }
+  .text-btn { justify-self: start; min-height: 44px; padding: 0 4px; font-weight: 600; color: var(--orange); }
+  .card { border-radius: var(--radius); padding: 16px; }
+  .field-label { display: block; font-size: 14px; font-weight: 600; color: var(--muted); margin: 0 0 6px 2px; }
+  .field-label em { font-style: normal; font-weight: 400; color: var(--faint); }
+  .text-input + .field-label { margin-top: 14px; }
+  .text-input, .url-row input, .paste-box textarea {
+    width: 100%; min-height: 52px; padding: 0 14px;
+    border-radius: var(--radius-sm); outline: 0;
+    background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border);
+    font-size: 17px;
+  }
+  .text-input:focus, .url-row input:focus, .paste-box textarea:focus { border-color: var(--orange); }
+  .url-row { display: flex; gap: 8px; }
+  .url-row input { flex: 1; min-width: 0; }
+  .fetch-btn {
+    flex: none; min-width: 84px; min-height: 52px; padding: 0 16px; border-radius: var(--radius-sm);
+    font-weight: 700; color: #1A0A12; background: var(--grad-hot);
+  }
+  .fetch-btn:disabled { opacity: 0.6; }
+  .hint { margin: 10px 2px 0; font-size: 14px; color: var(--muted); }
+  .hint:empty { display: none; }
+  .hint.warn { color: var(--sun); }
+  .hint.good { color: var(--mint); }
+  .photo { position: relative; border-radius: var(--radius); overflow: hidden; aspect-ratio: 16 / 9; }
+  .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photo-remove {
+    position: absolute; right: 10px; bottom: 10px; min-height: 40px; padding: 0 14px; border-radius: 999px;
+    font-size: 14px; font-weight: 600; background: rgba(10, 9, 18, 0.7);
+  }
+  .ing-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .ing-head h3 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 19px; }
+  .ing-head .mono { font-family: var(--font-mono); font-weight: 400; font-size: 15px; color: var(--faint); margin-left: 8px; }
+  .jar-inline { display: inline-grid; vertical-align: -3px; color: var(--mint); }
+  .jar-inline svg { width: 17px; height: 17px; }
+  .paste-box { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+  .paste-box textarea { padding: 12px 14px; line-height: 1.45; resize: vertical; font-family: var(--font-ui); }
+  .ing-list { list-style: none; margin: 12px 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .ing { display: flex; align-items: flex-start; gap: 4px; }
+  .ing-text {
+    flex: 1; min-width: 0; min-height: 48px; padding: 12px;
+    border-radius: 12px; outline: 0; resize: none; overflow: hidden;
+    background: rgba(0, 0, 0, 0.22); border: 1px solid var(--border);
+    font-family: var(--font-ui); font-size: 16px; line-height: 1.4;
+  }
+  .ing-text:focus { border-color: var(--orange); }
+  .ing-staple, .ing-del {
+    width: 44px; height: 48px; flex: none; border-radius: 12px;
+    display: grid; place-items: center;
+    border: 1px solid transparent;
+  }
+  .ing-staple { color: var(--faint); }
+  .ing-staple svg { width: 22px; height: 22px; }
+  .ing-staple[aria-pressed="true"] { color: var(--mint); background: rgba(46, 230, 184, 0.14); border-color: rgba(46, 230, 184, 0.45); }
+  .ing[data-staple="true"] .ing-text { color: var(--muted); border-style: dashed; }
+  .ing-del { color: var(--faint); }
+  .ing-del svg { width: 18px; height: 18px; }
+  .ing-staple:active, .ing-del:active { background: var(--surface-press); }
+  .ghost-btn.wide { width: 100%; }
+  .sheet-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+  .danger-btn {
+    width: 100%; min-height: 52px; border-radius: 999px;
+    font-weight: 600; color: var(--danger);
+    background: rgba(255, 107, 107, 0.08); border: 1px solid rgba(255, 107, 107, 0.3);
+  }
+  .danger-btn.confirm { background: var(--danger); color: #2A0707; }
+  body.sheet-open { overflow: hidden; }
 
   /* Lock screen */
   .lock {
@@ -328,11 +442,27 @@
     </section>
   </section>
 
-  <section id="view-dinners" hidden>
+  <section id="view-week" hidden>
     <div class="empty glass">
+      <div class="empty-emoji">🗓️</div>
+      <h2>The weekly planner is on the way</h2>
+      <p>Meanwhile, fill up the Dinners tab so there's plenty to pick from.</p>
+    </div>
+  </section>
+
+  <section id="view-dinners" hidden>
+    <div class="hero glass">
+      <div class="count"><span class="count-num" id="mealCount">0</span><span class="count-label" id="mealLabel">dinners</span></div>
+      <button class="add-meal-btn" id="newMealBtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Add dinner
+      </button>
+    </div>
+    <ul class="meals" id="meals"></ul>
+    <div class="empty glass" id="mealsEmpty" hidden>
       <div class="empty-emoji">🍝</div>
-      <h2>Dinners are on the way</h2>
-      <p>The meal library and weekly planner arrive in the next step.</p>
+      <h2>No dinners yet</h2>
+      <p>Add your go-to meals. Paste a recipe link and the ingredients fill themselves in.</p>
     </div>
   </section>
 </main>
@@ -341,6 +471,10 @@
   <button class="tab" role="tab" data-tab="list" aria-selected="true">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2.2l2.4 11.2a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.1L21 8H6.1"/><circle cx="9.5" cy="20" r="1.3"/><circle cx="17.5" cy="20" r="1.3"/></svg>
     <span>List</span>
+  </button>
+  <button class="tab" role="tab" data-tab="week" aria-selected="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 14.5h2M14 14.5h2M8 17.5h2"/></svg>
+    <span>This week</span>
   </button>
   <button class="tab" role="tab" data-tab="dinners" aria-selected="false">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="7"/><circle cx="12" cy="13" r="3.5"/><path d="M3 3v5a2 2 0 0 0 2 2M3 3v7M21 3c-1.5 1-2 3-2 5s1 2 1 2v11"/></svg>
@@ -363,6 +497,57 @@
     </label>
     <p class="error" id="lockError" role="alert"></p>
     <button class="primary" id="unlockBtn" type="submit">Unlock</button>
+  </form>
+</div>
+
+<div class="sheet" id="editor" hidden role="dialog" aria-modal="true" aria-labelledby="editorTitle">
+  <form class="sheet-inner" id="mealForm" novalidate autocomplete="off">
+    <header class="sheet-head">
+      <button type="button" class="text-btn" id="editorCancel">Cancel</button>
+      <h2 id="editorTitle">New dinner</h2>
+      <span class="sheet-head-spacer"></span>
+    </header>
+
+    <section class="card glass">
+      <label class="field-label" for="mealUrl">Recipe link <em>(optional)</em></label>
+      <div class="url-row">
+        <input id="mealUrl" type="url" inputmode="url" placeholder="Paste a recipe link" autocapitalize="off" spellcheck="false">
+        <button type="button" class="fetch-btn" id="fetchBtn">Fetch</button>
+      </div>
+      <p class="hint" id="fetchStatus" role="status" aria-live="polite"></p>
+    </section>
+
+    <div class="photo glass" id="mealPhoto" hidden>
+      <img id="mealPhotoImg" alt="" referrerpolicy="no-referrer">
+      <button type="button" class="photo-remove" id="photoRemove">Remove photo</button>
+    </div>
+
+    <section class="card glass">
+      <label class="field-label" for="mealName">Name</label>
+      <input class="text-input" id="mealName" maxlength="120" placeholder="e.g. Chilli con carne">
+      <label class="field-label" for="mealServings">Serves <em>(optional)</em></label>
+      <input class="text-input" id="mealServings" maxlength="60" placeholder="e.g. 4">
+    </section>
+
+    <section class="card glass">
+      <div class="ing-head">
+        <h3>Ingredients<span class="mono" id="ingCount"></span></h3>
+        <button type="button" class="ghost-btn" id="pasteToggle">Paste a list</button>
+      </div>
+      <p class="hint">Tap <span class="jar-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="3.5" rx="1"/><path d="M8 6c-1.8 1-3 2.7-3 4.6v7.9A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5v-7.9C19 8.7 17.8 7 16 6"/><path d="M8.5 13.5h7"/></svg></span> on things you always have, like salt or olive oil. It's remembered for every recipe.</p>
+      <div class="paste-box" id="pasteBox" hidden>
+        <textarea id="pasteText" rows="6" placeholder="One ingredient per line"></textarea>
+        <button type="button" class="ghost-btn" id="pasteAdd">Add these</button>
+      </div>
+      <ul class="ing-list" id="ingList"></ul>
+      <button type="button" class="ghost-btn wide" id="ingAdd">+ Add ingredient</button>
+    </section>
+
+    <p class="error" id="editorError" role="alert"></p>
+    <div class="sheet-actions">
+      <button type="submit" class="primary" id="saveMeal">Save dinner</button>
+      <button type="button" class="danger-btn" id="deleteMeal" hidden>Delete dinner</button>
+    </div>
   </form>
 </div>
 
@@ -670,16 +855,445 @@
     $("clearBtn").textContent = "Clear ticked";
   }
 
+  /* ---------- Dinners ---------- */
+
+  let meals = [];
+  let mealsLoaded = false;
+  let draft = null;        // the dinner being added or edited
+  let draftDirty = false;
+
+  const PLATE = "🍲";
+  const LINK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg>';
+  const JAR_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="3.5" rx="1"/><path d="M8 6c-1.8 1-3 2.7-3 4.6v7.9A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5v-7.9C19 8.7 17.8 7 16 6"/><path d="M8.5 13.5h7"/></svg>';
+  const X_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+  // Only ever put http(s) links into the page.
+  function safeUrl(u) {
+    try {
+      const url = new URL(u);
+      return /^https?:$/.test(url.protocol) ? url.href : null;
+    } catch { return null; }
+  }
+
+  // "4" → "Serves 4", "4 - 5 people" → "Serves 4 - 5 people", "4 servings" stays as it is
+  const servingsText = (s) => /^\d/.test(s) && !/serv|make|portion/i.test(s) ? `Serves ${s}` : s;
+
+  function photoEl(url) {
+    const box = document.createElement("span");
+    box.className = "meal-photo";
+    const src = url && safeUrl(url);
+    if (src) {
+      const img = document.createElement("img");
+      img.alt = "";
+      img.loading = "lazy";
+      img.referrerPolicy = "no-referrer";
+      img.addEventListener("error", () => { img.remove(); box.textContent = PLATE; });
+      img.src = src;
+      box.append(img);
+    } else {
+      box.textContent = PLATE;
+    }
+    return box;
+  }
+
+  function mealEl(meal) {
+    const li = document.createElement("li");
+    li.className = "meal glass";
+
+    const main = document.createElement("button");
+    main.type = "button";
+    main.className = "meal-main";
+    main.dataset.id = meal.id;
+    const body = document.createElement("span");
+    body.className = "meal-body";
+    const name = document.createElement("span");
+    name.className = "meal-name";
+    name.textContent = meal.name;
+    const meta = document.createElement("span");
+    meta.className = "meal-meta";
+    const count = meal.ingredients.length;
+    const staples = meal.ingredients.filter((i) => i.staple).length;
+    meta.textContent = [
+      meal.servings && servingsText(meal.servings),
+      `${count} ingredient${count === 1 ? "" : "s"}`,
+      staples && `${staples} pantry staple${staples === 1 ? "" : "s"}`,
+    ].filter(Boolean).join(" · ");
+    body.append(name, meta);
+    main.append(photoEl(meal.image_url), body);
+    li.append(main);
+
+    const href = meal.recipe_url && safeUrl(meal.recipe_url);
+    if (href) {
+      const foot = document.createElement("div");
+      foot.className = "meal-foot";
+      const a = document.createElement("a");
+      a.className = "recipe-link";
+      a.href = href;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.innerHTML = "View recipe " + LINK_SVG;
+      foot.append(a);
+      li.append(foot);
+    }
+    return li;
+  }
+
+  function renderMeals() {
+    $("meals").replaceChildren(...meals.map(mealEl));
+    $("mealCount").textContent = meals.length;
+    $("mealLabel").textContent = meals.length === 1 ? "dinner" : "dinners";
+    $("mealsEmpty").hidden = !mealsLoaded || meals.length > 0;
+  }
+
+  function applyMeals(data) {
+    meals = data.meals;
+    mealsLoaded = true;
+    renderMeals();
+    setSync("ok");
+  }
+
+  async function loadMeals() {
+    if (!passcode) return;
+    try {
+      applyMeals(await api("meals"));
+    } catch (err) {
+      handleError(err, mealsLoaded);
+    }
+  }
+
+  $("meals").addEventListener("click", (e) => {
+    const btn = e.target.closest(".meal-main");
+    if (btn) openEditor(meals.find((m) => m.id === Number(btn.dataset.id)));
+  });
+  $("newMealBtn").addEventListener("click", () => openEditor(null));
+
+  /* ---------- Meal editor ---------- */
+
+  function openEditor(meal) {
+    draft = {
+      id: meal?.id ?? null,
+      image_url: null,
+      // touched: someone tapped the jar on this row, so saving updates the household staples list
+      ingredients: (meal?.ingredients ?? []).map((i) => ({ line: i.line, name: i.name, staple: i.staple, touched: false })),
+    };
+    draftDirty = false;
+    $("editorTitle").textContent = meal ? "Edit dinner" : "New dinner";
+    $("mealUrl").value = meal?.recipe_url ?? "";
+    $("mealName").value = meal?.name ?? "";
+    $("mealServings").value = meal?.servings ?? "";
+    $("editorError").textContent = "";
+    $("pasteBox").hidden = true;
+    $("pasteText").value = "";
+    $("deleteMeal").hidden = !meal;
+    setFetchStatus("");
+    disarmDelete();
+    setPhoto(meal?.image_url);
+    $("editor").hidden = false;
+    $("editor").scrollTop = 0;
+    document.body.classList.add("sheet-open");
+    renderIngredients();
+  }
+
+  function closeEditor() {
+    $("editor").hidden = true;
+    document.body.classList.remove("sheet-open");
+    draft = null;
+  }
+
+  $("editorCancel").addEventListener("click", () => {
+    if (!draftDirty || confirm("Discard your changes to this dinner?")) closeEditor();
+  });
+  $("mealForm").addEventListener("input", () => { draftDirty = true; });
+
+  function setFetchStatus(message, tone = "") {
+    const el = $("fetchStatus");
+    el.textContent = message;
+    el.className = "hint" + (tone ? " " + tone : "");
+  }
+
+  function setPhoto(url) {
+    const src = url && safeUrl(url);
+    if (draft) draft.image_url = src || null;
+    $("mealPhoto").hidden = !src;
+    if (src) $("mealPhotoImg").src = src;
+    else $("mealPhotoImg").removeAttribute("src");
+  }
+  $("mealPhotoImg").addEventListener("error", () => { if (draft) setPhoto(null); });
+  $("photoRemove").addEventListener("click", () => { setPhoto(null); draftDirty = true; });
+
+  function autoGrow(ta) {
+    ta.style.height = "auto";
+    ta.style.height = ta.scrollHeight + 2 + "px";
+  }
+
+  function renderIngredients() {
+    $("ingList").replaceChildren(...draft.ingredients.map((ing, idx) => {
+      const li = document.createElement("li");
+      li.className = "ing";
+      li.dataset.idx = idx;
+      li.dataset.staple = String(ing.staple);
+
+      const ta = document.createElement("textarea");
+      ta.className = "ing-text";
+      ta.rows = 1;
+      ta.maxLength = 300;
+      ta.value = ing.line;
+      ta.placeholder = "e.g. 2 red onions, chopped";
+      ta.setAttribute("aria-label", `Ingredient ${idx + 1}`);
+
+      const jar = document.createElement("button");
+      jar.type = "button";
+      jar.className = "ing-staple";
+      jar.innerHTML = JAR_SVG;
+      jar.title = "Always have";
+      jar.setAttribute("aria-label", "Always have");
+      jar.setAttribute("aria-pressed", String(ing.staple));
+
+      const del = document.createElement("button");
+      del.type = "button";
+      del.className = "ing-del";
+      del.innerHTML = X_SVG;
+      del.setAttribute("aria-label", "Remove ingredient");
+
+      li.append(ta, jar, del);
+      return li;
+    }));
+    updateIngCount();
+    requestAnimationFrame(() => document.querySelectorAll(".ing-text").forEach(autoGrow));
+  }
+
+  function updateIngCount() {
+    const n = draft.ingredients.filter((i) => i.line.trim()).length;
+    $("ingCount").textContent = n || "";
+  }
+
+  function updateStapleButtons() {
+    document.querySelectorAll("#ingList .ing").forEach((li) => {
+      const ing = draft.ingredients[Number(li.dataset.idx)];
+      if (!ing) return;
+      li.dataset.staple = String(ing.staple);
+      li.querySelector(".ing-staple").setAttribute("aria-pressed", String(ing.staple));
+    });
+  }
+
+  // Asks the server whether new or edited lines are already household staples.
+  async function checkStaples(indices) {
+    const rows = indices.map((i) => draft.ingredients[i]).filter((r) => r && r.line.trim() && !r.touched);
+    if (!rows.length) return;
+    const d = draft;
+    try {
+      const { ingredients } = await api("preview", { lines: rows.map((r) => r.line) });
+      if (d !== draft) return;
+      rows.forEach((r, k) => {
+        if (ingredients[k]?.line !== r.line.replace(/\s+/g, " ").trim()) return; // edited again meanwhile
+        r.name = ingredients[k].name;
+        if (r.touched) return;
+        // A jar tapped on this recipe but not saved yet wins over the saved household list.
+        const same = draft.ingredients.find((o) => o !== r && o.touched && o.name === r.name);
+        r.staple = same ? same.staple : ingredients[k].staple;
+        if (same) r.touched = true;
+      });
+      updateStapleButtons();
+    } catch {
+      // Not important: the jar marks get sorted out when the dinner is saved.
+    }
+  }
+
+  function addIngredientRow(afterIdx) {
+    const at = afterIdx === undefined ? draft.ingredients.length : afterIdx + 1;
+    draft.ingredients.splice(at, 0, { line: "", staple: false, touched: false });
+    renderIngredients();
+    const ta = document.querySelector(`#ingList .ing[data-idx="${at}"] .ing-text`);
+    if (ta) ta.focus();
+  }
+
+  $("ingList").addEventListener("input", (e) => {
+    if (!e.target.classList.contains("ing-text")) return;
+    const ing = draft.ingredients[Number(e.target.closest(".ing").dataset.idx)];
+    ing.line = e.target.value.replace(/\n/g, " ");
+    ing.name = null; // worked out again by checkStaples when the row is left
+    autoGrow(e.target);
+    updateIngCount();
+  });
+  $("ingList").addEventListener("change", (e) => {
+    if (e.target.classList.contains("ing-text")) checkStaples([Number(e.target.closest(".ing").dataset.idx)]);
+  });
+  $("ingList").addEventListener("keydown", (e) => {
+    // Enter starts a new ingredient instead of a new line.
+    if (e.key === "Enter" && e.target.classList.contains("ing-text")) {
+      e.preventDefault();
+      addIngredientRow(Number(e.target.closest(".ing").dataset.idx));
+    }
+  });
+  $("ingList").addEventListener("click", (e) => {
+    const li = e.target.closest(".ing");
+    if (!li) return;
+    const idx = Number(li.dataset.idx);
+    if (e.target.closest(".ing-staple")) {
+      // Staples are household-wide, so every line of the same ingredient follows along.
+      const ing = draft.ingredients[idx];
+      const staple = !ing.staple;
+      for (const other of draft.ingredients) {
+        if (other === ing || (ing.name && other.name === ing.name)) {
+          other.staple = staple;
+          other.touched = true;
+        }
+      }
+      draftDirty = true;
+      updateStapleButtons();
+    } else if (e.target.closest(".ing-del")) {
+      draft.ingredients.splice(idx, 1);
+      draftDirty = true;
+      renderIngredients();
+    }
+  });
+  $("ingAdd").addEventListener("click", () => addIngredientRow());
+
+  function openPaste() {
+    $("pasteBox").hidden = false;
+    $("pasteToggle").textContent = "Hide";
+  }
+  $("pasteToggle").addEventListener("click", () => {
+    const show = $("pasteBox").hidden;
+    $("pasteBox").hidden = !show;
+    $("pasteToggle").textContent = show ? "Hide" : "Paste a list";
+    if (show) $("pasteText").focus();
+  });
+  $("pasteAdd").addEventListener("click", () => {
+    const lines = $("pasteText").value.split(/\n/)
+      .map((l) => l.replace(/^\s*(?:[-•*▢☐□]|\d+[.)])\s+/, "").replace(/\s+/g, " ").trim())
+      .filter(Boolean);
+    if (!lines.length) return;
+    draft.ingredients = draft.ingredients.filter((i) => i.line.trim());
+    const start = draft.ingredients.length;
+    draft.ingredients.push(...lines.map((line) => ({ line, staple: false, touched: false })));
+    draftDirty = true;
+    renderIngredients();
+    checkStaples(lines.map((_, k) => start + k));
+    $("pasteText").value = "";
+    $("pasteBox").hidden = true;
+    $("pasteToggle").textContent = "Paste a list";
+  });
+
+  async function fetchRecipe() {
+    const url = $("mealUrl").value.trim();
+    if (!url) {
+      setFetchStatus("Paste a recipe link first.", "warn");
+      return;
+    }
+    const btn = $("fetchBtn");
+    btn.disabled = true;
+    btn.textContent = "…";
+    setFetchStatus("Reading the recipe…");
+    const d = draft;
+    try {
+      const r = await api("import", { url });
+      if (d !== draft) return;
+      draftDirty = true;
+      $("mealUrl").value = r.recipe_url || url;
+      if (r.name && !$("mealName").value.trim()) $("mealName").value = r.name;
+      if (r.servings && !$("mealServings").value.trim()) $("mealServings").value = r.servings;
+      if (r.image_url && !draft.image_url) setPhoto(r.image_url);
+      if (r.found) {
+        const hasOwn = draft.ingredients.some((i) => i.line.trim());
+        if (!hasOwn || confirm("Replace the ingredients already here with the recipe's?")) {
+          draft.ingredients = r.ingredients.map((i) => ({ line: i.line, name: i.name, staple: i.staple, touched: false }));
+          renderIngredients();
+        }
+        const staples = r.ingredients.filter((i) => i.staple).length;
+        setFetchStatus(`Found ${r.ingredients.length} ingredients${staples ? ` (${staples} you always have)` : ""}. Check them over, then save.`, "good");
+      } else {
+        setFetchStatus("Couldn't find recipe details on that page. Type or paste the ingredients below.", "warn");
+        openPaste();
+      }
+    } catch (err) {
+      if (err instanceof AuthError) return handleError(err);
+      if (d !== draft) return;
+      setFetchStatus((err instanceof TypeError ? "No connection." : err.message) + " You can type or paste the ingredients below instead.", "warn");
+      openPaste();
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Fetch";
+    }
+  }
+  $("fetchBtn").addEventListener("click", fetchRecipe);
+  $("mealUrl").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); fetchRecipe(); }
+  });
+
+  $("mealForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = $("mealName").value.trim();
+    if (!name) {
+      $("editorError").textContent = "Give the dinner a name.";
+      $("mealName").focus();
+      return;
+    }
+    const btn = $("saveMeal");
+    btn.disabled = true;
+    btn.textContent = "Saving…";
+    $("editorError").textContent = "";
+    try {
+      const data = await api("save_meal", {
+        id: draft.id,
+        name,
+        recipe_url: $("mealUrl").value.trim(),
+        image_url: draft.image_url,
+        servings: $("mealServings").value.trim(),
+        ingredients: draft.ingredients
+          .filter((i) => i.line.trim())
+          .map((i) => ({ line: i.line, staple: i.touched ? i.staple : null })),
+      });
+      applyMeals(data);
+      closeEditor();
+      toast(`Saved ${name}`);
+    } catch (err) {
+      if (err instanceof AuthError) return handleError(err);
+      $("editorError").textContent = err instanceof TypeError ? "No connection. Check your signal and try again." : err.message;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Save dinner";
+    }
+  });
+
+  // Two taps to delete, like "Clear ticked".
+  let deleteArmed = null;
+  $("deleteMeal").addEventListener("click", async () => {
+    if (!deleteArmed) {
+      $("deleteMeal").classList.add("confirm");
+      $("deleteMeal").textContent = "Tap again to delete";
+      deleteArmed = setTimeout(disarmDelete, 3000);
+      return;
+    }
+    disarmDelete();
+    try {
+      applyMeals(await api("delete_meal", { id: draft.id }));
+      closeEditor();
+      toast("Dinner deleted");
+    } catch (err) {
+      if (err instanceof AuthError) return handleError(err);
+      $("editorError").textContent = err instanceof TypeError ? "No connection. Check your signal and try again." : err.message;
+    }
+  });
+  function disarmDelete() {
+    clearTimeout(deleteArmed);
+    deleteArmed = null;
+    $("deleteMeal").classList.remove("confirm");
+    $("deleteMeal").textContent = "Delete dinner";
+  }
+
   /* ---------- Tabs ---------- */
 
-  const TITLES = { list: "Shopping list", dinners: "Dinners" };
+  const TITLES = { list: "Shopping list", week: "This week", dinners: "Dinners" };
+  let currentTab = "list";
   function showTab(name) {
     if (!TITLES[name]) name = "list";
+    currentTab = name;
     document.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === name)));
-    $("view-list").hidden = name !== "list";
-    $("view-dinners").hidden = name !== "dinners";
+    for (const tab of Object.keys(TITLES)) $("view-" + tab).hidden = tab !== name;
     $("title").textContent = TITLES[name];
     store.set("kitchen.tab", name);
+    if (name === "dinners") loadMeals();
   }
   document.querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () => showTab(t.dataset.tab)));
 
@@ -715,6 +1329,7 @@
       render();
       setSync("ok");
       startPolling();
+      if (currentTab === "dinners") loadMeals();
     } catch (err) {
       $("lockError").textContent = err instanceof AuthError
         ? "That passcode didn't work. Try again."
@@ -731,7 +1346,11 @@
 
   /* ---------- Start ---------- */
 
-  document.addEventListener("visibilitychange", () => { if (document.hidden) flushQty(); else refresh(); });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) return flushQty();
+    refresh();
+    if (currentTab === "dinners" && !draft) loadMeals();
+  });
   window.addEventListener("focus", refresh);
   window.addEventListener("online", refresh);
 
