@@ -139,14 +139,43 @@
 
   /* Items */
   .items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-  .item {
-    width: 100%; min-height: 60px;
+  .item { border-radius: var(--radius-sm); transition: background 0.15s; }
+  .item-row { display: flex; align-items: stretch; }
+  .tick {
+    flex: 1; min-width: 0; min-height: 60px;
     display: flex; align-items: center; gap: 14px;
-    padding: 12px 16px; border-radius: var(--radius-sm);
+    padding: 12px 4px 12px 16px; border-radius: var(--radius-sm);
     text-align: left;
     transition: background 0.15s, transform 0.1s;
   }
-  .item:active { background: var(--surface-press); transform: scale(0.99); }
+  .tick:active { background: var(--surface-press); transform: scale(0.99); }
+  .qty-btn {
+    flex: none; align-self: center;
+    min-width: 56px; height: 44px; margin-right: 8px; padding: 0 12px;
+    border-radius: 12px;
+    font-family: var(--font-mono); font-size: 16px; font-weight: 500;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px dashed rgba(255, 255, 255, 0.14);
+  }
+  .qty-btn.has-qty {
+    color: var(--text);
+    background: rgba(255, 138, 61, 0.14);
+    border: 1px solid rgba(255, 138, 61, 0.35);
+  }
+  .qty-btn:active { transform: scale(0.95); }
+  .qty-btn[aria-expanded="true"] { border-style: solid; border-color: var(--orange); color: var(--text); }
+  .item[data-ticked="true"] .qty-btn { pointer-events: none; opacity: 0.5; background: none; border-color: transparent; }
+  .stepper { display: flex; align-items: center; gap: 10px; padding: 0 12px 12px 58px; }
+  .step {
+    width: 56px; height: 52px; flex: none; border-radius: 14px;
+    display: grid; place-items: center;
+    background: var(--surface-strong); border: 1px solid var(--border);
+  }
+  .step:active { background: var(--surface-press); transform: scale(0.95); }
+  .step:disabled { opacity: 0.35; }
+  .step svg { width: 22px; height: 22px; }
+  .step-value { flex: 1; text-align: center; font-family: var(--font-mono); font-size: 22px; font-weight: 500; }
   .check {
     width: 28px; height: 28px; flex: none; border-radius: 50%;
     border: 2px solid var(--border-strong);
@@ -157,11 +186,11 @@
   .item-body { flex: 1; min-width: 0; }
   .item-text { display: block; font-size: 17px; font-weight: 500; overflow-wrap: anywhere; }
   .item-meta { display: block; font-size: 13px; color: var(--faint); margin-top: 1px; }
-  .item[aria-pressed="true"] { background: rgba(255, 255, 255, 0.025); border-color: rgba(255, 255, 255, 0.05); }
-  .item[aria-pressed="true"] .check { background: var(--grad-fresh); border-color: transparent; }
-  .item[aria-pressed="true"] .check svg { opacity: 1; transform: none; }
-  .item[aria-pressed="true"] .item-text { color: var(--faint); text-decoration: line-through; text-decoration-color: rgba(255,255,255,0.3); }
-  .item.pending { opacity: 0.6; }
+  .item[data-ticked="true"] { background: rgba(255, 255, 255, 0.025); border-color: rgba(255, 255, 255, 0.05); }
+  .item[data-ticked="true"] .check { background: var(--grad-fresh); border-color: transparent; }
+  .item[data-ticked="true"] .check svg { opacity: 1; transform: none; }
+  .item[data-ticked="true"] .item-text { color: var(--faint); text-decoration: line-through; text-decoration-color: rgba(255,255,255,0.3); }
+  .add.busy { opacity: 0.6; }
 
   .section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 28px 4px 10px; }
   h2 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 20px; letter-spacing: -0.01em; }
@@ -276,7 +305,7 @@
     </div>
 
     <form class="add glass" id="addForm" autocomplete="off">
-      <input id="addInput" type="text" placeholder="Add items: milk, eggs…" enterkeyhint="done" maxlength="500" aria-label="Add items">
+      <input id="addInput" type="text" placeholder="Add: milk x2, 500g mince…" enterkeyhint="done" maxlength="500" aria-label="Add items">
       <button class="add-btn" type="submit" aria-label="Add to list">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
       </button>
@@ -361,7 +390,8 @@
   let pending = 0;   // mutations in flight
   let epoch = 0;     // bumps on every mutation so stale polls are ignored
   let pollTimer = null;
-  let tempId = -1;
+  let openQtyId = null;         // item whose − / + buttons are showing
+  const qtyTimers = new Map();  // item id → quantity change waiting to be saved
 
   class AuthError extends Error {}
 
@@ -378,24 +408,39 @@
     return data;
   }
 
-  // Same splitting rules as the bot, so optimistic items look right straight away.
-  function parseItems(text) {
-    return text.split(/[,;\n]+/)
-      .map((s) => s.replace(/^\s*(?:[-•*]\s*|\d+[.)]\s+)/, "").replace(/\s+/g, " ").trim().slice(0, 200))
-      .filter(Boolean);
+  // Mirrors formatAmount in supabase/functions/_shared/items.ts: 2 → "×2", 500 g → "500g", 3 tin → "3 tins"
+  const COUNTABLE_UNITS = new Set(["cup", "pack", "tin", "bottle", "bunch"]);
+  function formatAmount(qty, unit) {
+    const n = String(Math.round(Number(qty) * 100) / 100);
+    if (!unit) return "×" + n;
+    if (!COUNTABLE_UNITS.has(unit)) return unit.length <= 2 ? n + unit : `${n} ${unit}`;
+    return Number(qty) <= 1 ? `${n} ${unit}` : `${n} ${unit}${unit.endsWith("ch") ? "es" : "s"}`;
+  }
+
+  // How much one tap of − / + changes the amount.
+  function stepFor(unit) {
+    if (unit === "g" || unit === "ml") return 50;
+    if (unit === "kg" || unit === "L") return 0.5;
+    return 1;
   }
 
   /* ---------- Rendering ---------- */
 
   const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 
+  const MINUS_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 12h14"/></svg>';
+  const PLUS_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+
   function itemEl(item) {
     const li = document.createElement("li");
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "item glass" + (item.id < 0 ? " pending" : "");
-    btn.setAttribute("aria-pressed", String(item.ticked));
-    btn.dataset.id = item.id;
+    li.className = "item glass";
+    li.dataset.id = item.id;
+    li.dataset.ticked = String(item.ticked);
+
+    const tick = document.createElement("button");
+    tick.type = "button";
+    tick.className = "tick";
+    tick.setAttribute("aria-pressed", String(item.ticked));
 
     const check = document.createElement("span");
     check.className = "check";
@@ -413,15 +458,37 @@
       meta.textContent = item.added_by;
       body.append(meta);
     }
+    tick.append(check, body);
 
-    btn.append(check, body);
-    li.append(btn);
+    const open = openQtyId === item.id && !item.ticked;
+    const qty = document.createElement("button");
+    qty.type = "button";
+    qty.className = "qty-btn" + (item.unit || Number(item.qty) !== 1 ? " has-qty" : "");
+    qty.textContent = formatAmount(item.qty, item.unit);
+    qty.setAttribute("aria-label", `Change amount of ${item.text}`);
+    qty.setAttribute("aria-expanded", String(open));
+
+    const row = document.createElement("div");
+    row.className = "item-row";
+    row.append(tick, qty);
+    li.append(row);
+
+    if (open) {
+      const stepper = document.createElement("div");
+      stepper.className = "stepper";
+      stepper.innerHTML = `<button type="button" class="step" data-step="-1" aria-label="Less">${MINUS_SVG}</button>`
+        + `<span class="step-value"></span>`
+        + `<button type="button" class="step" data-step="1" aria-label="More">${PLUS_SVG}</button>`;
+      stepper.querySelector(".step-value").textContent = formatAmount(item.qty, item.unit);
+      stepper.querySelector('[data-step="-1"]').disabled = Number(item.qty) - stepFor(item.unit) <= 0;
+      li.append(stepper);
+    }
     return li;
   }
 
   function render() {
     // Only touch the DOM when something changed, so a poll never swallows a tap.
-    const snapshot = JSON.stringify(items);
+    const snapshot = JSON.stringify([items, openQtyId]);
     if (snapshot === lastRendered) return;
     lastRendered = snapshot;
 
@@ -476,11 +543,11 @@
   }
 
   async function refresh() {
-    if (!passcode || pending) return;
+    if (!passcode || pending || qtyTimers.size) return;
     const startEpoch = epoch;
     try {
       const data = await api("list");
-      if (pending || startEpoch !== epoch) return; // a tap happened meanwhile; its reply wins
+      if (pending || qtyTimers.size || startEpoch !== epoch) return; // a tap happened meanwhile; its reply wins
       items = data.items;
       render();
       setSync("ok");
@@ -496,7 +563,7 @@
     try {
       const data = await api(action, body);
       pending--;
-      if (!pending) { items = data.items; render(); }
+      if (!pending && !qtyTimers.size) { items = data.items; render(); }
       setSync("ok");
       return data;
     } catch (err) {
@@ -516,20 +583,54 @@
 
   /* ---------- Actions ---------- */
 
-  $("todo").addEventListener("click", onItemTap);
-  $("done").addEventListener("click", onItemTap);
-  function onItemTap(e) {
-    const btn = e.target.closest(".item");
-    if (!btn) return;
-    const id = Number(btn.dataset.id);
+  $("todo").addEventListener("click", onListTap);
+  $("done").addEventListener("click", onListTap);
+  function onListTap(e) {
+    const li = e.target.closest(".item");
+    if (!li) return;
+    const id = Number(li.dataset.id);
     const item = items.find((i) => i.id === id);
-    if (!item || id < 0) return;
+    if (!item) return;
+
+    if (e.target.closest(".qty-btn")) {
+      openQtyId = openQtyId === id ? null : id;
+      render();
+      return;
+    }
+    const step = e.target.closest(".step");
+    if (step) {
+      changeQty(item, Number(step.dataset.step));
+      return;
+    }
+    if (!e.target.closest(".tick")) return;
+
     const ticked = !item.ticked;
+    if (ticked && openQtyId === id) openQtyId = null;
     if (navigator.vibrate) navigator.vibrate(8);
+    flushQty();
     mutate("tick", { id, ticked }, () => {
       items = items.map((i) => i.id === id ? { ...i, ticked, ticked_at: ticked ? new Date().toISOString() : null } : i);
     });
   }
+
+  // − / + taps update the screen straight away but only save once you stop
+  // tapping, so a burst of taps can't reach the server out of order.
+  function changeQty(item, direction) {
+    const qty = Math.round((Number(item.qty) + direction * stepFor(item.unit)) * 100) / 100;
+    if (qty <= 0 || qty > 99999) return;
+    epoch++;
+    items = items.map((i) => i.id === item.id ? { ...i, qty } : i);
+    render();
+    clearTimeout(qtyTimers.get(item.id));
+    qtyTimers.set(item.id, setTimeout(() => saveQty(item.id), 600));
+  }
+  function saveQty(id) {
+    clearTimeout(qtyTimers.get(id));
+    qtyTimers.delete(id);
+    const item = items.find((i) => i.id === id);
+    if (item) mutate("qty", { id, qty: Number(item.qty) });
+  }
+  function flushQty() { [...qtyTimers.keys()].forEach(saveQty); }
 
   $("addForm").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -537,15 +638,15 @@
     const text = input.value.trim();
     if (!text) return;
     input.value = "";
-    const data = await mutate("add", { text, by: myName }, () => {
-      const known = new Set(items.filter((i) => !i.ticked).map((i) => i.text.toLowerCase()));
-      for (const t of parseItems(text)) {
-        if (known.has(t.toLowerCase())) continue;
-        known.add(t.toLowerCase());
-        items = [...items, { id: tempId--, text: t, ticked: false, added_by: myName || "Web", created_at: new Date().toISOString() }];
-      }
-    });
-    if (data?.skipped?.length) toast("👍 Already on the list: " + data.skipped.join(", "));
+    flushQty();
+    $("addForm").classList.add("busy");
+    const data = await mutate("add", { text, by: myName });
+    $("addForm").classList.remove("busy");
+    if (!data) {
+      if (!input.value) input.value = text; // keep what was typed so it isn't lost
+    } else if (data.updated?.length) {
+      toast("➕ Topped up: " + data.updated.join(", "));
+    }
   });
 
   // Two taps to clear, so a stray thumb in the supermarket doesn't wipe the trolley.
@@ -630,7 +731,7 @@
 
   /* ---------- Start ---------- */
 
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) refresh(); });
+  document.addEventListener("visibilitychange", () => { if (document.hidden) flushQty(); else refresh(); });
   window.addEventListener("focus", refresh);
   window.addEventListener("online", refresh);
 
