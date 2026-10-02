@@ -261,18 +261,70 @@
   .recipe-link:active { background: var(--surface-press); }
   .recipe-link svg { width: 16px; height: 16px; color: var(--orange); }
 
-  .view-toggle {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
-    padding: 4px; border-radius: 999px; margin-bottom: 14px;
+  .dinner-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .control-label {
+    display: block; margin: 0 0 6px 8px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--faint);
   }
-  .view-toggle button {
+  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 999px; }
+  .seg button {
     min-height: 44px; border-radius: 999px;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    font-size: 15px; font-weight: 600; color: var(--faint);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    font-size: 14px; font-weight: 600; color: var(--faint);
   }
-  .view-toggle button svg { width: 18px; height: 18px; }
-  .view-toggle button[aria-pressed="true"] { color: var(--text); background: var(--surface-strong); }
-  .view-toggle button[aria-pressed="true"] svg { color: var(--orange); }
+  .seg button svg { width: 17px; height: 17px; flex: none; }
+  .seg button[aria-pressed="true"] { color: var(--text); background: var(--surface-strong); }
+  .seg button[aria-pressed="true"] svg { color: var(--orange); }
+
+  /* Recipe view (for cooking) */
+  .text-btn.end { justify-self: end; }
+  .rv-title { font-size: 28px; margin: 4px 2px 6px; }
+  .rv-meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 0 2px 4px; color: var(--muted); font-size: 15px; }
+  .rv-meta:empty { display: none; }
+  .rv-ings { list-style: none; margin: 10px 0 0; padding: 0; }
+  .rv-ing {
+    width: 100%; min-height: 48px; display: flex; align-items: center; gap: 12px;
+    padding: 8px 4px; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    font-size: 17px; line-height: 1.4;
+  }
+  .rv-ings li:last-child .rv-ing { border-bottom: 0; }
+  .rv-ing .check { width: 24px; height: 24px; }
+  .rv-ing .check svg { width: 14px; height: 14px; }
+  .rv-ing-text { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+  .rv-ing .jar-inline { flex: none; }
+  .rv-ing[aria-pressed="true"] .check { background: var(--grad-fresh); border-color: transparent; }
+  .rv-ing[aria-pressed="true"] .check svg { opacity: 1; transform: none; }
+  .rv-ing[aria-pressed="true"] .rv-ing-text { color: var(--faint); text-decoration: line-through; }
+  .rv-steps { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+  .rv-step {
+    width: 100%; display: flex; align-items: flex-start; gap: 14px;
+    padding: 12px 6px; border-radius: 14px; text-align: left;
+    font-size: 18px; line-height: 1.55;
+    transition: opacity 0.2s, background 0.15s;
+  }
+  .rv-step:active { background: var(--surface-press); }
+  .rv-step-num {
+    flex: none; min-width: 32px; height: 32px; padding: 0 6px; border-radius: 10px;
+    display: grid; place-items: center; margin-top: -2px;
+    font-family: var(--font-mono); font-size: 16px; font-weight: 500; color: #1A0A12;
+    background: var(--grad-hot);
+  }
+  .rv-step[aria-pressed="true"] { opacity: 0.38; }
+  .rv-step[aria-pressed="true"] .rv-step-num { background: var(--grad-fresh); }
+  .rv-heading {
+    margin: 14px 6px 2px;
+    font-family: var(--font-display); font-weight: 600; font-size: 18px; color: var(--orange);
+  }
+  .rv-heading:first-child { margin-top: 2px; }
+  .rv-empty { margin: 10px 2px 0; color: var(--muted); font-size: 15px; }
+  .hint.center { text-align: center; }
+  .method-input {
+    width: 100%; min-height: 160px; margin-top: 12px; padding: 12px 14px;
+    border-radius: var(--radius-sm); outline: 0; resize: vertical;
+    background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border);
+    font-family: var(--font-ui); font-size: 16px; line-height: 1.5;
+  }
+  .method-input:focus { border-color: var(--orange); }
 
   /* Dinners: compact list view */
   .meals.compact { gap: 0; }
@@ -496,15 +548,33 @@
         Add dinner
       </button>
     </div>
-    <div class="view-toggle glass" role="group" aria-label="How to show dinners">
-      <button type="button" data-view="cards" aria-pressed="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg>
-        Cards
-      </button>
-      <button type="button" data-view="list" aria-pressed="false">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></svg>
-        List
-      </button>
+    <div class="dinner-controls">
+      <div>
+        <span class="control-label">Show as</span>
+      <div class="seg view-toggle glass" role="group" aria-label="Show dinners as">
+        <button type="button" data-view="cards" aria-pressed="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg>
+          Cards
+        </button>
+        <button type="button" data-view="list" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></svg>
+          List
+        </button>
+      </div>
+      </div>
+      <div>
+        <span class="control-label">Tapping opens</span>
+        <div class="seg open-toggle glass" role="group" aria-label="Tapping a dinner opens">
+          <button type="button" data-open="recipe" aria-pressed="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/><path d="M8.5 8h7M8.5 12h5"/></svg>
+            Recipe
+          </button>
+          <button type="button" data-open="edit" aria-pressed="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>
+            Edit
+          </button>
+        </div>
+      </div>
     </div>
     <ul class="meals" id="meals"></ul>
     <div class="empty glass" id="mealsEmpty" hidden>
@@ -553,7 +623,7 @@
     <header class="sheet-head">
       <button type="button" class="text-btn" id="editorCancel">Cancel</button>
       <h2 id="editorTitle">New dinner</h2>
-      <span class="sheet-head-spacer"></span>
+      <button type="button" class="text-btn end" id="editorToRecipe" hidden>Recipe</button>
     </header>
 
     <section class="card glass">
@@ -591,12 +661,40 @@
       <button type="button" class="ghost-btn wide" id="ingAdd">+ Add ingredient</button>
     </section>
 
+    <section class="card glass">
+      <div class="ing-head"><h3>Method<span class="mono" id="methodCount"></span></h3></div>
+      <p class="hint">One step per line. A line ending in ":" becomes a heading, like "For the sauce:".</p>
+      <textarea class="method-input" id="mealMethod" rows="6" placeholder="Heat the oil in a large pan…"></textarea>
+    </section>
+
     <p class="error" id="editorError" role="alert"></p>
     <div class="sheet-actions">
       <button type="submit" class="primary" id="saveMeal">Save dinner</button>
       <button type="button" class="danger-btn" id="deleteMeal" hidden>Delete dinner</button>
     </div>
   </form>
+</div>
+
+<div class="sheet" id="recipeView" hidden role="dialog" aria-modal="true" aria-labelledby="rvTitle">
+  <div class="sheet-inner">
+    <header class="sheet-head">
+      <button type="button" class="text-btn" id="rvClose">Close</button>
+      <span></span>
+      <button type="button" class="text-btn end" id="rvEdit">Edit</button>
+    </header>
+    <div class="photo glass" id="rvPhoto" hidden><img id="rvPhotoImg" alt="" referrerpolicy="no-referrer"></div>
+    <h1 class="rv-title" id="rvTitle"></h1>
+    <div class="rv-meta" id="rvMeta"></div>
+    <section class="card glass">
+      <div class="ing-head"><h3>Ingredients<span class="mono" id="rvIngCount"></span></h3></div>
+      <ul class="rv-ings" id="rvIngs"></ul>
+    </section>
+    <section class="card glass">
+      <div class="ing-head"><h3>Method</h3></div>
+      <ol class="rv-steps" id="rvSteps"></ol>
+    </section>
+    <p class="hint center" id="rvAwake" hidden>The screen stays on while a recipe is open.</p>
+  </div>
 </div>
 
 <div class="toast glass" id="toast" role="status" aria-live="polite"></div>
@@ -908,6 +1006,7 @@
   let meals = [];
   let mealsLoaded = false;
   let mealView = store.get("kitchen.mealView") === "list" ? "list" : "cards";
+  let openMode = store.get("kitchen.openMode") === "edit" ? "edit" : "recipe"; // what tapping a dinner opens
   let draft = null;        // the dinner being added or edited
   let draftDirty = false;
 
@@ -980,7 +1079,7 @@
       a.href = href;
       a.target = "_blank";
       a.rel = "noopener noreferrer";
-      a.innerHTML = "View recipe " + LINK_SVG;
+      a.innerHTML = "View original " + LINK_SVG;
       foot.append(a);
       li.append(foot);
     }
@@ -1046,6 +1145,7 @@
 
   function renderMeals() {
     document.querySelectorAll(".view-toggle button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === mealView)));
+    document.querySelectorAll(".open-toggle button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.open === openMode)));
     $("meals").classList.toggle("compact", mealView === "list");
     $("meals").replaceChildren(...(mealView === "list" ? mealListEls() : meals.map(mealEl)));
     $("mealCount").textContent = meals.length;
@@ -1075,9 +1175,160 @@
     renderMeals();
   }));
 
+  document.querySelectorAll(".open-toggle button").forEach((b) => b.addEventListener("click", () => {
+    openMode = b.dataset.open;
+    store.set("kitchen.openMode", openMode);
+    renderMeals();
+  }));
+
   $("meals").addEventListener("click", (e) => {
     const btn = e.target.closest(".meal-main, .meal-row-main");
-    if (btn) openEditor(meals.find((m) => m.id === Number(btn.dataset.id)));
+    if (!btn) return;
+    const meal = meals.find((m) => m.id === Number(btn.dataset.id));
+    if (openMode === "edit") openEditor(meal);
+    else openRecipe(meal);
+  });
+
+  /* ---------- Recipe view (for cooking) ---------- */
+
+  let recipeMeal = null;
+  let wakeLock = null;
+
+  // Keeps the phone screen on while a recipe is open (where the browser allows it).
+  async function keepAwake() {
+    try { wakeLock = await navigator.wakeLock?.request("screen"); } catch { wakeLock = null; }
+  }
+  function releaseAwake() {
+    wakeLock?.release().catch(() => {});
+    wakeLock = null;
+  }
+
+  // Splits a method into headings ("For the sauce:") and numbered steps.
+  function methodParts(method) {
+    return (method || "").split("\n").map((l) => l.trim()).filter(Boolean)
+      .map((text) => ({ text, heading: text.endsWith(":") && text.length <= 80 }));
+  }
+
+  function openRecipe(meal) {
+    if (!meal) return;
+    recipeMeal = meal;
+
+    const src = meal.image_url && safeUrl(meal.image_url);
+    $("rvPhoto").hidden = !src;
+    if (src) $("rvPhotoImg").src = src;
+    else $("rvPhotoImg").removeAttribute("src");
+    $("rvTitle").textContent = meal.name;
+
+    const meta = $("rvMeta");
+    meta.replaceChildren();
+    if (meal.servings) {
+      const serves = document.createElement("span");
+      serves.textContent = servingsText(meal.servings);
+      meta.append(serves);
+    }
+    const href = meal.recipe_url && safeUrl(meal.recipe_url);
+    if (href) {
+      const a = document.createElement("a");
+      a.className = "recipe-link";
+      a.href = href;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.innerHTML = "View original " + LINK_SVG;
+      meta.append(a);
+    }
+
+    $("rvIngCount").textContent = meal.ingredients.length || "";
+    if (meal.ingredients.length) {
+      $("rvIngs").replaceChildren(...meal.ingredients.map((ing) => {
+        const li = document.createElement("li");
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "rv-ing";
+        btn.setAttribute("aria-pressed", "false");
+        const check = document.createElement("span");
+        check.className = "check";
+        check.innerHTML = CHECK_SVG;
+        const text = document.createElement("span");
+        text.className = "rv-ing-text";
+        text.textContent = ing.line;
+        btn.append(check, text);
+        if (ing.staple) {
+          const jar = document.createElement("span");
+          jar.className = "jar-inline";
+          jar.title = "Always have";
+          jar.innerHTML = JAR_SVG;
+          btn.append(jar);
+        }
+        li.append(btn);
+        return li;
+      }));
+    } else {
+      const p = document.createElement("li");
+      p.className = "rv-empty";
+      p.textContent = "No ingredients yet. Tap Edit to add them.";
+      $("rvIngs").replaceChildren(p);
+    }
+
+    const parts = methodParts(meal.method);
+    if (parts.length) {
+      let n = 0;
+      $("rvSteps").replaceChildren(...parts.map((part) => {
+        const li = document.createElement("li");
+        if (part.heading) {
+          li.className = "rv-heading";
+          li.textContent = part.text.replace(/:$/, "");
+          return li;
+        }
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "rv-step";
+        btn.setAttribute("aria-pressed", "false");
+        const num = document.createElement("span");
+        num.className = "rv-step-num";
+        num.textContent = ++n;
+        const text = document.createElement("span");
+        text.textContent = part.text;
+        btn.append(num, text);
+        li.append(btn);
+        return li;
+      }));
+    } else {
+      const p = document.createElement("li");
+      p.className = "rv-empty";
+      p.textContent = href
+        ? "No method saved yet. Use View original, or tap Edit to add one."
+        : "No method saved yet. Tap Edit to add one.";
+      $("rvSteps").replaceChildren(p);
+    }
+
+    $("rvAwake").hidden = !("wakeLock" in navigator);
+    $("recipeView").hidden = false;
+    $("recipeView").scrollTop = 0;
+    document.body.classList.add("sheet-open");
+    keepAwake();
+  }
+
+  function closeRecipe() {
+    $("recipeView").hidden = true;
+    document.body.classList.remove("sheet-open");
+    recipeMeal = null;
+    releaseAwake();
+  }
+
+  // Tap an ingredient or step to tick it off while cooking (not saved).
+  $("rvIngs").addEventListener("click", (e) => {
+    const btn = e.target.closest(".rv-ing");
+    if (btn) btn.setAttribute("aria-pressed", String(btn.getAttribute("aria-pressed") !== "true"));
+  });
+  $("rvSteps").addEventListener("click", (e) => {
+    const btn = e.target.closest(".rv-step");
+    if (btn) btn.setAttribute("aria-pressed", String(btn.getAttribute("aria-pressed") !== "true"));
+  });
+  $("rvClose").addEventListener("click", closeRecipe);
+  $("rvEdit").addEventListener("click", () => {
+    const meal = recipeMeal;
+    closeRecipe();
+    openEditor(meal);
   });
   $("newMealBtn").addEventListener("click", () => openEditor(null));
 
@@ -1095,6 +1346,8 @@
     $("mealUrl").value = meal?.recipe_url ?? "";
     $("mealName").value = meal?.name ?? "";
     $("mealServings").value = meal?.servings ?? "";
+    $("mealMethod").value = meal?.method ?? "";
+    $("editorToRecipe").hidden = !meal;
     $("editorError").textContent = "";
     $("pasteBox").hidden = true;
     $("pasteText").value = "";
@@ -1106,7 +1359,21 @@
     $("editor").scrollTop = 0;
     document.body.classList.add("sheet-open");
     renderIngredients();
+    updateMethodCount();
   }
+
+  function updateMethodCount() {
+    const steps = methodParts($("mealMethod").value).filter((p) => !p.heading).length;
+    $("methodCount").textContent = steps ? `${steps} step${steps === 1 ? "" : "s"}` : "";
+  }
+  $("mealMethod").addEventListener("input", updateMethodCount);
+
+  $("editorToRecipe").addEventListener("click", () => {
+    if (draftDirty && !confirm("Discard your changes and view the recipe?")) return;
+    const meal = meals.find((m) => m.id === draft.id);
+    closeEditor();
+    openRecipe(meal);
+  });
 
   function closeEditor() {
     $("editor").hidden = true;
@@ -1309,13 +1576,19 @@
       if (r.servings && !$("mealServings").value.trim()) $("mealServings").value = r.servings;
       if (r.image_url && !draft.image_url) setPhoto(r.image_url);
       if (r.found) {
-        const hasOwn = draft.ingredients.some((i) => i.line.trim());
-        if (!hasOwn || confirm("Replace the ingredients already here with the recipe's?")) {
+        const hasOwn = draft.ingredients.some((i) => i.line.trim()) || $("mealMethod").value.trim();
+        if (!hasOwn || confirm("Replace the ingredients and method already here with the recipe's?")) {
           draft.ingredients = r.ingredients.map((i) => ({ line: i.line, name: i.name, staple: i.staple, touched: false }));
           renderIngredients();
+          if (r.method) {
+            $("mealMethod").value = r.method;
+            updateMethodCount();
+          }
         }
         const staples = r.ingredients.filter((i) => i.staple).length;
-        setFetchStatus(`Found ${r.ingredients.length} ingredients${staples ? ` (${staples} you always have)` : ""}. Check them over, then save.`, "good");
+        const steps = methodParts(r.method).filter((p) => !p.heading).length;
+        setFetchStatus(`Found ${r.ingredients.length} ingredients${staples ? ` (${staples} you always have)` : ""}`
+          + (steps ? ` and ${steps} method steps` : ", but no method") + ". Check them over, then save.", "good");
       } else {
         setFetchStatus("Couldn't find recipe details on that page. Type or paste the ingredients below.", "warn");
         openPaste();
@@ -1354,6 +1627,7 @@
         recipe_url: $("mealUrl").value.trim(),
         image_url: draft.image_url,
         servings: $("mealServings").value.trim(),
+        method: $("mealMethod").value,
         ingredients: draft.ingredients
           .filter((i) => i.line.trim())
           .map((i) => ({ line: i.line, staple: i.touched ? i.staple : null })),
@@ -1463,6 +1737,7 @@
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) return flushQty();
     refresh();
+    if (recipeMeal) keepAwake(); // phones drop the screen-on request when the app is left
     if (currentTab === "dinners" && !draft) loadMeals();
   });
   window.addEventListener("focus", refresh);
