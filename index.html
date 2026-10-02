@@ -261,6 +261,44 @@
   .recipe-link:active { background: var(--surface-press); }
   .recipe-link svg { width: 16px; height: 16px; color: var(--orange); }
 
+  .view-toggle {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+    padding: 4px; border-radius: 999px; margin-bottom: 14px;
+  }
+  .view-toggle button {
+    min-height: 44px; border-radius: 999px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    font-size: 15px; font-weight: 600; color: var(--faint);
+  }
+  .view-toggle button svg { width: 18px; height: 18px; }
+  .view-toggle button[aria-pressed="true"] { color: var(--text); background: var(--surface-strong); }
+  .view-toggle button[aria-pressed="true"] svg { color: var(--orange); }
+
+  /* Dinners: compact list view */
+  .meals.compact { gap: 0; }
+  .meal-letter {
+    padding: 18px 6px 6px;
+    font-family: var(--font-display); font-weight: 700; font-size: 15px;
+    background: var(--grad-hot); -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .meal-letter:first-child { padding-top: 0; }
+  .meal-row { display: flex; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.07); }
+  .meal-letter + .meal-row { border-top: 1px solid rgba(255, 255, 255, 0.07); }
+  .meal-row-main {
+    flex: 1; min-width: 0; min-height: 52px;
+    display: flex; align-items: center; gap: 12px;
+    padding: 8px 4px 8px 6px; border-radius: 10px; text-align: left;
+  }
+  .meal-row-main:active { background: var(--surface-press); }
+  .meal-row-name { flex: 1; min-width: 0; font-weight: 500; font-size: 16px; line-height: 1.3; overflow-wrap: anywhere; }
+  .meal-row-count { flex: none; font-size: 13px; color: var(--faint); }
+  .meal-row-count .mono { font-family: var(--font-mono); }
+  .meal-row-count.missing { color: var(--sun); }
+  .meal-row-link, .meal-row-spacer { width: 44px; height: 48px; flex: none; }
+  .meal-row-link { display: grid; place-items: center; border-radius: 12px; color: var(--orange); }
+  .meal-row-link:active { background: var(--surface-press); }
+  .meal-row-link svg { width: 18px; height: 18px; }
+
   /* Meal editor */
   .sheet {
     position: fixed; inset: 0; z-index: 15;
@@ -456,6 +494,16 @@
       <button class="add-meal-btn" id="newMealBtn" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
         Add dinner
+      </button>
+    </div>
+    <div class="view-toggle glass" role="group" aria-label="How to show dinners">
+      <button type="button" data-view="cards" aria-pressed="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg>
+        Cards
+      </button>
+      <button type="button" data-view="list" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></svg>
+        List
       </button>
     </div>
     <ul class="meals" id="meals"></ul>
@@ -859,6 +907,7 @@
 
   let meals = [];
   let mealsLoaded = false;
+  let mealView = store.get("kitchen.mealView") === "list" ? "list" : "cards";
   let draft = null;        // the dinner being added or edited
   let draftDirty = false;
 
@@ -938,8 +987,67 @@
     return li;
   }
 
+  // Compact A–Z row: name, ingredient count, and a recipe link if there is one.
+  function mealRowEl(meal) {
+    const li = document.createElement("li");
+    li.className = "meal-row";
+
+    const main = document.createElement("button");
+    main.type = "button";
+    main.className = "meal-row-main";
+    main.dataset.id = meal.id;
+    const name = document.createElement("span");
+    name.className = "meal-row-name";
+    name.textContent = meal.name;
+    const count = document.createElement("span");
+    const n = meal.ingredients.length;
+    count.className = "meal-row-count" + (n ? "" : " missing");
+    if (n) count.innerHTML = `<span class="mono">${n}</span> ingredient${n === 1 ? "" : "s"}`;
+    else count.textContent = "No ingredients";
+    main.append(name, count);
+    li.append(main);
+
+    const href = meal.recipe_url && safeUrl(meal.recipe_url);
+    if (href) {
+      const a = document.createElement("a");
+      a.className = "meal-row-link";
+      a.href = href;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.innerHTML = LINK_SVG;
+      a.setAttribute("aria-label", `Open the recipe for ${meal.name}`);
+      li.append(a);
+    } else {
+      const spacer = document.createElement("span");
+      spacer.className = "meal-row-spacer";
+      li.append(spacer);
+    }
+    return li;
+  }
+
+  function mealListEls() {
+    const els = [];
+    let letter = null;
+    for (const meal of meals) {
+      const first = meal.name.trim().charAt(0).toUpperCase();
+      const heading = /[A-Z]/.test(first) ? first : "#";
+      if (heading !== letter) {
+        letter = heading;
+        const h = document.createElement("li");
+        h.className = "meal-letter";
+        h.setAttribute("aria-hidden", "true");
+        h.textContent = heading;
+        els.push(h);
+      }
+      els.push(mealRowEl(meal));
+    }
+    return els;
+  }
+
   function renderMeals() {
-    $("meals").replaceChildren(...meals.map(mealEl));
+    document.querySelectorAll(".view-toggle button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === mealView)));
+    $("meals").classList.toggle("compact", mealView === "list");
+    $("meals").replaceChildren(...(mealView === "list" ? mealListEls() : meals.map(mealEl)));
     $("mealCount").textContent = meals.length;
     $("mealLabel").textContent = meals.length === 1 ? "dinner" : "dinners";
     $("mealsEmpty").hidden = !mealsLoaded || meals.length > 0;
@@ -961,8 +1069,14 @@
     }
   }
 
+  document.querySelectorAll(".view-toggle button").forEach((b) => b.addEventListener("click", () => {
+    mealView = b.dataset.view;
+    store.set("kitchen.mealView", mealView);
+    renderMeals();
+  }));
+
   $("meals").addEventListener("click", (e) => {
-    const btn = e.target.closest(".meal-main");
+    const btn = e.target.closest(".meal-main, .meal-row-main");
     if (btn) openEditor(meals.find((m) => m.id === Number(btn.dataset.id)));
   });
   $("newMealBtn").addEventListener("click", () => openEditor(null));
