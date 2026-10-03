@@ -432,6 +432,45 @@
   .danger-btn.confirm { background: var(--danger); color: #2A0707; }
   body.sheet-open { overflow: hidden; }
 
+  /* This week */
+  .plan-start h2 { font-size: 24px; margin-bottom: 6px; }
+  .plan-start .hint { margin-top: 0; }
+  .count-picker { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 22px 0; }
+  .count-picker .step { width: 64px; height: 64px; border-radius: 20px; }
+  .count-picker .step svg { width: 26px; height: 26px; }
+  .count-picker-value { display: flex; align-items: baseline; gap: 8px; }
+  .center-btn { display: block; margin: 10px auto 0; justify-self: center; }
+  .week-status {
+    align-self: center; padding: 6px 12px; border-radius: 999px;
+    font-size: 13px; font-weight: 600; white-space: nowrap;
+  }
+  .week-status.draft { color: var(--sun); background: rgba(255, 203, 71, 0.12); }
+  .week-status.locked { color: var(--mint); background: rgba(46, 230, 184, 0.12); }
+  .week-list { list-style: none; margin: 0 0 16px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .wk { border-radius: var(--radius); overflow: hidden; }
+  .wk-main { width: 100%; display: flex; align-items: center; gap: 14px; padding: 12px; text-align: left; }
+  .wk-main:active { background: var(--surface-press); }
+  .wk-main .meal-photo { width: 64px; height: 64px; }
+  .wk-chevron { flex: none; width: 20px; height: 20px; color: var(--faint); }
+  .wk-actions { display: grid; grid-template-columns: 1fr 1fr 48px; gap: 6px; padding: 0 12px 12px; }
+  .wk-btn {
+    min-height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    font-size: 15px; font-weight: 600;
+    background: var(--surface-strong); border: 1px solid var(--border);
+  }
+  .wk-btn svg { width: 17px; height: 17px; color: var(--orange); }
+  .wk-btn.icon { color: var(--faint); }
+  .wk-btn.icon svg { color: currentColor; }
+  .wk-btn:active { background: var(--surface-press); }
+  .wk-btn:disabled { opacity: 0.5; }
+  .week-actions { display: flex; flex-direction: column; gap: 10px; }
+  .week-actions[hidden] { display: none; }
+  .picker-list { margin-top: 12px; }
+  .meal-row-count.recent { color: var(--sun); }
+  .meal-row.unavailable { opacity: 0.45; }
+  .meal-row.unavailable .meal-row-main { cursor: default; }
+
   /* Lock screen */
   .lock {
     position: fixed; inset: 0; z-index: 20;
@@ -533,10 +572,41 @@
   </section>
 
   <section id="view-week" hidden>
-    <div class="empty glass">
-      <div class="empty-emoji">🗓️</div>
-      <h2>The weekly planner is on the way</h2>
-      <p>Meanwhile, fill up the Dinners tab so there's plenty to pick from.</p>
+    <div id="weekStart" hidden>
+      <div class="card glass plan-start">
+        <h2>Plan the week</h2>
+        <p class="hint">Picks dinners at random from your library. Anything locked in during the last 7 days is left out.</p>
+        <div class="count-picker">
+          <button type="button" class="step" id="planLess" aria-label="Fewer dinners"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+          <div class="count-picker-value"><span class="count-num" id="planCount">5</span><span class="count-label" id="planCountLabel">dinners</span></div>
+          <button type="button" class="step" id="planMore" aria-label="More dinners"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+        </div>
+        <button type="button" class="primary" id="planBtn">Plan my week</button>
+        <button type="button" class="text-btn center-btn" id="planBack" hidden>Back to this week</button>
+      </div>
+    </div>
+
+    <div id="weekPlan" hidden>
+      <div class="hero glass">
+        <div class="count"><span class="count-num" id="weekCount">0</span><span class="count-label" id="weekLabel">dinners</span></div>
+        <span class="week-status" id="weekStatus"></span>
+      </div>
+      <ul class="week-list" id="weekList"></ul>
+      <div class="week-actions" id="weekDraftActions">
+        <button type="button" class="ghost-btn wide" id="weekAdd">+ Add another dinner</button>
+        <button type="button" class="primary" id="weekLock">Lock in this week</button>
+        <button type="button" class="text-btn center-btn" id="weekRestart">Start over with new picks</button>
+      </div>
+      <div class="week-actions" id="weekLockedActions">
+        <button type="button" class="ghost-btn wide" id="weekEdit">Edit plan</button>
+        <button type="button" class="ghost-btn wide" id="weekNext">Start next week</button>
+      </div>
+    </div>
+
+    <div class="empty glass" id="weekEmpty" hidden>
+      <div class="empty-emoji">🍝</div>
+      <h2>No dinners to pick from</h2>
+      <p>Add some dinners in the Dinners tab first.</p>
     </div>
   </section>
 
@@ -694,6 +764,18 @@
       <ol class="rv-steps" id="rvSteps"></ol>
     </section>
     <p class="hint center" id="rvAwake" hidden>The screen stays on while a recipe is open.</p>
+  </div>
+</div>
+
+<div class="sheet" id="picker" hidden role="dialog" aria-modal="true" aria-labelledby="pickerTitle">
+  <div class="sheet-inner">
+    <header class="sheet-head">
+      <button type="button" class="text-btn" id="pickerClose">Cancel</button>
+      <h2 id="pickerTitle">Pick a dinner</h2>
+      <span></span>
+    </header>
+    <input class="text-input" id="pickerSearch" type="search" placeholder="Search your dinners" autocomplete="off" aria-label="Search your dinners">
+    <ul class="meals compact picker-list" id="pickerList"></ul>
   </div>
 </div>
 
@@ -908,7 +990,11 @@
   function startPolling() {
     stopPolling();
     refresh();
-    pollTimer = setInterval(() => { if (!document.hidden) refresh(); }, POLL_MS);
+    pollTimer = setInterval(() => {
+      if (document.hidden) return;
+      refresh();
+      if (currentTab === "week" && $("picker").hidden) loadWeek(true); // see the other phone's swaps
+    }, POLL_MS);
   }
   function stopPolling() { clearInterval(pollTimer); pollTimer = null; }
 
@@ -1157,7 +1243,9 @@
     meals = data.meals;
     mealsLoaded = true;
     renderMeals();
+    if (currentTab === "week") renderWeek();
     setSync("ok");
+    openPendingMeal();
   }
 
   async function loadMeals() {
@@ -1670,6 +1758,246 @@
     $("deleteMeal").textContent = "Delete dinner";
   }
 
+  /* ---------- This week ---------- */
+
+  let week = null;            // { plan, recent } from the server
+  let weekBusy = false;       // an action is in flight, so polls wait
+  let weekPlanning = false;   // showing "Plan the week" even though a locked week exists
+  let lastWeekRender = "";
+  let planCount = Math.min(Math.max(Number(store.get("kitchen.planCount")) || 5, 1), 7);
+  let pickerReplaceId = null; // dinner being replaced by "Pick", or null when adding
+
+  const SWAP_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h13l-3.5-3.5M20 15H7l3.5 3.5"/></svg>';
+  const PICK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>';
+  const CHEVRON_SVG = '<svg class="wk-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+
+  const shortDate = (iso) => new Date(iso).toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
+  const mealById = (id) => meals.find((m) => m.id === id);
+
+  async function loadWeek(quiet) {
+    if (!passcode || weekBusy) return;
+    try {
+      const data = await api("week");
+      if (weekBusy) return;
+      week = data;
+      renderWeek();
+    } catch (err) {
+      handleError(err, quiet);
+    }
+  }
+
+  async function weekAction(action, body = {}) {
+    weekBusy = true;
+    document.querySelectorAll("#view-week button").forEach((b) => { b.disabled = true; });
+    try {
+      const data = await api(action, { plan_id: week?.plan?.id, ...body });
+      week = { plan: data.plan, recent: data.recent };
+      weekPlanning = false;
+      if (data.short > 0) {
+        const got = data.plan?.meal_ids.length ?? 0;
+        toast(`Only ${got} dinner${got === 1 ? "" : "s"} available. The rest were had in the last 7 days.`);
+      }
+      setSync("ok");
+      return data;
+    } catch (err) {
+      handleError(err);
+      return null;
+    } finally {
+      weekBusy = false;
+      document.querySelectorAll("#view-week button").forEach((b) => { b.disabled = false; });
+      lastWeekRender = "";
+      renderWeek();
+    }
+  }
+
+  function weekCard(mealId, draft) {
+    const meal = mealById(mealId);
+    const li = document.createElement("li");
+    li.className = "wk glass";
+    li.dataset.id = mealId;
+
+    const main = document.createElement("button");
+    main.type = "button";
+    main.className = "wk-main";
+    const body = document.createElement("span");
+    body.className = "meal-body";
+    const name = document.createElement("span");
+    name.className = "meal-name";
+    name.textContent = meal ? meal.name : "Deleted dinner";
+    const meta = document.createElement("span");
+    meta.className = "meal-meta";
+    if (meal) {
+      const steps = methodParts(meal.method).filter((p) => !p.heading).length;
+      meta.textContent = [
+        meal.servings && servingsText(meal.servings),
+        meal.ingredients.length ? `${meal.ingredients.length} ingredients` : "No ingredients yet",
+        !steps && "no method",
+      ].filter(Boolean).join(" · ");
+    }
+    body.append(name, meta);
+    main.append(photoEl(meal?.image_url), body);
+    main.insertAdjacentHTML("beforeend", CHEVRON_SVG);
+    li.append(main);
+
+    if (draft) {
+      const actions = document.createElement("div");
+      actions.className = "wk-actions";
+      actions.innerHTML = `<button type="button" class="wk-btn" data-act="swap">${SWAP_SVG} Swap</button>`
+        + `<button type="button" class="wk-btn" data-act="pick">${PICK_SVG} Pick</button>`
+        + `<button type="button" class="wk-btn icon" data-act="remove" aria-label="Remove from this week">${X_SVG}</button>`;
+      li.append(actions);
+    }
+    return li;
+  }
+
+  function renderWeek() {
+    const plan = week?.plan;
+    const snapshot = JSON.stringify([week, weekPlanning, planCount, meals.length, mealsLoaded]);
+    if (snapshot === lastWeekRender) return;
+    lastWeekRender = snapshot;
+
+    const noMeals = mealsLoaded && meals.length === 0;
+    const showStart = !noMeals && (!plan || weekPlanning);
+    $("weekEmpty").hidden = !noMeals;
+    $("weekStart").hidden = !showStart;
+    $("weekPlan").hidden = noMeals || showStart || !plan;
+
+    $("planCount").textContent = planCount;
+    $("planCountLabel").textContent = planCount === 1 ? "dinner" : "dinners";
+    $("planLess").disabled = planCount <= 1;
+    $("planMore").disabled = planCount >= 7;
+    $("planBack").hidden = !(plan && weekPlanning);
+    if (!plan || showStart) return;
+
+    const draft = plan.status === "draft";
+    $("weekCount").textContent = plan.meal_ids.length;
+    $("weekLabel").textContent = plan.meal_ids.length === 1 ? "dinner" : "dinners";
+    const status = $("weekStatus");
+    status.className = "week-status " + (draft ? "draft" : "locked");
+    status.textContent = draft ? "Not locked in yet" : `Locked in ${shortDate(plan.locked_at)}`;
+    $("weekList").replaceChildren(...plan.meal_ids.map((id) => weekCard(id, draft)));
+    $("weekDraftActions").hidden = !draft;
+    $("weekLockedActions").hidden = draft;
+    $("weekAdd").hidden = plan.meal_ids.length >= 7;
+  }
+
+  async function loadWeekTab() {
+    await Promise.all([mealsLoaded ? null : loadMeals(), loadWeek()]);
+    lastWeekRender = "";
+    renderWeek();
+  }
+
+  $("planLess").addEventListener("click", () => { planCount = Math.max(1, planCount - 1); store.set("kitchen.planCount", planCount); renderWeek(); });
+  $("planMore").addEventListener("click", () => { planCount = Math.min(7, planCount + 1); store.set("kitchen.planCount", planCount); renderWeek(); });
+  $("planBtn").addEventListener("click", () => weekAction("plan_new", { count: planCount }));
+  $("planBack").addEventListener("click", () => { weekPlanning = false; renderWeek(); });
+  $("weekAdd").addEventListener("click", () => weekAction("add_random"));
+  $("weekLock").addEventListener("click", async () => {
+    if (await weekAction("lock")) toast("🔒 Week locked in. Tap a dinner for its recipe.");
+  });
+  $("weekEdit").addEventListener("click", () => weekAction("unlock"));
+  $("weekNext").addEventListener("click", () => { weekPlanning = true; renderWeek(); });
+  $("weekRestart").addEventListener("click", () => {
+    if (confirm("Replace this week's dinners with new random picks?")) weekAction("plan_new", { count: planCount });
+  });
+
+  $("weekList").addEventListener("click", (e) => {
+    const li = e.target.closest(".wk");
+    if (!li) return;
+    const id = Number(li.dataset.id);
+    const act = e.target.closest("[data-act]")?.dataset.act;
+    if (act === "swap") weekAction("swap", { meal_id: id });
+    else if (act === "remove") weekAction("remove", { meal_id: id });
+    else if (act === "pick") openPicker(id);
+    else if (e.target.closest(".wk-main")) openRecipe(mealById(id));
+  });
+
+  /* "Pick myself": choose a dinner from the library */
+
+  function openPicker(replaceId) {
+    pickerReplaceId = replaceId;
+    $("pickerTitle").textContent = replaceId ? "Swap for…" : "Add a dinner";
+    $("pickerSearch").value = "";
+    renderPicker();
+    $("picker").hidden = false;
+    $("picker").scrollTop = 0;
+    document.body.classList.add("sheet-open");
+  }
+  function closePicker() {
+    $("picker").hidden = true;
+    document.body.classList.remove("sheet-open");
+  }
+
+  function renderPicker() {
+    const q = $("pickerSearch").value.trim().toLowerCase();
+    const inPlan = new Set(week?.plan?.meal_ids ?? []);
+    const recent = week?.recent ?? {};
+    const rows = meals
+      .filter((m) => !q || m.name.toLowerCase().includes(q))
+      .map((meal) => {
+        const li = document.createElement("li");
+        const taken = inPlan.has(meal.id);
+        li.className = "meal-row" + (taken ? " unavailable" : "");
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "meal-row-main";
+        btn.dataset.id = meal.id;
+        btn.disabled = taken;
+        const name = document.createElement("span");
+        name.className = "meal-row-name";
+        name.textContent = meal.name;
+        const note = document.createElement("span");
+        note.className = "meal-row-count";
+        if (taken) {
+          note.textContent = "In this week";
+        } else if (recent[meal.id]) {
+          note.className += " recent";
+          note.textContent = `Planned ${shortDate(recent[meal.id])}`;
+        } else if (!meal.ingredients.length) {
+          note.textContent = "No ingredients";
+        }
+        btn.append(name, note);
+        li.append(btn);
+        return li;
+      });
+    if (!rows.length) {
+      const li = document.createElement("li");
+      li.className = "rv-empty";
+      li.textContent = "No dinners match that search.";
+      rows.push(li);
+    }
+    $("pickerList").replaceChildren(...rows);
+  }
+
+  $("pickerSearch").addEventListener("input", renderPicker);
+  $("pickerClose").addEventListener("click", closePicker);
+  $("pickerList").addEventListener("click", async (e) => {
+    const btn = e.target.closest(".meal-row-main");
+    if (!btn || btn.disabled) return;
+    closePicker();
+    await weekAction("set_meal", { meal_id: Number(btn.dataset.id), replace_id: pickerReplaceId });
+  });
+
+  /* Links like …/#meal=12 (from /week in Telegram) open that dinner's recipe */
+
+  let pendingMealId = null;
+  function readMealLink() {
+    const m = location.hash.match(/^#meal=(\d+)$/);
+    if (!m) return;
+    pendingMealId = Number(m[1]);
+    history.replaceState(null, "", location.pathname + location.search);
+    if (mealsLoaded) openPendingMeal();
+    else loadMeals();
+  }
+  function openPendingMeal() {
+    if (pendingMealId === null) return;
+    const meal = mealById(pendingMealId);
+    pendingMealId = null;
+    if (meal) openRecipe(meal);
+    else toast("That dinner has been deleted.");
+  }
+  window.addEventListener("hashchange", readMealLink);
+
   /* ---------- Tabs ---------- */
 
   const TITLES = { list: "Shopping list", week: "This week", dinners: "Dinners" };
@@ -1682,6 +2010,7 @@
     $("title").textContent = TITLES[name];
     store.set("kitchen.tab", name);
     if (name === "dinners") loadMeals();
+    if (name === "week") loadWeekTab();
   }
   document.querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () => showTab(t.dataset.tab)));
 
@@ -1718,6 +2047,8 @@
       setSync("ok");
       startPolling();
       if (currentTab === "dinners") loadMeals();
+      if (currentTab === "week") loadWeekTab();
+      readMealLink();
     } catch (err) {
       $("lockError").textContent = err instanceof AuthError
         ? "That passcode didn't work. Try again."
@@ -1739,12 +2070,18 @@
     refresh();
     if (recipeMeal) keepAwake(); // phones drop the screen-on request when the app is left
     if (currentTab === "dinners" && !draft) loadMeals();
+    if (currentTab === "week") loadWeek(true);
   });
   window.addEventListener("focus", refresh);
   window.addEventListener("online", refresh);
 
   showTab(store.get("kitchen.tab") || "list");
-  if (passcode) startPolling(); else showLock();
+  if (passcode) {
+    startPolling();
+    readMealLink();
+  } else {
+    showLock();
+  }
 </script>
 </body>
 </html>
