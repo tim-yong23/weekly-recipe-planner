@@ -251,6 +251,7 @@
   .meal-name { display: block; font-family: var(--font-display); font-weight: 600; font-size: 19px; line-height: 1.2; overflow-wrap: anywhere; }
   .meal-meta { display: block; margin-top: 4px; font-size: 14px; color: var(--muted); }
   .meal-meta .mono { font-family: var(--font-mono); }
+  .meal-check { color: var(--sun); }
   .meal-foot { display: flex; justify-content: flex-end; padding: 0 12px 12px; margin-top: -4px; }
   .recipe-link {
     display: inline-flex; align-items: center; gap: 6px;
@@ -401,15 +402,28 @@
   .jar-inline svg { width: 17px; height: 17px; }
   .paste-box { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
   .paste-box textarea { padding: 12px 14px; line-height: 1.45; resize: vertical; font-family: var(--font-ui); }
-  .ing-list { list-style: none; margin: 12px 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
-  .ing { display: flex; align-items: flex-start; gap: 4px; }
-  .ing-text {
-    flex: 1; min-width: 0; min-height: 48px; padding: 12px;
-    border-radius: 12px; outline: 0; resize: none; overflow: hidden;
-    background: rgba(0, 0, 0, 0.22); border: 1px solid var(--border);
-    font-family: var(--font-ui); font-size: 16px; line-height: 1.4;
+  .ing-list { list-style: none; margin: 12px 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  /* One ingredient: name on top, then amount · unit · note */
+  .ing { padding: 8px; border-radius: 16px; background: rgba(0, 0, 0, 0.18); border: 1px solid var(--border); }
+  .ing[data-staple="true"] { border-style: dashed; }
+  .ing[data-review="true"] { border-color: rgba(255, 203, 71, 0.6); background: rgba(255, 203, 71, 0.06); }
+  .ing-top { display: flex; align-items: center; gap: 4px; }
+  .ing-bottom { display: grid; grid-template-columns: 64px 100px 1fr; gap: 6px; margin-top: 6px; }
+  .ing input, .ing select {
+    width: 100%; min-width: 0; min-height: 44px; padding: 0 10px;
+    border-radius: 10px; outline: 0;
+    background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border);
+    font-family: var(--font-ui); font-size: 16px;
   }
-  .ing-text:focus { border-color: var(--orange); }
+  .ing input:focus, .ing select:focus { border-color: var(--orange); }
+  .ing .ing-name { flex: 1; font-weight: 600; }
+  .ing .ing-amount { font-family: var(--font-mono); text-align: center; padding: 0 4px; }
+  .ing select {
+    -webkit-appearance: none; appearance: none; padding-right: 26px;
+    background: rgba(0, 0, 0, 0.25) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23F5F3FF' stroke-opacity='.6' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 10l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 6px center / 16px;
+  }
+  .ing .ing-note { font-size: 15px; color: var(--muted); }
+  .ing-original { margin: 8px 4px 2px; font-size: 13px; color: var(--sun); overflow-wrap: anywhere; }
   .ing-staple, .ing-del {
     width: 44px; height: 48px; flex: none; border-radius: 12px;
     display: grid; place-items: center;
@@ -418,7 +432,6 @@
   .ing-staple { color: var(--faint); }
   .ing-staple svg { width: 22px; height: 22px; }
   .ing-staple[aria-pressed="true"] { color: var(--mint); background: rgba(46, 230, 184, 0.14); border-color: rgba(46, 230, 184, 0.45); }
-  .ing[data-staple="true"] .ing-text { color: var(--muted); border-style: dashed; }
   .ing-del { color: var(--faint); }
   .ing-del svg { width: 18px; height: 18px; }
   .ing-staple:active, .ing-del:active { background: var(--surface-press); }
@@ -470,6 +483,40 @@
   .meal-row-count.recent { color: var(--sun); }
   .meal-row.unavailable { opacity: 0.45; }
   .meal-row.unavailable .meal-row-main { cursor: default; }
+
+  /* Household ingredients */
+  .household-btn {
+    width: 100%; min-height: 52px; margin-bottom: 16px; padding: 0 14px;
+    display: flex; align-items: center; gap: 10px; border-radius: 16px; text-align: left;
+    font-size: 15px; font-weight: 600;
+  }
+  .household-btn:active { background: var(--surface-press); }
+  .household-btn > svg:first-child { width: 20px; height: 20px; color: var(--mint); flex: none; }
+  .household-btn .grow { flex: 1; }
+  .household-btn .mono { font-family: var(--font-mono); font-weight: 400; color: var(--faint); margin-left: 6px; }
+  .badge {
+    min-width: 24px; height: 24px; padding: 0 8px; border-radius: 999px;
+    display: inline-grid; place-items: center;
+    font-family: var(--font-mono); font-size: 13px; color: #1A0A12; background: var(--sun);
+  }
+  .suggest-list { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .suggest { padding: 12px; border-radius: 14px; background: rgba(0, 0, 0, 0.2); }
+  .suggest p { margin: 0 0 10px; font-size: 15px; }
+  .suggest strong { font-weight: 600; color: var(--text); }
+  .suggest-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .hh-list { list-style: none; margin: 12px 0 0; padding: 0; }
+  .hh { border-bottom: 1px solid rgba(255, 255, 255, 0.07); }
+  .hh-row { display: flex; align-items: center; gap: 6px; }
+  .hh-name { flex: 1; min-width: 0; min-height: 52px; padding: 8px 4px; display: flex; align-items: baseline; gap: 10px; text-align: left; }
+  .hh-name span:first-child { font-weight: 500; overflow-wrap: anywhere; }
+  .hh-uses { margin-left: auto; font-size: 13px; color: var(--faint); white-space: nowrap; }
+  .hh-uses.unused { color: var(--sun); }
+  .hh-edit { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 0 0 12px; }
+  .hh-edit .text-input, .hh-edit select {
+    min-height: 48px; border-radius: 12px; padding: 0 12px; font-size: 16px; min-width: 0; width: 100%;
+    background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border); outline: 0;
+  }
+  .hh-edit select { -webkit-appearance: none; appearance: none; }
 
   /* Lock screen */
   .lock {
@@ -646,6 +693,12 @@
         </div>
       </div>
     </div>
+    <button type="button" class="household-btn glass" id="householdBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="3.5" rx="1"/><path d="M8 6c-1.8 1-3 2.7-3 4.6v7.9A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5v-7.9C19 8.7 17.8 7 16 6"/><path d="M8.5 13.5h7"/></svg>
+      <span class="grow">Household ingredients<span class="mono" id="householdCount"></span></span>
+      <span class="badge" id="householdBadge" hidden></span>
+      <svg class="wk-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+    </button>
     <ul class="meals" id="meals"></ul>
     <div class="empty glass" id="mealsEmpty" hidden>
       <div class="empty-emoji">🍝</div>
@@ -722,13 +775,14 @@
         <h3>Ingredients<span class="mono" id="ingCount"></span></h3>
         <button type="button" class="ghost-btn" id="pasteToggle">Paste a list</button>
       </div>
-      <p class="hint">Tap <span class="jar-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="3.5" rx="1"/><path d="M8 6c-1.8 1-3 2.7-3 4.6v7.9A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5v-7.9C19 8.7 17.8 7 16 6"/><path d="M8.5 13.5h7"/></svg></span> on things you always have, like salt or olive oil. It's remembered for every recipe.</p>
+      <p class="hint">Type an ingredient and pick from your list as you go. Tap <span class="jar-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="3.5" rx="1"/><path d="M8 6c-1.8 1-3 2.7-3 4.6v7.9A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5v-7.9C19 8.7 17.8 7 16 6"/><path d="M8.5 13.5h7"/></svg></span> on things you always have, like salt or olive oil. It's remembered for every recipe.</p>
       <div class="paste-box" id="pasteBox" hidden>
         <textarea id="pasteText" rows="6" placeholder="One ingredient per line"></textarea>
         <button type="button" class="ghost-btn" id="pasteAdd">Add these</button>
       </div>
       <ul class="ing-list" id="ingList"></ul>
       <button type="button" class="ghost-btn wide" id="ingAdd">+ Add ingredient</button>
+      <p class="hint" id="reviewHint" hidden>Rows outlined in amber were hard to read when imported. Check them over, then save.</p>
     </section>
 
     <section class="card glass">
@@ -778,6 +832,25 @@
     <ul class="meals compact picker-list" id="pickerList"></ul>
   </div>
 </div>
+
+<div class="sheet" id="household" hidden role="dialog" aria-modal="true" aria-labelledby="householdTitle">
+  <div class="sheet-inner">
+    <header class="sheet-head">
+      <button type="button" class="text-btn" id="householdClose">Done</button>
+      <h2 id="householdTitle">Ingredients</h2>
+      <span></span>
+    </header>
+    <p class="hint">Every ingredient your dinners use. Tap <span class="jar-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="3.5" rx="1"/><path d="M8 6c-1.8 1-3 2.7-3 4.6v7.9A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5v-7.9C19 8.7 17.8 7 16 6"/><path d="M8.5 13.5h7"/></svg></span> for things you always have. Tap a name to rename it or merge it into another.</p>
+    <section class="card glass" id="suggestBox" hidden>
+      <div class="ing-head"><h3>Same thing?</h3></div>
+      <ul class="suggest-list" id="suggestList"></ul>
+    </section>
+    <input class="text-input" id="householdSearch" type="search" placeholder="Search ingredients" autocomplete="off" aria-label="Search ingredients">
+    <ul class="hh-list" id="householdList"></ul>
+  </div>
+</div>
+
+<datalist id="ingredientNames"></datalist>
 
 <div class="toast glass" id="toast" role="status" aria-live="polite"></div>
 
@@ -1091,6 +1164,7 @@
 
   let meals = [];
   let mealsLoaded = false;
+  let household = { ingredients: [], aliases: {}, suggestions: [] }; // the household ingredient list
   let mealView = store.get("kitchen.mealView") === "list" ? "list" : "cards";
   let openMode = store.get("kitchen.openMode") === "edit" ? "edit" : "recipe"; // what tapping a dinner opens
   let draft = null;        // the dinner being added or edited
@@ -1152,6 +1226,13 @@
       `${count} ingredient${count === 1 ? "" : "s"}`,
       staples && `${staples} pantry staple${staples === 1 ? "" : "s"}`,
     ].filter(Boolean).join(" · ");
+    const toCheck = meal.ingredients.filter((i) => i.review).length;
+    if (toCheck) {
+      const warn = document.createElement("span");
+      warn.className = "meal-check";
+      warn.textContent = ` · ${toCheck} to check`;
+      meta.append(warn);
+    }
     body.append(name, meta);
     main.append(photoEl(meal.image_url), body);
     li.append(main);
@@ -1187,8 +1268,15 @@
     const count = document.createElement("span");
     const n = meal.ingredients.length;
     count.className = "meal-row-count" + (n ? "" : " missing");
-    if (n) count.innerHTML = `<span class="mono">${n}</span> ingredient${n === 1 ? "" : "s"}`;
-    else count.textContent = "No ingredients";
+    const toCheck = meal.ingredients.filter((i) => i.review).length;
+    if (toCheck) {
+      count.className += " missing";
+      count.textContent = `${toCheck} to check`;
+    } else if (n) {
+      count.innerHTML = `<span class="mono">${n}</span> ingredient${n === 1 ? "" : "s"}`;
+    } else {
+      count.textContent = "No ingredients";
+    }
     main.append(name, count);
     li.append(main);
 
@@ -1242,6 +1330,8 @@
   function applyMeals(data) {
     meals = data.meals;
     mealsLoaded = true;
+    household = { ingredients: data.ingredients ?? [], aliases: data.aliases ?? {}, suggestions: data.suggestions ?? [] };
+    renderHousehold();
     renderMeals();
     if (currentTab === "week") renderWeek();
     setSync("ok");
@@ -1420,6 +1510,183 @@
   });
   $("newMealBtn").addEventListener("click", () => openEditor(null));
 
+  /* ---------- Household ingredients ---------- */
+
+  let householdOpenId = null; // the ingredient whose rename / merge controls are showing
+
+  const dismissedKey = (s) => `${s.from_id}>${s.into_id}`;
+  function dismissed() {
+    try { return new Set(JSON.parse(store.get("kitchen.notSame") || "[]")); } catch { return new Set(); }
+  }
+  const openSuggestions = () => household.suggestions.filter((s) => !dismissed().has(dismissedKey(s)));
+
+  function renderHousehold() {
+    // Autocomplete for the editor's ingredient boxes.
+    $("ingredientNames").replaceChildren(...household.ingredients.map((i) => {
+      const o = document.createElement("option");
+      o.value = i.name;
+      return o;
+    }));
+    $("householdCount").textContent = household.ingredients.length || "";
+    const pending = openSuggestions();
+    $("householdBadge").hidden = !pending.length;
+    $("householdBadge").textContent = pending.length;
+    if (!$("household").hidden) renderHouseholdSheet();
+  }
+
+  function renderHouseholdSheet() {
+    const pending = openSuggestions();
+    $("suggestBox").hidden = !pending.length;
+    $("suggestList").replaceChildren(...pending.map((sg) => {
+      const li = document.createElement("li");
+      li.className = "suggest";
+      const p = document.createElement("p");
+      const a = document.createElement("strong");
+      a.textContent = sg.from;
+      const b = document.createElement("strong");
+      b.textContent = sg.into;
+      p.append(a, " and ", b, " look like the same thing.");
+      const actions = document.createElement("div");
+      actions.className = "suggest-actions";
+      const merge = document.createElement("button");
+      merge.type = "button";
+      merge.className = "ghost-btn";
+      merge.dataset.merge = `${sg.from_id}>${sg.into_id}`;
+      merge.textContent = `Use "${sg.into}"`;
+      const keep = document.createElement("button");
+      keep.type = "button";
+      keep.className = "ghost-btn";
+      keep.dataset.keep = dismissedKey(sg);
+      keep.textContent = "Not the same";
+      actions.append(merge, keep);
+      li.append(p, actions);
+      return li;
+    }));
+
+    const q = normaliseName($("householdSearch").value);
+    const list = household.ingredients.filter((i) => !q || i.name.includes(q));
+    $("householdList").replaceChildren(...list.map((ing) => {
+      const li = document.createElement("li");
+      li.className = "hh";
+      li.dataset.id = ing.id;
+      const row = document.createElement("div");
+      row.className = "hh-row";
+      const name = document.createElement("button");
+      name.type = "button";
+      name.className = "hh-name";
+      const label = document.createElement("span");
+      label.textContent = ing.name;
+      const uses = document.createElement("span");
+      uses.className = "hh-uses" + (ing.uses ? "" : " unused");
+      uses.textContent = ing.uses ? `${ing.uses} dinner${ing.uses === 1 ? "" : "s"}` : "not used";
+      name.append(label, uses);
+      const jar = document.createElement("button");
+      jar.type = "button";
+      jar.className = "ing-staple";
+      jar.innerHTML = JAR_SVG;
+      jar.setAttribute("aria-label", `Always have ${ing.name}`);
+      jar.setAttribute("aria-pressed", String(ing.staple));
+      row.append(name, jar);
+      li.append(row);
+
+      if (householdOpenId === ing.id) {
+        const edit = document.createElement("div");
+        edit.className = "hh-edit";
+        const rename = document.createElement("input");
+        rename.className = "text-input hh-rename";
+        rename.value = ing.name;
+        rename.maxLength = 100;
+        rename.setAttribute("aria-label", "New name");
+        const save = document.createElement("button");
+        save.type = "button";
+        save.className = "ghost-btn";
+        save.dataset.act = "rename";
+        save.textContent = "Rename";
+        const into = document.createElement("select");
+        into.className = "hh-merge";
+        into.setAttribute("aria-label", "Merge into");
+        into.innerHTML = `<option value="">Merge into…</option>`;
+        for (const other of household.ingredients) {
+          if (other.id === ing.id) continue;
+          const o = document.createElement("option");
+          o.value = other.id;
+          o.textContent = other.name;
+          into.append(o);
+        }
+        const merge = document.createElement("button");
+        merge.type = "button";
+        merge.className = "ghost-btn";
+        merge.dataset.act = "merge";
+        merge.textContent = "Merge";
+        edit.append(rename, save, into, merge);
+        li.append(edit);
+      }
+      return li;
+    }));
+  }
+
+  async function householdAction(action, body, done) {
+    try {
+      applyMeals(await api(action, body));
+      if (done) toast(done);
+    } catch (err) {
+      handleError(err);
+    }
+  }
+
+  $("householdBtn").addEventListener("click", () => {
+    householdOpenId = null;
+    $("householdSearch").value = "";
+    $("household").hidden = false;
+    $("household").scrollTop = 0;
+    document.body.classList.add("sheet-open");
+    renderHouseholdSheet();
+  });
+  $("householdClose").addEventListener("click", () => {
+    $("household").hidden = true;
+    document.body.classList.remove("sheet-open");
+  });
+  $("householdSearch").addEventListener("input", renderHouseholdSheet);
+
+  $("suggestList").addEventListener("click", (e) => {
+    const merge = e.target.closest("[data-merge]");
+    const keep = e.target.closest("[data-keep]");
+    if (merge) {
+      const [from_id, into_id] = merge.dataset.merge.split(">").map(Number);
+      householdAction("ingredient_merge", { from_id, into_id }, "Merged");
+    } else if (keep) {
+      const set = dismissed();
+      set.add(keep.dataset.keep);
+      store.set("kitchen.notSame", JSON.stringify([...set]));
+      renderHousehold();
+    }
+  });
+
+  $("householdList").addEventListener("click", (e) => {
+    const li = e.target.closest(".hh");
+    if (!li) return;
+    const id = Number(li.dataset.id);
+    const ing = household.ingredients.find((i) => i.id === id);
+    if (!ing) return;
+    if (e.target.closest(".ing-staple")) {
+      householdAction("ingredient_staple", { id, staple: !ing.staple });
+    } else if (e.target.closest(".hh-name")) {
+      householdOpenId = householdOpenId === id ? null : id;
+      renderHouseholdSheet();
+      if (householdOpenId) li.parentElement.querySelector(`.hh[data-id="${id}"] .hh-rename`)?.focus();
+    } else if (e.target.closest('[data-act="rename"]')) {
+      householdAction("ingredient_rename", { id, name: li.querySelector(".hh-rename").value }, "Renamed");
+    } else if (e.target.closest('[data-act="merge"]')) {
+      const into = Number(li.querySelector(".hh-merge").value);
+      if (!into) return toast("Pick which ingredient to merge it into.");
+      const target = household.ingredients.find((i) => i.id === into);
+      if (confirm(`Merge "${ing.name}" into "${target.name}"? Every recipe using "${ing.name}" will use "${target.name}" instead.`)) {
+        householdOpenId = null;
+        householdAction("ingredient_merge", { from_id: id, into_id: into }, "Merged");
+      }
+    }
+  });
+
   /* ---------- Meal editor ---------- */
 
   function openEditor(meal) {
@@ -1427,7 +1694,7 @@
       id: meal?.id ?? null,
       image_url: null,
       // touched: someone tapped the jar on this row, so saving updates the household staples list
-      ingredients: (meal?.ingredients ?? []).map((i) => ({ line: i.line, name: i.name, staple: i.staple, touched: false })),
+      ingredients: (meal?.ingredients ?? []).map(editRow),
     };
     draftDirty = false;
     $("editorTitle").textContent = meal ? "Edit dinner" : "New dinner";
@@ -1490,108 +1757,189 @@
   $("mealPhotoImg").addEventListener("error", () => { if (draft) setPhoto(null); });
   $("photoRemove").addEventListener("click", () => { setPhoto(null); draftDirty = true; });
 
-  function autoGrow(ta) {
-    ta.style.height = "auto";
-    ta.style.height = ta.scrollHeight + 2 + "px";
+  /* Structured ingredient rows: amount · unit · ingredient · note */
+
+  const UNIT_OPTIONS = ["g", "kg", "ml", "L", "tsp", "tbsp", "cup", "pinch", "handful", "bunch", "sprig", "clove",
+    "slice", "rasher", "fillet", "stick", "head", "tin", "jar", "bottle", "pack", "punnet", "sheet"];
+  const GLYPHS = [[0.25, "¼"], [0.5, "½"], [0.75, "¾"], [1 / 3, "⅓"], [2 / 3, "⅔"], [0.125, "⅛"]];
+
+  // 1.5 → "1½", 0.25 → "¼", 500 → "500"
+  function amountText(n) {
+    if (n === null || n === undefined || n === "") return "";
+    const whole = Math.floor(n + 1e-9), frac = n - whole;
+    if (frac < 0.01) return String(whole);
+    const g = GLYPHS.find(([v]) => Math.abs(frac - v) < 0.02);
+    return g ? (whole ? `${whole}${g[1]}` : g[1]) : String(Math.round(n * 100) / 100);
+  }
+
+  // Mirrors normaliseName in supabase/functions/_shared/ingredients.ts: "Red Onions " → "red onion"
+  function singular(w) {
+    if (w.length <= 3 || /(ss|us|is)$/.test(w)) return w;
+    if (w === "leaves" || w === "loaves") return w.slice(0, -3) + "f";
+    if (w.endsWith("ies")) return w.slice(0, -3) + "y";
+    if (w.endsWith("oes")) return w.slice(0, -2);
+    if (/(ch|sh|x)es$/.test(w)) return w.slice(0, -2);
+    if (w.endsWith("s")) return w.slice(0, -1);
+    return w;
+  }
+  function normaliseName(raw) {
+    const words = (raw || "").toLowerCase().replace(/[^\p{L}\p{N}\s\-'&]/gu, " ").replace(/\s+/g, " ").trim().split(" ").filter(Boolean);
+    if (!words.length) return "";
+    words[words.length - 1] = singular(words[words.length - 1]);
+    return words.join(" ");
+  }
+
+  // The household ingredient a typed name means, following aliases ("cilantro" → coriander).
+  function findHousehold(name) {
+    const n = normaliseName(name);
+    const aliasOf = household.aliases[n];
+    return aliasOf !== undefined
+      ? household.ingredients.find((i) => i.id === aliasOf)
+      : household.ingredients.find((i) => i.name === n);
+  }
+
+  // A row from the server → a row being edited (amount kept as text so "1½" stays as typed).
+  const editRow = (r) => ({
+    amount: amountText(r.amount), unit: r.unit || "", name: r.name || "", note: r.note || "",
+    staple: !!r.staple, touched: false, review: !!r.review, original: r.original || null,
+  });
+  const blankRow = () => ({ amount: "", unit: "", name: "", note: "", staple: false, touched: false, review: false, original: null });
+
+  function ingRow(ing, idx) {
+    const li = document.createElement("li");
+    li.className = "ing";
+    li.dataset.idx = idx;
+    li.dataset.staple = String(ing.staple);
+    li.dataset.review = String(ing.review);
+
+    const top = document.createElement("div");
+    top.className = "ing-top";
+    const name = document.createElement("input");
+    name.className = "ing-name";
+    name.value = ing.name;
+    name.placeholder = "Ingredient, e.g. red onion";
+    name.maxLength = 100;
+    name.setAttribute("list", "ingredientNames");
+    name.setAttribute("autocapitalize", "none");
+    name.setAttribute("enterkeyhint", "next");
+    name.setAttribute("aria-label", `Ingredient ${idx + 1}`);
+    const jar = document.createElement("button");
+    jar.type = "button";
+    jar.className = "ing-staple";
+    jar.innerHTML = JAR_SVG;
+    jar.title = "Always have";
+    jar.setAttribute("aria-label", "Always have");
+    jar.setAttribute("aria-pressed", String(ing.staple));
+    const del = document.createElement("button");
+    del.type = "button";
+    del.className = "ing-del";
+    del.innerHTML = X_SVG;
+    del.setAttribute("aria-label", "Remove ingredient");
+    top.append(name, jar, del);
+
+    const bottom = document.createElement("div");
+    bottom.className = "ing-bottom";
+    const amount = document.createElement("input");
+    amount.className = "ing-amount";
+    amount.value = ing.amount;
+    amount.placeholder = "Qty";
+    amount.maxLength = 12;
+    amount.inputMode = "decimal";
+    amount.setAttribute("aria-label", "Amount");
+    const unit = document.createElement("select");
+    unit.className = "ing-unit";
+    unit.setAttribute("aria-label", "Unit");
+    unit.innerHTML = `<option value="">whole</option>` + UNIT_OPTIONS.map((u) => `<option value="${u}">${u}</option>`).join("");
+    unit.value = ing.unit;
+    const note = document.createElement("input");
+    note.className = "ing-note";
+    note.value = ing.note;
+    note.placeholder = "Note, e.g. finely chopped";
+    note.maxLength = 200;
+    note.setAttribute("enterkeyhint", "next");
+    note.setAttribute("aria-label", "Note");
+    bottom.append(amount, unit, note);
+    li.append(top, bottom);
+
+    if (ing.review && ing.original) {
+      const orig = document.createElement("p");
+      orig.className = "ing-original";
+      orig.textContent = `Check this one. The recipe said: "${ing.original}"`;
+      li.append(orig);
+    }
+    return li;
   }
 
   function renderIngredients() {
-    $("ingList").replaceChildren(...draft.ingredients.map((ing, idx) => {
-      const li = document.createElement("li");
-      li.className = "ing";
-      li.dataset.idx = idx;
-      li.dataset.staple = String(ing.staple);
-
-      const ta = document.createElement("textarea");
-      ta.className = "ing-text";
-      ta.rows = 1;
-      ta.maxLength = 300;
-      ta.value = ing.line;
-      ta.placeholder = "e.g. 2 red onions, chopped";
-      ta.setAttribute("aria-label", `Ingredient ${idx + 1}`);
-
-      const jar = document.createElement("button");
-      jar.type = "button";
-      jar.className = "ing-staple";
-      jar.innerHTML = JAR_SVG;
-      jar.title = "Always have";
-      jar.setAttribute("aria-label", "Always have");
-      jar.setAttribute("aria-pressed", String(ing.staple));
-
-      const del = document.createElement("button");
-      del.type = "button";
-      del.className = "ing-del";
-      del.innerHTML = X_SVG;
-      del.setAttribute("aria-label", "Remove ingredient");
-
-      li.append(ta, jar, del);
-      return li;
-    }));
+    $("ingList").replaceChildren(...draft.ingredients.map(ingRow));
     updateIngCount();
-    requestAnimationFrame(() => document.querySelectorAll(".ing-text").forEach(autoGrow));
   }
 
   function updateIngCount() {
-    const n = draft.ingredients.filter((i) => i.line.trim()).length;
+    const n = draft.ingredients.filter((i) => i.name.trim()).length;
     $("ingCount").textContent = n || "";
+    $("reviewHint").hidden = !draft.ingredients.some((i) => i.review);
   }
 
-  function updateStapleButtons() {
+  function updateRowFlags() {
     document.querySelectorAll("#ingList .ing").forEach((li) => {
       const ing = draft.ingredients[Number(li.dataset.idx)];
       if (!ing) return;
       li.dataset.staple = String(ing.staple);
+      li.dataset.review = String(ing.review);
       li.querySelector(".ing-staple").setAttribute("aria-pressed", String(ing.staple));
+      if (!ing.review) li.querySelector(".ing-original")?.remove();
     });
+    updateIngCount();
   }
 
-  // Asks the server whether new or edited lines are already household staples.
-  async function checkStaples(indices) {
-    const rows = indices.map((i) => draft.ingredients[i]).filter((r) => r && r.line.trim() && !r.touched);
-    if (!rows.length) return;
-    const d = draft;
-    try {
-      const { ingredients } = await api("preview", { lines: rows.map((r) => r.line) });
-      if (d !== draft) return;
-      rows.forEach((r, k) => {
-        if (ingredients[k]?.line !== r.line.replace(/\s+/g, " ").trim()) return; // edited again meanwhile
-        r.name = ingredients[k].name;
-        if (r.touched) return;
-        // A jar tapped on this recipe but not saved yet wins over the saved household list.
-        const same = draft.ingredients.find((o) => o !== r && o.touched && o.name === r.name);
-        r.staple = same ? same.staple : ingredients[k].staple;
-        if (same) r.touched = true;
-      });
-      updateStapleButtons();
-    } catch {
-      // Not important: the jar marks get sorted out when the dinner is saved.
+  // Once a name is filled in, pick up its "always have" mark from the household list,
+  // unless a jar tapped on this recipe (not saved yet) says otherwise.
+  function syncStaple(ing) {
+    if (ing.touched) return;
+    const key = findHousehold(ing.name)?.name ?? normaliseName(ing.name);
+    const same = draft.ingredients.find((o) => o !== ing && o.touched && (findHousehold(o.name)?.name ?? normaliseName(o.name)) === key);
+    if (same) {
+      ing.staple = same.staple;
+      ing.touched = true;
+    } else {
+      ing.staple = findHousehold(ing.name)?.staple ?? false;
     }
   }
 
   function addIngredientRow(afterIdx) {
     const at = afterIdx === undefined ? draft.ingredients.length : afterIdx + 1;
-    draft.ingredients.splice(at, 0, { line: "", staple: false, touched: false });
+    draft.ingredients.splice(at, 0, blankRow());
     renderIngredients();
-    const ta = document.querySelector(`#ingList .ing[data-idx="${at}"] .ing-text`);
-    if (ta) ta.focus();
+    document.querySelector(`#ingList .ing[data-idx="${at}"] .ing-name`)?.focus();
   }
 
-  $("ingList").addEventListener("input", (e) => {
-    if (!e.target.classList.contains("ing-text")) return;
+  const FIELD = { "ing-name": "name", "ing-amount": "amount", "ing-unit": "unit", "ing-note": "note" };
+  function onRowEdit(e) {
+    const field = FIELD[e.target.className];
+    if (!field) return;
     const ing = draft.ingredients[Number(e.target.closest(".ing").dataset.idx)];
-    ing.line = e.target.value.replace(/\n/g, " ");
-    ing.name = null; // worked out again by checkStaples when the row is left
-    autoGrow(e.target);
-    updateIngCount();
-  });
+    ing[field] = e.target.value;
+    ing.review = false; // someone has looked at it
+    updateRowFlags();
+  }
+  $("ingList").addEventListener("input", onRowEdit);
   $("ingList").addEventListener("change", (e) => {
-    if (e.target.classList.contains("ing-text")) checkStaples([Number(e.target.closest(".ing").dataset.idx)]);
+    onRowEdit(e);
+    if (e.target.classList.contains("ing-name")) {
+      syncStaple(draft.ingredients[Number(e.target.closest(".ing").dataset.idx)]);
+      updateRowFlags();
+    }
   });
   $("ingList").addEventListener("keydown", (e) => {
-    // Enter starts a new ingredient instead of a new line.
-    if (e.key === "Enter" && e.target.classList.contains("ing-text")) {
-      e.preventDefault();
-      addIngredientRow(Number(e.target.closest(".ing").dataset.idx));
+    // Enter in the note (or in a name that's filled in) starts the next ingredient.
+    if (e.key !== "Enter" || !e.target.closest(".ing")) return;
+    e.preventDefault();
+    const idx = Number(e.target.closest(".ing").dataset.idx);
+    if (e.target.classList.contains("ing-name")) {
+      e.target.closest(".ing").querySelector(".ing-amount").focus();
+    } else {
+      addIngredientRow(idx);
     }
   });
   $("ingList").addEventListener("click", (e) => {
@@ -1601,15 +1949,16 @@
     if (e.target.closest(".ing-staple")) {
       // Staples are household-wide, so every line of the same ingredient follows along.
       const ing = draft.ingredients[idx];
+      const key = findHousehold(ing.name)?.name ?? normaliseName(ing.name);
       const staple = !ing.staple;
       for (const other of draft.ingredients) {
-        if (other === ing || (ing.name && other.name === ing.name)) {
+        if (other === ing || (key && (findHousehold(other.name)?.name ?? normaliseName(other.name)) === key)) {
           other.staple = staple;
           other.touched = true;
         }
       }
       draftDirty = true;
-      updateStapleButtons();
+      updateRowFlags();
     } else if (e.target.closest(".ing-del")) {
       draft.ingredients.splice(idx, 1);
       draftDirty = true;
@@ -1628,17 +1977,30 @@
     $("pasteToggle").textContent = show ? "Hide" : "Paste a list";
     if (show) $("pasteText").focus();
   });
-  $("pasteAdd").addEventListener("click", () => {
+  // Pasted lines are split into amount · unit · ingredient · note by the server.
+  $("pasteAdd").addEventListener("click", async () => {
     const lines = $("pasteText").value.split(/\n/)
       .map((l) => l.replace(/^\s*(?:[-•*▢☐□]|\d+[.)])\s+/, "").replace(/\s+/g, " ").trim())
       .filter(Boolean);
     if (!lines.length) return;
-    draft.ingredients = draft.ingredients.filter((i) => i.line.trim());
-    const start = draft.ingredients.length;
-    draft.ingredients.push(...lines.map((line) => ({ line, staple: false, touched: false })));
+    const btn = $("pasteAdd");
+    btn.disabled = true;
+    btn.textContent = "Reading…";
+    const d = draft;
+    let rows;
+    try {
+      rows = (await api("preview", { lines })).ingredients.map(editRow);
+    } catch (err) {
+      if (err instanceof AuthError) return handleError(err);
+      rows = lines.map((line) => ({ ...blankRow(), name: line, review: true, original: line })); // offline: fix by hand
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Add these";
+    }
+    if (d !== draft) return;
+    draft.ingredients = draft.ingredients.filter((i) => i.name.trim()).concat(rows);
     draftDirty = true;
     renderIngredients();
-    checkStaples(lines.map((_, k) => start + k));
     $("pasteText").value = "";
     $("pasteBox").hidden = true;
     $("pasteToggle").textContent = "Paste a list";
@@ -1664,9 +2026,9 @@
       if (r.servings && !$("mealServings").value.trim()) $("mealServings").value = r.servings;
       if (r.image_url && !draft.image_url) setPhoto(r.image_url);
       if (r.found) {
-        const hasOwn = draft.ingredients.some((i) => i.line.trim()) || $("mealMethod").value.trim();
+        const hasOwn = draft.ingredients.some((i) => i.name.trim()) || $("mealMethod").value.trim();
         if (!hasOwn || confirm("Replace the ingredients and method already here with the recipe's?")) {
-          draft.ingredients = r.ingredients.map((i) => ({ line: i.line, name: i.name, staple: i.staple, touched: false }));
+          draft.ingredients = r.ingredients.map(editRow);
           renderIngredients();
           if (r.method) {
             $("mealMethod").value = r.method;
@@ -1674,9 +2036,11 @@
           }
         }
         const staples = r.ingredients.filter((i) => i.staple).length;
+        const unsure = r.ingredients.filter((i) => i.review).length;
         const steps = methodParts(r.method).filter((p) => !p.heading).length;
         setFetchStatus(`Found ${r.ingredients.length} ingredients${staples ? ` (${staples} you always have)` : ""}`
-          + (steps ? ` and ${steps} method steps` : ", but no method") + ". Check them over, then save.", "good");
+          + (steps ? ` and ${steps} method steps` : ", but no method") + ". "
+          + (unsure ? `${unsure} need${unsure === 1 ? "s" : ""} a check (outlined in amber).` : "Check them over, then save."), "good");
       } else {
         setFetchStatus("Couldn't find recipe details on that page. Type or paste the ingredients below.", "warn");
         openPaste();
@@ -1716,9 +2080,12 @@
         image_url: draft.image_url,
         servings: $("mealServings").value.trim(),
         method: $("mealMethod").value,
-        ingredients: draft.ingredients
-          .filter((i) => i.line.trim())
-          .map((i) => ({ line: i.line, staple: i.touched ? i.staple : null })),
+        rows: draft.ingredients
+          .filter((i) => i.name.trim())
+          .map((i) => ({
+            amount: i.amount, unit: i.unit || null, name: i.name, note: i.note,
+            staple: i.touched ? i.staple : null, original: i.original,
+          })),
       });
       applyMeals(data);
       closeEditor();
