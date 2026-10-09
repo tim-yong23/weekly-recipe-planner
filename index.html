@@ -484,6 +484,52 @@
   .meal-row.unavailable { opacity: 0.45; }
   .meal-row.unavailable .meal-row-main { cursor: default; }
 
+  /* Shopping for the week */
+  .shop-btn { display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .shop-btn svg { width: 22px; height: 22px; }
+  .shop-btn.done { color: var(--text); background: var(--surface-strong); border: 1px solid var(--border); box-shadow: none; font-size: 17px; }
+  .shop-btn.done svg { color: var(--mint); }
+  .shop-list { list-style: none; margin: 8px 0 12px; padding: 0; }
+  .shop-line { border-bottom: 1px solid rgba(255, 255, 255, 0.07); padding: 4px 0 8px; }
+  .shop-list li:last-child { border-bottom: 0; }
+  .shop-row { display: flex; align-items: center; gap: 4px; }
+  .shop-tick { width: 48px; height: 52px; flex: none; display: grid; place-items: center; border-radius: 12px; }
+  .shop-tick:active { background: var(--surface-press); }
+  .shop-line[data-checked="true"] .check { background: var(--grad-fresh); border-color: transparent; }
+  .shop-line[data-checked="true"] .check svg { opacity: 1; transform: none; }
+  .shop-main { flex: 1; min-width: 0; min-height: 52px; display: flex; align-items: center; gap: 12px; padding: 6px 4px; text-align: left; border-radius: 12px; }
+  .shop-main:active { background: var(--surface-press); }
+  .shop-name { flex: 1; min-width: 0; font-weight: 500; overflow-wrap: anywhere; }
+  .shop-amt { flex: none; font-family: var(--font-mono); font-size: 15px; color: var(--orange); }
+  .shop-line[data-checked="false"] .shop-name, .shop-line[data-checked="false"] .shop-amt { color: var(--faint); }
+  .shop-line[data-edited="true"] .shop-name::after { content: "changed"; margin-left: 8px; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; color: var(--sun); background: rgba(255, 203, 71, 0.12); }
+  .shop-was { margin: 0 4px 4px 52px; font-size: 13px; color: var(--faint); }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 52px; }
+  .tag {
+    display: inline-flex; min-width: 0; max-width: 100%; padding: 3px 10px; border-radius: 999px;
+    font-size: 13px; font-weight: 500; line-height: 1.5; color: #FFC2D7;
+    background: rgba(255, 79, 139, 0.12); border: 1px solid rgba(255, 79, 139, 0.28);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .tag-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .tag .mono { flex: none; font-family: var(--font-mono); color: var(--faint); margin-left: 6px; }
+  .shop-line[data-checked="false"] .tag { opacity: 0.55; }
+  .shop-edit { display: grid; grid-template-columns: 72px 1fr; gap: 6px; margin: 8px 0 4px 52px; }
+  .shop-edit input, .shop-edit select {
+    min-width: 0; width: 100%; height: 48px; padding: 0 12px; border-radius: 12px; font-size: 16px; outline: 0;
+    background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border);
+  }
+  .shop-edit input:focus, .shop-edit select:focus { border-color: var(--orange); }
+  .shop-edit .shop-edit-name { grid-column: 1 / -1; font-weight: 600; }
+  .shop-edit .shop-edit-amount { font-family: var(--font-mono); text-align: center; padding: 0 4px; }
+  .shop-edit select { -webkit-appearance: none; appearance: none; }
+  .shop-edit-actions { grid-column: 1 / -1; display: flex; gap: 8px; }
+  .shop-edit-actions .ghost-btn { flex: 1; }
+  .shop-go { position: sticky; bottom: calc(env(safe-area-inset-bottom) + 12px); z-index: 1; }
+  .item-tags { padding: 0 12px 12px 58px; margin-top: -4px; }
+  button.tag:active { background: rgba(255, 79, 139, 0.25); }
+  .item[data-ticked="true"] .tag { opacity: 0.5; }
+
   /* Household ingredients */
   .household-btn {
     width: 100%; min-height: 52px; margin-bottom: 16px; padding: 0 14px;
@@ -645,6 +691,11 @@
         <button type="button" class="text-btn center-btn" id="weekRestart">Start over with new picks</button>
       </div>
       <div class="week-actions" id="weekLockedActions">
+        <button type="button" class="primary shop-btn" id="weekShop">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2.2l2.4 11.2a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.1L21 8H6.1"/><circle cx="9.5" cy="20" r="1.3"/><circle cx="17.5" cy="20" r="1.3"/></svg>
+          <span id="weekShopText">Add to shopping list</span>
+        </button>
+        <p class="hint center good" id="weekShopNote" hidden></p>
         <button type="button" class="ghost-btn wide" id="weekEdit">Edit plan</button>
         <button type="button" class="ghost-btn wide" id="weekNext">Start next week</button>
       </div>
@@ -833,6 +884,31 @@
   </div>
 </div>
 
+<div class="sheet" id="shop" hidden role="dialog" aria-modal="true" aria-labelledby="shopTitle">
+  <div class="sheet-inner">
+    <header class="sheet-head">
+      <button type="button" class="text-btn" id="shopClose">Cancel</button>
+      <h2 id="shopTitle">This week's shop</h2>
+      <span></span>
+    </header>
+    <p class="hint">Untick anything you already have. Tap a name to change it, like swapping beef mince for pork mince. Changes only affect this shop, not the recipes.</p>
+    <p class="hint warn" id="shopWarn" hidden></p>
+    <section class="card glass">
+      <div class="ing-head"><h3>Going on the list<span class="mono" id="shopMainCount"></span></h3></div>
+      <ul class="shop-list" id="shopMain"></ul>
+      <button type="button" class="ghost-btn wide" id="shopExtra">+ Add something else</button>
+    </section>
+    <section class="card glass" id="shopPantryCard">
+      <div class="ing-head"><h3>Pantry check<span class="mono" id="shopPantryCount"></span></h3></div>
+      <p class="hint">Things you always have. Tick anything you're running low on.</p>
+      <ul class="shop-list" id="shopPantry"></ul>
+    </section>
+    <div class="shop-go">
+      <button type="button" class="primary" id="shopAdd">Add to the list</button>
+    </div>
+  </div>
+</div>
+
 <div class="sheet" id="household" hidden role="dialog" aria-modal="true" aria-labelledby="householdTitle">
   <div class="sheet-inner">
     <header class="sheet-head">
@@ -895,12 +971,15 @@
   }
 
   // Mirrors formatAmount in supabase/functions/_shared/items.ts: 2 → "×2", 500 g → "500g", 3 tin → "3 tins"
-  const COUNTABLE_UNITS = new Set(["cup", "pack", "tin", "bottle", "bunch"]);
+  const COUNTABLE_UNITS = new Set([
+    "cup", "pack", "tin", "bottle", "bunch", "pinch", "handful", "sprig", "clove", "slice", "rasher",
+    "fillet", "stick", "head", "jar", "punnet", "sheet",
+  ]);
   function formatAmount(qty, unit) {
     const n = String(Math.round(Number(qty) * 100) / 100);
     if (!unit) return "×" + n;
     if (!COUNTABLE_UNITS.has(unit)) return unit.length <= 2 ? n + unit : `${n} ${unit}`;
-    return Number(qty) <= 1 ? `${n} ${unit}` : `${n} ${unit}${unit.endsWith("ch") ? "es" : "s"}`;
+    return Number(qty) <= 1 ? `${n} ${unit}` : `${n} ${unit}${/(ch|sh)$/.test(unit) ? "es" : "s"}`;
   }
 
   // How much one tap of − / + changes the amount.
@@ -958,6 +1037,25 @@
     row.className = "item-row";
     row.append(tick, qty);
     li.append(row);
+
+    // Which dinners it's for: tap one to open its recipe.
+    if (item.meals?.length) {
+      const tags = document.createElement("div");
+      tags.className = "tags item-tags";
+      for (const m of item.meals) {
+        const tag = document.createElement("button");
+        tag.type = "button";
+        tag.className = "tag";
+        tag.dataset.meal = m.id;
+        const tagName = document.createElement("span");
+        tagName.className = "tag-name";
+        tagName.textContent = m.name;
+        tag.append(tagName);
+        tag.setAttribute("aria-label", `Open the recipe for ${m.name}`);
+        tags.append(tag);
+      }
+      li.append(tags);
+    }
 
     if (open) {
       const stepper = document.createElement("div");
@@ -1082,6 +1180,11 @@
     const item = items.find((i) => i.id === id);
     if (!item) return;
 
+    const tag = e.target.closest(".tag");
+    if (tag) {
+      openMealById(Number(tag.dataset.meal));
+      return;
+    }
     if (e.target.closest(".qty-btn")) {
       openQtyId = openQtyId === id ? null : id;
       render();
@@ -2245,6 +2348,11 @@
     $("weekList").replaceChildren(...plan.meal_ids.map((id) => weekCard(id, draft)));
     $("weekDraftActions").hidden = !draft;
     $("weekLockedActions").hidden = draft;
+    const added = plan.added_to_list_at;
+    $("weekShop").classList.toggle("done", !!added);
+    $("weekShopText").textContent = added ? "Added to the list ✓" : "Add to shopping list";
+    $("weekShopNote").hidden = !added;
+    $("weekShopNote").textContent = added ? `Added ${shortDate(added)}. Tap to add again.` : "";
     $("weekAdd").hidden = plan.meal_ids.length >= 7;
   }
 
@@ -2345,6 +2453,270 @@
     await weekAction("set_meal", { meal_id: Number(btn.dataset.id), replace_id: pickerReplaceId });
   });
 
+  /* ---------- Shopping for the week ---------- */
+
+  let shopLines = [];      // the review screen's lines, as edited
+  let shopEditing = null;  // key of the line being changed
+  let shopExtraCount = 0;
+  let shopPlanId = null;
+
+  // 1.5 → "1½"; "1 1/2", "1½", "2-3" → numbers, like the server reads them (null when blank).
+  function amountValue(text) {
+    const s = String(text ?? "").trim().replace(",", ".").replace(/(\d)([½¼¾⅓⅔⅛])/g, "$1 $2").split(/\s*(?:-|–|to)\s*/).pop();
+    if (!s) return null;
+    let total = 0;
+    for (const t of s.split(/\s+/)) {
+      const g = { "½": 0.5, "¼": 0.25, "¾": 0.75, "⅓": 1 / 3, "⅔": 2 / 3, "⅛": 0.125 }[t];
+      const n = g ?? (t.includes("/") ? Number(t.split("/")[0]) / Number(t.split("/")[1]) : Number(t));
+      if (!Number.isFinite(n)) return null;
+      total += n;
+    }
+    return total > 0 ? total : null;
+  }
+
+  // 750, "g" → "750g"; 3, "" → "3"; 2, "tin" → "2 tins"
+  function shopLabel(amountTextValue, unit) {
+    const n = amountValue(amountTextValue);
+    if (n === null) return "";
+    const t = amountText(n);
+    if (!unit) return t;
+    if (["g", "kg", "ml", "L"].includes(unit)) return t + unit;
+    return `${t} ${unit}${n > 1 && COUNTABLE_UNITS.has(unit) ? (/(ch|sh)$/.test(unit) ? "es" : "s") : ""}`;
+  }
+
+  const lineEdited = (l) => !l.custom && (normaliseName(l.name) !== normaliseName(l.orig.name) || amountValue(l.amount) !== amountValue(l.orig.amount) || l.unit !== l.orig.unit);
+
+  function shopLineEl(line) {
+    const li = document.createElement("li");
+    li.className = "shop-line";
+    li.dataset.key = line.key;
+    li.dataset.checked = String(line.checked);
+    li.dataset.edited = String(lineEdited(line));
+
+    const row = document.createElement("div");
+    row.className = "shop-row";
+    const tick = document.createElement("button");
+    tick.type = "button";
+    tick.className = "shop-tick";
+    tick.dataset.act = "tick";
+    tick.setAttribute("aria-pressed", String(line.checked));
+    tick.setAttribute("aria-label", `Add ${line.name || "this"} to the list`);
+    tick.innerHTML = `<span class="check">${CHECK_SVG}</span>`;
+    const main = document.createElement("button");
+    main.type = "button";
+    main.className = "shop-main";
+    main.dataset.act = "edit";
+    main.setAttribute("aria-expanded", String(shopEditing === line.key));
+    const name = document.createElement("span");
+    name.className = "shop-name";
+    name.textContent = line.name || "New item";
+    const amt = document.createElement("span");
+    amt.className = "shop-amt";
+    amt.textContent = shopLabel(line.amount, line.unit);
+    main.append(name, amt);
+    row.append(tick, main);
+    li.append(row);
+
+    if (lineEdited(line)) {
+      const was = document.createElement("p");
+      was.className = "shop-was";
+      was.textContent = "Was " + [line.orig.name, shopLabel(line.orig.amount, line.orig.unit)].filter(Boolean).join(" · ");
+      li.append(was);
+    }
+    if (line.meals.length) {
+      const tags = document.createElement("div");
+      tags.className = "tags";
+      for (const m of line.meals) {
+        const tag = document.createElement("span");
+        tag.className = "tag";
+        const tagName = document.createElement("span");
+        tagName.className = "tag-name";
+        tagName.textContent = m.name;
+        tag.append(tagName);
+        if (m.amount && line.meals.length > 1) {
+          const a = document.createElement("span");
+          a.className = "mono";
+          a.textContent = m.amount;
+          tag.append(a);
+        }
+        tags.append(tag);
+      }
+      li.append(tags);
+    }
+
+    if (shopEditing === line.key) {
+      const edit = document.createElement("div");
+      edit.className = "shop-edit";
+      edit.innerHTML = `<input class="shop-edit-name" data-field="name" maxlength="200" list="ingredientNames" autocapitalize="none" enterkeyhint="done" placeholder="What to buy" aria-label="What to buy">`
+        + `<input class="shop-edit-amount" data-field="amount" maxlength="12" inputmode="decimal" placeholder="Qty" aria-label="Amount">`
+        + `<select data-field="unit" aria-label="Unit"><option value="">whole</option>${UNIT_OPTIONS.map((u) => `<option value="${u}">${u}</option>`).join("")}</select>`
+        + `<div class="shop-edit-actions">`
+        + (line.custom ? `<button type="button" class="ghost-btn" data-act="remove">Remove</button>` : lineEdited(line) ? `<button type="button" class="ghost-btn" data-act="undo">Undo change</button>` : "")
+        + `<button type="button" class="ghost-btn" data-act="done">Done</button></div>`;
+      edit.querySelector('[data-field="name"]').value = line.name;
+      edit.querySelector('[data-field="amount"]').value = line.amount;
+      edit.querySelector('[data-field="unit"]').value = line.unit;
+      li.append(edit);
+    }
+    return li;
+  }
+
+  function renderShop() {
+    const main = shopLines.filter((l) => !l.staple);
+    const pantry = shopLines.filter((l) => l.staple);
+    $("shopMain").replaceChildren(...main.map(shopLineEl));
+    $("shopPantry").replaceChildren(...pantry.map(shopLineEl));
+    $("shopPantryCard").hidden = !pantry.length;
+    const ticked = (ls) => ls.filter((l) => l.checked && l.name.trim()).length;
+    $("shopMainCount").textContent = `${ticked(main)}/${main.length}`;
+    $("shopPantryCount").textContent = `${ticked(pantry)}/${pantry.length}`;
+    renderShopCounts();
+  }
+  function renderShopCounts() {
+    const n = shopLines.filter((l) => l.checked && l.name.trim()).length;
+    $("shopAdd").disabled = !n;
+    $("shopAdd").textContent = n ? `Add ${n} item${n === 1 ? "" : "s"} to the list` : "Nothing ticked";
+  }
+
+  async function openShop() {
+    const plan = week?.plan;
+    if (!plan) return;
+    if (plan.added_to_list_at && !confirm(`You added this week's ingredients on ${shortDate(plan.added_to_list_at)}. Add them again? Anything still on the list gets topped up.`)) return;
+    const btn = $("weekShop");
+    btn.disabled = true;
+    $("weekShopText").textContent = "Adding up ingredients…";
+    try {
+      if (!mealsLoaded) await loadMeals(); // for ingredient name suggestions
+      const data = await api("shop_preview", { plan_id: plan.id });
+      shopPlanId = data.plan_id;
+      shopEditing = null;
+      shopLines = data.lines.map((l) => ({
+        key: l.key, name: l.name, amount: amountText(l.amount), unit: l.unit || "", staple: l.staple,
+        meals: l.meals, checked: !l.staple, custom: false,
+        orig: { name: l.name, amount: amountText(l.amount), unit: l.unit || "" },
+      }));
+      const missing = data.no_ingredients ?? [];
+      $("shopWarn").hidden = !missing.length;
+      $("shopWarn").textContent = missing.length
+        ? `${missing.join(", ")} ${missing.length === 1 ? "has" : "have"} no ingredients yet, so nothing is listed for ${missing.length === 1 ? "it" : "them"}.`
+        : "";
+      renderShop();
+      $("shop").hidden = false;
+      $("shop").scrollTop = 0;
+      document.body.classList.add("sheet-open");
+      setSync("ok");
+    } catch (err) {
+      handleError(err);
+    } finally {
+      btn.disabled = false;
+      lastWeekRender = "";
+      renderWeek();
+    }
+  }
+
+  function closeShop() {
+    $("shop").hidden = true;
+    document.body.classList.remove("sheet-open");
+  }
+
+  // Finishes changing a line: a new line with no name is dropped.
+  function finishShopEdit() {
+    const line = shopLines.find((l) => l.key === shopEditing);
+    shopEditing = null;
+    if (line?.custom && !line.name.trim()) shopLines = shopLines.filter((l) => l !== line);
+  }
+
+  $("weekShop").addEventListener("click", openShop);
+  $("shopClose").addEventListener("click", closeShop);
+
+  $("shop").addEventListener("input", (e) => {
+    const field = e.target.dataset?.field;
+    const key = e.target.closest(".shop-line")?.dataset.key;
+    const line = shopLines.find((l) => l.key === key);
+    if (!field || !line) return;
+    line[field] = e.target.value;
+    // Update the line's summary as you type, without rebuilding the boxes you're typing in.
+    const li = e.target.closest(".shop-line");
+    li.querySelector(".shop-name").textContent = line.name || "New item";
+    li.querySelector(".shop-amt").textContent = shopLabel(line.amount, line.unit);
+    li.dataset.edited = String(lineEdited(line));
+    if (field === "name") renderShopCounts();
+  });
+
+  $("shop").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && e.target.closest(".shop-edit")) {
+      e.preventDefault();
+      finishShopEdit();
+      renderShop();
+    }
+  });
+
+  $("shop").addEventListener("click", (e) => {
+    const act = e.target.closest("[data-act]")?.dataset.act;
+    const key = e.target.closest(".shop-line")?.dataset.key;
+    const line = shopLines.find((l) => l.key === key);
+    if (!act || !line) return;
+    if (act === "tick") {
+      line.checked = !line.checked;
+      if (navigator.vibrate) navigator.vibrate(8);
+    } else if (act === "edit") {
+      const opening = shopEditing !== key;
+      finishShopEdit();
+      if (opening && shopLines.includes(line)) shopEditing = key;
+    } else if (act === "done") {
+      finishShopEdit();
+    } else if (act === "undo") {
+      Object.assign(line, line.orig);
+      shopEditing = null;
+    } else if (act === "remove") {
+      shopLines = shopLines.filter((l) => l !== line);
+      shopEditing = null;
+    }
+    renderShop();
+    if (shopEditing === key && act === "edit") {
+      $("shop").querySelector(`.shop-line[data-key="${CSS.escape(key)}"] .shop-edit-name`)?.focus();
+    }
+  });
+
+  $("shopExtra").addEventListener("click", () => {
+    finishShopEdit();
+    const key = `extra-${++shopExtraCount}`;
+    shopLines.push({ key, name: "", amount: "", unit: "", staple: false, meals: [], checked: true, custom: true, orig: { name: "", amount: "", unit: "" } });
+    shopEditing = key;
+    renderShop();
+    $("shop").querySelector(`.shop-line[data-key="${key}"] .shop-edit-name`)?.focus();
+  });
+
+  $("shopAdd").addEventListener("click", async () => {
+    finishShopEdit();
+    const lines = shopLines.filter((l) => l.checked && l.name.trim()).map((l) => ({
+      name: l.name.trim(), amount: l.amount, unit: l.unit || null, meal_ids: l.meals.map((m) => m.id),
+    }));
+    if (!lines.length) return renderShop();
+    const btn = $("shopAdd");
+    btn.disabled = true;
+    btn.textContent = "Adding…";
+    epoch++;
+    pending++; // the list poll waits until this lands
+    try {
+      const data = await api("shop_add", { plan_id: shopPlanId, lines, by: myName });
+      items = data.items;
+      render();
+      week = { plan: data.plan, recent: data.recent };
+      lastWeekRender = "";
+      renderWeek();
+      closeShop();
+      const added = data.added.length, topped = data.updated.length;
+      toast(`🛒 Added ${added} item${added === 1 ? "" : "s"} to the list` + (topped ? `, topped up ${topped}` : ""));
+      setSync("ok");
+    } catch (err) {
+      handleError(err);
+      renderShop();
+    } finally {
+      pending--;
+    }
+  });
+
   /* Links like …/#meal=12 (from /week in Telegram) open that dinner's recipe */
 
   let pendingMealId = null;
@@ -2353,6 +2725,12 @@
     if (!m) return;
     pendingMealId = Number(m[1]);
     history.replaceState(null, "", location.pathname + location.search);
+    if (mealsLoaded) openPendingMeal();
+    else loadMeals();
+  }
+  // Opens a dinner's recipe, loading the dinners first if needed.
+  function openMealById(id) {
+    pendingMealId = id;
     if (mealsLoaded) openPendingMeal();
     else loadMeals();
   }
