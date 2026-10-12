@@ -484,6 +484,21 @@
   .meal-row.unavailable { opacity: 0.45; }
   .meal-row.unavailable .meal-row-main { cursor: default; }
 
+  /* Supermarket sections */
+  .aisle { display: flex; align-items: baseline; gap: 8px; margin: 18px 4px 2px; list-style: none; }
+  .aisle:first-child { margin-top: 0; }
+  .aisle h3 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 17px; }
+  .aisle .mono { font-family: var(--font-mono); font-size: 14px; color: var(--faint); }
+  .move-row { display: flex; align-items: center; gap: 10px; padding: 0 12px 12px 58px; }
+  .move-row span { font-size: 14px; font-weight: 600; color: var(--muted); }
+  .move-row select, .hh-edit .hh-section {
+    flex: 1; min-width: 0; height: 48px; padding: 0 12px; border-radius: 12px; font-size: 16px; outline: 0;
+    background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border); -webkit-appearance: none; appearance: none;
+  }
+  .move-row select:focus { border-color: var(--orange); }
+  .hh-edit .hh-section { grid-column: 1 / -1; }
+  .hh-aisle { margin-right: 6px; }
+
   /* Shopping for the week */
   .shop-btn { display: flex; align-items: center; justify-content: center; gap: 10px; }
   .shop-btn svg { width: 22px; height: 22px; }
@@ -652,7 +667,7 @@
     <div class="empty glass" id="empty" hidden>
       <div class="empty-emoji" id="emptyEmoji">🧺</div>
       <h2 id="emptyTitle">Nothing on the list</h2>
-      <p id="emptyText">Text the bot or add something above.</p>
+      <p id="emptyText">Add something above, or add the week's ingredients from This week.</p>
     </div>
 
     <section id="doneSection" hidden>
@@ -916,7 +931,7 @@
       <h2 id="householdTitle">Ingredients</h2>
       <span></span>
     </header>
-    <p class="hint">Every ingredient your dinners use. Tap <span class="jar-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="3.5" rx="1"/><path d="M8 6c-1.8 1-3 2.7-3 4.6v7.9A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5v-7.9C19 8.7 17.8 7 16 6"/><path d="M8.5 13.5h7"/></svg></span> for things you always have. Tap a name to rename it or merge it into another.</p>
+    <p class="hint">Every ingredient your dinners use. Tap <span class="jar-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="3.5" rx="1"/><path d="M8 6c-1.8 1-3 2.7-3 4.6v7.9A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5v-7.9C19 8.7 17.8 7 16 6"/><path d="M8.5 13.5h7"/></svg></span> for things you always have. Tap a name to change its supermarket section, rename it or merge it into another.</p>
     <section class="card glass" id="suggestBox" hidden>
       <div class="ing-head"><h3>Same thing?</h3></div>
       <ul class="suggest-list" id="suggestList"></ul>
@@ -982,6 +997,17 @@
     return Number(qty) <= 1 ? `${n} ${unit}` : `${n} ${unit}${/(ch|sh)$/.test(unit) ? "es" : "s"}`;
   }
 
+  // Supermarket sections, in the order you walk the shop (mirrors supabase/functions/_shared/sections.ts).
+  const SECTIONS = [
+    ["produce", "🥦", "Fruit & veg"], ["meat", "🥩", "Meat & seafood"], ["deli", "🧀", "Deli"],
+    ["bakery", "🍞", "Bakery"], ["pantry", "🥫", "Pantry"], ["international", "🍜", "Pasta, rice & international"],
+    ["snacks", "🍫", "Snacks & drinks"], ["dairy", "🥛", "Dairy & eggs"], ["frozen", "❄️", "Frozen"],
+    ["household", "🧻", "Household"], ["other", "❓", "Other"],
+  ];
+  const sectionName = (key) => (SECTIONS.find(([k]) => k === key) ?? SECTIONS[SECTIONS.length - 1])[2];
+  const sectionOptions = (current) => SECTIONS.map(([k, emoji, label]) =>
+    `<option value="${k}"${k === current ? " selected" : ""}>${emoji} ${label}</option>`).join("");
+
   // How much one tap of − / + changes the amount.
   function stepFor(unit) {
     if (unit === "g" || unit === "ml") return 50;
@@ -1030,7 +1056,7 @@
     qty.type = "button";
     qty.className = "qty-btn" + (item.unit || Number(item.qty) !== 1 ? " has-qty" : "");
     qty.textContent = formatAmount(item.qty, item.unit);
-    qty.setAttribute("aria-label", `Change amount of ${item.text}`);
+    qty.setAttribute("aria-label", `Change amount or section of ${item.text}`);
     qty.setAttribute("aria-expanded", String(open));
 
     const row = document.createElement("div");
@@ -1065,7 +1091,10 @@
         + `<button type="button" class="step" data-step="1" aria-label="More">${PLUS_SVG}</button>`;
       stepper.querySelector(".step-value").textContent = formatAmount(item.qty, item.unit);
       stepper.querySelector('[data-step="-1"]').disabled = Number(item.qty) - stepFor(item.unit) <= 0;
-      li.append(stepper);
+      const move = document.createElement("label");
+      move.className = "move-row";
+      move.innerHTML = `<span>Section</span><select class="move-select" aria-label="Move to section">${sectionOptions(item.section || "other")}</select>`;
+      li.append(stepper, move);
     }
     return li;
   }
@@ -1080,7 +1109,18 @@
     const done = items.filter((i) => i.ticked)
       .sort((a, b) => (b.ticked_at || "").localeCompare(a.ticked_at || ""));
 
-    $("todo").replaceChildren(...todo.map(itemEl));
+    // Grouped by supermarket section, in the order you walk the shop.
+    const groups = SECTIONS.map(([key, emoji, label]) => {
+      const inSection = todo.filter((i) => (SECTIONS.some(([k]) => k === i.section) ? i.section : "other") === key);
+      if (!inSection.length) return [];
+      const head = document.createElement("li");
+      head.className = "aisle";
+      head.innerHTML = `<h3></h3><span class="mono"></span>`;
+      head.querySelector("h3").textContent = `${emoji} ${label}`;
+      head.querySelector(".mono").textContent = inSection.length;
+      return [head, ...inSection.map(itemEl)];
+    });
+    $("todo").replaceChildren(...groups.flat());
     $("done").replaceChildren(...done.map(itemEl));
     $("countNum").textContent = todo.length;
     $("countLabel").textContent = todo.length === 1 ? "thing to get" : "to get";
@@ -1096,7 +1136,7 @@
     } else {
       $("emptyEmoji").textContent = "🧺";
       $("emptyTitle").textContent = "Nothing on the list";
-      $("emptyText").textContent = "Text the bot or add something above.";
+      $("emptyText").textContent = "Add something above, or add the week's ingredients from This week.";
     }
   }
 
@@ -1224,6 +1264,19 @@
     if (item) mutate("qty", { id, qty: Number(item.qty) });
   }
   function flushQty() { [...qtyTimers.keys()].forEach(saveQty); }
+
+  // Moving an item to another section. The app remembers it for next time.
+  $("todo").addEventListener("change", (e) => {
+    const select = e.target.closest(".move-select");
+    const li = e.target.closest(".item");
+    if (!select || !li) return;
+    const id = Number(li.dataset.id);
+    const section = select.value;
+    flushQty();
+    mutate("item_section", { id, section }, () => {
+      items = items.map((i) => i.id === id ? { ...i, section } : i);
+    }).then((data) => { if (data) toast(`Moved to ${sectionName(section)}. It'll go there next time too.`); });
+  });
 
   $("addForm").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -1682,6 +1735,14 @@
       const uses = document.createElement("span");
       uses.className = "hh-uses" + (ing.uses ? "" : " unused");
       uses.textContent = ing.uses ? `${ing.uses} dinner${ing.uses === 1 ? "" : "s"}` : "not used";
+      const aisle = SECTIONS.find(([k]) => k === ing.section);
+      if (aisle) {
+        const icon = document.createElement("span");
+        icon.className = "hh-aisle";
+        icon.textContent = aisle[1];
+        icon.title = aisle[2];
+        uses.prepend(icon);
+      }
       name.append(label, uses);
       const jar = document.createElement("button");
       jar.type = "button";
@@ -1721,7 +1782,11 @@
         merge.className = "ghost-btn";
         merge.dataset.act = "merge";
         merge.textContent = "Merge";
-        edit.append(rename, save, into, merge);
+        const section = document.createElement("select");
+        section.className = "hh-section";
+        section.setAttribute("aria-label", "Supermarket section");
+        section.innerHTML = sectionOptions(ing.section || "other");
+        edit.append(section, rename, save, into, merge);
         li.append(edit);
       }
       return li;
@@ -1750,6 +1815,11 @@
     document.body.classList.remove("sheet-open");
   });
   $("householdSearch").addEventListener("input", renderHouseholdSheet);
+  $("householdList").addEventListener("change", (e) => {
+    const select = e.target.closest(".hh-section");
+    const id = Number(e.target.closest(".hh")?.dataset.id);
+    if (select && id) householdAction("ingredient_section", { id, section: select.value }, `Moved to ${sectionName(select.value)}`);
+  });
 
   $("suggestList").addEventListener("click", (e) => {
     const merge = e.target.closest("[data-merge]");
@@ -1776,7 +1846,7 @@
     } else if (e.target.closest(".hh-name")) {
       householdOpenId = householdOpenId === id ? null : id;
       renderHouseholdSheet();
-      if (householdOpenId) li.parentElement.querySelector(`.hh[data-id="${id}"] .hh-rename`)?.focus();
+      if (householdOpenId) $("householdList").querySelector(`.hh[data-id="${id}"] .hh-rename`)?.focus();
     } else if (e.target.closest('[data-act="rename"]')) {
       householdAction("ingredient_rename", { id, name: li.querySelector(".hh-rename").value }, "Renamed");
     } else if (e.target.closest('[data-act="merge"]')) {
