@@ -158,6 +158,14 @@
     background: rgba(255, 255, 255, 0.04);
     border: 1px dashed rgba(255, 255, 255, 0.14);
   }
+  .item-row .qty-btn { margin-right: 2px; }
+  .more-btn {
+    flex: none; align-self: center; width: 40px; height: 44px; margin-right: 6px;
+    display: grid; place-items: center; border-radius: 12px; color: var(--muted);
+  }
+  .more-btn svg { width: 22px; height: 22px; }
+  .more-btn:active, .more-btn[aria-expanded="true"] { background: var(--surface-press); color: var(--text); }
+  .item[data-ticked="true"] .more-btn { pointer-events: none; opacity: 0.3; }
   .qty-btn.has-qty {
     color: var(--text);
     background: rgba(255, 138, 61, 0.14);
@@ -630,7 +638,7 @@
   .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
   @media (prefers-reduced-motion: no-preference) {
-    .items li { animation: rise 0.25s ease-out both; }
+    .items li.new { animation: rise 0.25s ease-out both; }
   }
   @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
 </style>
@@ -675,7 +683,6 @@
         <h2>In the trolley<span class="mono" id="doneCount"></span></h2>
         <button class="ghost-btn" id="clearBtn" type="button">Clear ticked</button>
       </div>
-      <ul class="items" id="done"></ul>
     </section>
   </section>
 
@@ -968,6 +975,7 @@
   let epoch = 0;     // bumps on every mutation so stale polls are ignored
   let pollTimer = null;
   let openQtyId = null;         // item whose − / + buttons are showing
+  let shownIds = new Set();     // items already on screen, so only new ones fade in
   const qtyTimers = new Map();  // item id → quantity change waiting to be saved
 
   class AuthError extends Error {}
@@ -1020,6 +1028,7 @@
   const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 
   const MINUS_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 12h14"/></svg>';
+  const MORE_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>';
   const PLUS_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
 
   function itemEl(item) {
@@ -1059,9 +1068,17 @@
     qty.setAttribute("aria-label", `Change amount or section of ${item.text}`);
     qty.setAttribute("aria-expanded", String(open));
 
+    // ⋯ opens the same panel as the amount box: amount and supermarket section.
+    const more = document.createElement("button");
+    more.type = "button";
+    more.className = "more-btn";
+    more.innerHTML = MORE_SVG;
+    more.setAttribute("aria-label", `Change amount or section of ${item.text}`);
+    more.setAttribute("aria-expanded", String(open));
+
     const row = document.createElement("div");
     row.className = "item-row";
-    row.append(tick, qty);
+    row.append(tick, qty, more);
     li.append(row);
 
     // Which dinners it's for: tap one to open its recipe.
@@ -1106,38 +1123,34 @@
     lastRendered = snapshot;
 
     const todo = items.filter((i) => !i.ticked);
-    const done = items.filter((i) => i.ticked)
-      .sort((a, b) => (b.ticked_at || "").localeCompare(a.ticked_at || ""));
+    const done = items.filter((i) => i.ticked);
 
-    // Grouped by supermarket section, in the order you walk the shop.
+    // Grouped by supermarket section, in the order you walk the shop. Ticked items
+    // stay where they are (crossed out), so the screen doesn't jump while you shop.
     const groups = SECTIONS.map(([key, emoji, label]) => {
-      const inSection = todo.filter((i) => (SECTIONS.some(([k]) => k === i.section) ? i.section : "other") === key);
+      const inSection = items.filter((i) => (SECTIONS.some(([k]) => k === i.section) ? i.section : "other") === key);
       if (!inSection.length) return [];
+      const left = inSection.filter((i) => !i.ticked).length;
       const head = document.createElement("li");
       head.className = "aisle";
       head.innerHTML = `<h3></h3><span class="mono"></span>`;
       head.querySelector("h3").textContent = `${emoji} ${label}`;
-      head.querySelector(".mono").textContent = inSection.length;
+      head.querySelector(".mono").textContent = left ? left : "✓";
       return [head, ...inSection.map(itemEl)];
     });
     $("todo").replaceChildren(...groups.flat());
-    $("done").replaceChildren(...done.map(itemEl));
+    // Only items that weren't on screen before fade in.
+    $("todo").querySelectorAll(".item").forEach((li) => {
+      if (!shownIds.has(li.dataset.id)) li.classList.add("new");
+    });
+    shownIds = new Set(items.map((i) => String(i.id)));
     $("countNum").textContent = todo.length;
     $("countLabel").textContent = todo.length === 1 ? "thing to get" : "to get";
     $("doneCount").textContent = done.length;
     $("doneSection").hidden = done.length === 0;
 
-    const empty = todo.length === 0;
-    $("empty").hidden = !empty;
-    if (empty && done.length) {
-      $("emptyEmoji").textContent = "🎉";
-      $("emptyTitle").textContent = "All ticked off";
-      $("emptyText").textContent = "Clear the trolley when you're done.";
-    } else {
-      $("emptyEmoji").textContent = "🧺";
-      $("emptyTitle").textContent = "Nothing on the list";
-      $("emptyText").textContent = "Add something above, or add the week's ingredients from This week.";
-    }
+    // Ticked items stay on screen until cleared, so the empty card only shows for a truly empty list.
+    $("empty").hidden = items.length > 0;
   }
 
   function setSync(state) {
@@ -1212,7 +1225,6 @@
   /* ---------- Actions ---------- */
 
   $("todo").addEventListener("click", onListTap);
-  $("done").addEventListener("click", onListTap);
   function onListTap(e) {
     const li = e.target.closest(".item");
     if (!li) return;
@@ -1225,7 +1237,7 @@
       openMealById(Number(tag.dataset.meal));
       return;
     }
-    if (e.target.closest(".qty-btn")) {
+    if (e.target.closest(".qty-btn, .more-btn")) {
       openQtyId = openQtyId === id ? null : id;
       render();
       return;
