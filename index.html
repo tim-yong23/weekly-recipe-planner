@@ -517,6 +517,11 @@
   .meal-row.unavailable { opacity: 0.45; }
   .meal-row.unavailable .meal-row-main { cursor: default; }
 
+  /* The trolley: tap to see everything ticked so far */
+  .trolley-toggle { display: inline-flex; align-items: center; gap: 2px; min-height: 44px; font: inherit; color: inherit; }
+  .trolley-toggle svg { width: 20px; height: 20px; margin-left: 4px; color: var(--muted); transition: transform 0.2s; }
+  .trolley-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+
   /* Supermarket sections */
   .aisle { display: flex; align-items: baseline; gap: 8px; margin: 18px 4px 2px; list-style: none; }
   .aisle:first-child { margin-top: 0; }
@@ -738,9 +743,15 @@
 
     <section id="doneSection" hidden>
       <div class="section-head">
-        <h2>In the trolley<span class="mono" id="doneCount"></span></h2>
+        <h2>
+          <button type="button" class="trolley-toggle" id="trolleyToggle" aria-expanded="false" aria-controls="done">
+            In the trolley<span class="mono" id="doneCount"></span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+        </h2>
         <button class="ghost-btn" id="clearBtn" type="button">Clear ticked</button>
       </div>
+      <ul class="items" id="done" hidden></ul>
     </section>
   </section>
 
@@ -1034,6 +1045,7 @@
   let pollTimer = null;
   let openQtyId = null;         // item whose − / + buttons are showing
   let shownIds = new Set();     // items already on screen, so only new ones fade in
+  let trolleyOpen = store.get("kitchen.trolleyOpen") === "1"; // the ticked-items list is showing
   const qtyTimers = new Map();  // item id → quantity change waiting to be saved
 
   class AuthError extends Error {}
@@ -1205,6 +1217,12 @@
     $("countNum").textContent = todo.length;
     $("countLabel").textContent = todo.length === 1 ? "thing to get" : "to get";
     $("doneCount").textContent = done.length;
+    // The trolley list: everything ticked, most recent first. Untick from here or in place.
+    $("trolleyToggle").setAttribute("aria-expanded", String(trolleyOpen));
+    $("done").hidden = !trolleyOpen;
+    $("done").replaceChildren(...(trolleyOpen
+      ? [...done].sort((a, b) => (b.ticked_at || "").localeCompare(a.ticked_at || "")).map(itemEl)
+      : []));
     $("doneSection").hidden = done.length === 0;
 
     // Ticked items stay on screen until cleared, so the empty card only shows for a truly empty list.
@@ -1283,6 +1301,13 @@
   /* ---------- Actions ---------- */
 
   $("todo").addEventListener("click", onListTap);
+  $("done").addEventListener("click", onListTap);
+  $("trolleyToggle").addEventListener("click", () => {
+    trolleyOpen = !trolleyOpen;
+    store.set("kitchen.trolleyOpen", trolleyOpen ? "1" : "0");
+    lastRendered = "";
+    render();
+  });
   function onListTap(e) {
     const li = e.target.closest(".item");
     if (!li) return;
