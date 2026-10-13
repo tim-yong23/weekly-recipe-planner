@@ -1045,7 +1045,7 @@
   let pollTimer = null;
   let openQtyId = null;         // item whose − / + buttons are showing
   let shownIds = new Set();     // items already on screen, so only new ones fade in
-  let trolleyOpen = store.get("kitchen.trolleyOpen") === "1"; // the ticked-items list is showing
+  let trolleyOpen = store.get("kitchen.trolleyOpen") !== "0"; // the ticked-items list is showing (open unless closed)
   const qtyTimers = new Map();  // item id → quantity change waiting to be saved
 
   class AuthError extends Error {}
@@ -1195,17 +1195,16 @@
     const todo = items.filter((i) => !i.ticked);
     const done = items.filter((i) => i.ticked);
 
-    // Grouped by supermarket section, in the order you walk the shop. Ticked items
-    // stay where they are (crossed out), so the screen doesn't jump while you shop.
+    // What's left to get, grouped by supermarket section in the order you walk the shop.
+    // Ticking an item moves it to the trolley below, so finished sections disappear.
     const groups = SECTIONS.map(([key, emoji, label]) => {
-      const inSection = items.filter((i) => (SECTIONS.some(([k]) => k === i.section) ? i.section : "other") === key);
+      const inSection = todo.filter((i) => (SECTIONS.some(([k]) => k === i.section) ? i.section : "other") === key);
       if (!inSection.length) return [];
-      const left = inSection.filter((i) => !i.ticked).length;
       const head = document.createElement("li");
       head.className = "aisle";
       head.innerHTML = `<h3></h3><span class="mono"></span>`;
       head.querySelector("h3").textContent = `${emoji} ${label}`;
-      head.querySelector(".mono").textContent = left ? left : "✓";
+      head.querySelector(".mono").textContent = inSection.length;
       return [head, ...inSection.map(itemEl)];
     });
     $("todo").replaceChildren(...groups.flat());
@@ -1217,7 +1216,7 @@
     $("countNum").textContent = todo.length;
     $("countLabel").textContent = todo.length === 1 ? "thing to get" : "to get";
     $("doneCount").textContent = done.length;
-    // The trolley list: everything ticked, most recent first. Untick from here or in place.
+    // The trolley list: everything ticked, most recent first. Tap one to put it back.
     $("trolleyToggle").setAttribute("aria-expanded", String(trolleyOpen));
     $("done").hidden = !trolleyOpen;
     $("done").replaceChildren(...(trolleyOpen
@@ -1225,8 +1224,17 @@
       : []));
     $("doneSection").hidden = done.length === 0;
 
-    // Ticked items stay on screen until cleared, so the empty card only shows for a truly empty list.
-    $("empty").hidden = items.length > 0;
+    const empty = todo.length === 0;
+    $("empty").hidden = !empty;
+    if (empty && done.length) {
+      $("emptyEmoji").textContent = "🎉";
+      $("emptyTitle").textContent = "All ticked off";
+      $("emptyText").textContent = "Clear the trolley when you're done.";
+    } else {
+      $("emptyEmoji").textContent = "🧺";
+      $("emptyTitle").textContent = "Nothing on the list";
+      $("emptyText").textContent = "Add something above, or add the week's ingredients from This week.";
+    }
   }
 
   function setSync(state) {
