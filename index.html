@@ -1098,6 +1098,8 @@
       <input class="text-input" id="mealName" maxlength="120" placeholder="e.g. Chilli con carne">
       <label class="field-label" for="mealServings">Serves <em>(optional)</em></label>
       <input class="text-input" id="mealServings" maxlength="60" placeholder="e.g. 4">
+      <label class="field-label" for="mealCook">Cooking time <em>(optional)</em></label>
+      <input class="text-input" id="mealCook" maxlength="40" inputmode="text" placeholder="e.g. 45 min or 1.5 hours">
     </section>
 
     <section class="card glass">
@@ -1720,6 +1722,13 @@
 
   // "4" → "Serves 4", "4 - 5 people" → "Serves 4 - 5 people", "4 servings" stays as it is
   const servingsText = (s) => /^\d/.test(s) && !/serv|make|portion/i.test(s) ? `Serves ${s}` : s;
+  // 45 → "45 min", 90 → "1 hr 30 min", 240 → "4 hrs" (the server reads all of these back)
+  function cookText(mins) {
+    if (!mins) return "";
+    if (mins < 60) return `${mins} min`;
+    const h = Math.floor(mins / 60), m = mins % 60;
+    return m ? `${h} hr ${m} min` : `${h} hr${h === 1 ? "" : "s"}`;
+  }
 
   function photoEl(url) {
     const box = document.createElement("span");
@@ -1758,6 +1767,7 @@
     const staples = meal.ingredients.filter((i) => i.staple).length;
     meta.textContent = [
       meal.servings && servingsText(meal.servings),
+      cookText(meal.cook_minutes),
       `${count} ingredient${count === 1 ? "" : "s"}`,
       staples && `${staples} pantry staple${staples === 1 ? "" : "s"}`,
     ].filter(Boolean).join(" · ");
@@ -1935,9 +1945,10 @@
 
     const meta = $("rvMeta");
     meta.replaceChildren();
-    if (meal.servings) {
+    const facts = [meal.servings && servingsText(meal.servings), cookText(meal.cook_minutes)].filter(Boolean).join(" · ");
+    if (facts) {
       const serves = document.createElement("span");
-      serves.textContent = servingsText(meal.servings);
+      serves.textContent = facts;
       meta.append(serves);
     }
     const href = meal.recipe_url && safeUrl(meal.recipe_url);
@@ -2248,6 +2259,7 @@
     $("mealUrl").value = meal?.recipe_url ?? "";
     $("mealName").value = meal?.name ?? "";
     $("mealServings").value = meal?.servings ?? "";
+    $("mealCook").value = meal?.cook_minutes ? cookText(meal.cook_minutes) : "";
     $("mealMethod").value = meal?.method ?? "";
     $("editorToRecipe").hidden = !meal;
     $("editorError").textContent = "";
@@ -2571,6 +2583,7 @@
       $("mealUrl").value = r.recipe_url || url;
       if (r.name && !$("mealName").value.trim()) $("mealName").value = r.name;
       if (r.servings && !$("mealServings").value.trim()) $("mealServings").value = r.servings;
+      if (r.cook_minutes && !$("mealCook").value.trim()) $("mealCook").value = cookText(r.cook_minutes);
       if (r.image_url && !draft.image_url) setPhoto(r.image_url);
       if (r.found) {
         const hasOwn = draft.ingredients.some((i) => i.name.trim()) || $("mealMethod").value.trim();
@@ -2626,6 +2639,7 @@
         recipe_url: $("mealUrl").value.trim(),
         image_url: draft.image_url,
         servings: $("mealServings").value.trim(),
+        cook_minutes: $("mealCook").value.trim(),
         method: $("mealMethod").value,
         rows: draft.ingredients
           .filter((i) => i.name.trim())
@@ -2746,7 +2760,7 @@
     if (meal) {
       meta.textContent = [
         meal.ingredients.length ? `${meal.ingredients.length} ingredients` : "No ingredients yet",
-        meal.servings && servingsText(meal.servings),
+        meal.cook_minutes ? `${cookText(meal.cook_minutes)} cooking time` : meal.servings && servingsText(meal.servings),
       ].filter(Boolean).join(" · ");
     }
     body.append(name, meta);
