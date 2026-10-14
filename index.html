@@ -10,7 +10,9 @@
 <meta name="apple-mobile-web-app-title" content="Home Butler">
 <meta name="robots" content="noindex">
 <title>The Home Butler</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9B%92%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght,SOFT@9..144,400,100&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -810,6 +812,14 @@
   .ghost-btn, .wk-btn, .recipe-link { border-color: transparent; }
   .item.glass { background: var(--row); }
   .seg button[aria-pressed="true"] { background: var(--bg); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08); }
+
+  /* Install tip */
+  .install { display: flex; align-items: center; gap: 12px; padding: 10px 6px 10px 12px; border-radius: 16px; margin-bottom: 16px; }
+  .install img { width: 40px; height: 40px; border-radius: 10px; flex: none; }
+  .install-text { flex: 1; min-width: 0; display: flex; flex-direction: column; font-size: 13px; color: var(--muted); }
+  .install-text strong { font-size: 14px; font-weight: 600; color: var(--text); }
+  .install .icon-btn { width: 40px; height: 40px; }
+  .install .icon-btn svg { width: 18px; height: 18px; }
 </style>
 </head>
 <body>
@@ -864,6 +874,14 @@
 <div class="mast-spacer" id="mastSpacer"></div>
 
 <main class="app">
+  <div class="install glass" id="installCard" hidden>
+    <img src="apple-touch-icon.png" alt="" width="40" height="40">
+    <div class="install-text"><strong>Add Home Butler to your home screen</strong><span id="installText"></span></div>
+    <button type="button" class="ghost-btn" id="installBtn" hidden>Install</button>
+    <button type="button" class="icon-btn" id="installClose" aria-label="Hide this tip">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
 
   <section id="view-list">
 
@@ -1360,11 +1378,14 @@
     }
   }
 
+  let syncState = "loading";
   function setSync(state) {
+    syncState = state;
     $("sync").dataset.state = state;
-    $("syncText").textContent = state === "ok" ? "Live" : state === "offline" ? "Offline, retrying" : "Syncing…";
+    const waiting = outbox.length ? ` · ${outbox.length} waiting` : "";
+    $("syncText").textContent = state === "ok" ? (waiting ? `Syncing${waiting}` : "Live")
+      : state === "offline" ? `Offline${waiting}` : "Syncing…";
   }
-
   let toastTimer;
   function toast(message) {
     const el = $("toast");
@@ -1388,11 +1409,13 @@
 
   async function refresh() {
     if (!passcode || pending || qtyTimers.size) return;
+    // Changes made offline go first, in order, so the list we fetch includes them.
+    if (outbox.length && !(await flushOutbox())) { setSync("offline"); return; }
     const startEpoch = epoch;
     try {
       const data = await api("list");
       if (pending || qtyTimers.size || startEpoch !== epoch) return; // a tap happened meanwhile; its reply wins
-      items = data.items;
+      setItems(data.items);
       render();
       setSync("ok");
     } catch (err) {
@@ -1402,19 +1425,97 @@
 
   async function mutate(action, body, optimistic) {
     epoch++;
-    pending++;
     if (optimistic) { optimistic(); render(); }
+    // Older offline changes must reach the server first, so this one waits its turn.
+    if (outbox.length && OFFLINE_OK.has(action)) return queueChange(action, body);
+    pending++;
     try {
       const data = await api(action, body);
       pending--;
-      if (!pending && !qtyTimers.size) { items = data.items; render(); }
+      if (!pending && !qtyTimers.size) { setItems(data.items); render(); }
       setSync("ok");
       return data;
     } catch (err) {
       pending--;
+      if (err instanceof TypeError && OFFLINE_OK.has(action)) return queueChange(action, body);
       handleError(err);
       if (!pending) refresh(); // undo the optimistic change
       return null;
+    }
+  }
+
+  /* ---------- Offline ---------- */
+
+  // The last list, recipes and week are saved on the phone, so the app opens and works
+  // with no signal. Changes made offline wait in an "outbox" (also saved on the phone)
+  // and are sent in order as soon as there's signal again.
+  const OFFLINE_OK = new Set(["add", "tick", "qty", "clear", "item_section"]);
+  const readSaved = (key) => { try { return JSON.parse(store.get(key) || "null"); } catch { return null; } };
+  const keep = (key, value) => { try { store.set(key, JSON.stringify(value)); } catch {} };
+  let outbox = readSaved("kitchen.outbox") || [];
+  let flushing = false;
+  let nextLocalId = -1; // items added offline get a temporary id until the server gives them one
+
+  function setItems(list) {
+    items = list;
+    keep("kitchen.cache.items", list);
+  }
+
+  function queueChange(action, body) {
+    const entry = { action, body };
+    // Show offline additions straight away, in "Other" until the server sorts them.
+    if (action === "add") {
+      entry.local = body.text.split(/[,;\n]+/).map((t) => t.trim()).filter(Boolean).map((text) => {
+        const item = { id: nextLocalId--, text, qty: 1, unit: null, ticked: false, section: "other", meals: [],
+          added_by: myName, created_at: new Date().toISOString(), ticked_at: null, local: true };
+        items = [...items, item];
+        return { id: item.id, text };
+      });
+    }
+    outbox.push(entry);
+    keep("kitchen.outbox", outbox);
+    setItems(items);
+    render();
+    setSync(navigator.onLine ? "ok" : "offline");
+    if (navigator.onLine) setTimeout(refresh, 300); // send it as soon as the earlier ones are through
+    return { items, queued: true, added: [], updated: [] };
+  }
+
+  // Ticking something added offline (before it ever reached the server) just drops it.
+  function dropLocalItem(id) {
+    for (const entry of outbox) {
+      if (!entry.local?.some((l) => l.id === id)) continue;
+      entry.local = entry.local.filter((l) => l.id !== id);
+      entry.body = { ...entry.body, text: entry.local.map((l) => l.text).join(", ") };
+    }
+    outbox = outbox.filter((e) => e.action !== "add" || e.local?.length);
+    keep("kitchen.outbox", outbox);
+    setItems(items.filter((i) => i.id !== id));
+    render();
+    setSync(syncState);
+  }
+
+  // Sends waiting changes in order. Returns true once nothing is left waiting.
+  async function flushOutbox() {
+    if (flushing) return false;
+    if (!outbox.length) return true;
+    flushing = true;
+    try {
+      while (outbox.length) {
+        const { action, body } = outbox[0];
+        try {
+          await api(action, body);
+        } catch (err) {
+          if (err instanceof TypeError) return false;               // still no signal
+          if (err instanceof AuthError) { handleError(err); return false; }
+          // The server turned it down (say, the item was deleted on the other phone): skip it.
+        }
+        outbox.shift();
+        keep("kitchen.outbox", outbox);
+      }
+      return true;
+    } finally {
+      flushing = false;
     }
   }
 
@@ -1449,6 +1550,11 @@
     const tag = e.target.closest(".tag");
     if (tag) {
       openMealById(Number(tag.dataset.meal));
+      return;
+    }
+    if (item.local) {
+      if (e.target.closest(".tick")) { dropLocalItem(id); toast("Removed. It hadn't synced yet."); }
+      else if (e.target.closest(".qty-btn, .more-btn")) toast("This will sync when you're back online. Change it then.");
       return;
     }
     if (e.target.closest(".qty-btn, .more-btn")) {
@@ -1709,14 +1815,15 @@
     $("mealsEmpty").hidden = !mealsLoaded || meals.length > 0;
   }
 
-  function applyMeals(data) {
+  function applyMeals(data, fromCache = false) {
+    if (!fromCache) keep("kitchen.cache.meals", data);
     meals = data.meals;
     mealsLoaded = true;
     household = { ingredients: data.ingredients ?? [], aliases: data.aliases ?? {}, suggestions: data.suggestions ?? [] };
     renderHousehold();
     renderMeals();
     if (currentTab === "week") renderWeek();
-    setSync("ok");
+    if (!fromCache) setSync("ok");
     openPendingMeal();
   }
 
@@ -2540,6 +2647,7 @@
       const data = await api("week");
       if (weekBusy) return;
       week = data;
+      keep("kitchen.cache.week", week);
       renderWeek();
     } catch (err) {
       handleError(err, quiet);
@@ -2552,6 +2660,7 @@
     try {
       const data = await api(action, { plan_id: week?.plan?.id, ...body });
       week = { plan: data.plan, recent: data.recent };
+      keep("kitchen.cache.week", week);
       weekPlanning = false;
       if (data.short > 0) {
         const got = data.plan?.meal_ids.length ?? 0;
@@ -2991,9 +3100,10 @@
     pending++; // the list poll waits until this lands
     try {
       const data = await api("shop_add", { plan_id: shopPlanId, lines, by: myName });
-      items = data.items;
+      setItems(data.items);
       render();
       week = { plan: data.plan, recent: data.recent };
+      keep("kitchen.cache.week", week);
       lastWeekRender = "";
       renderWeek();
       closeShop();
@@ -3103,7 +3213,7 @@
       store.set("kitchen.passcode", code);
       store.set("kitchen.name", myName);
       $("lock").hidden = true;
-      items = data.items;
+      setItems(data.items);
       render();
       setSync("ok");
       startPolling();
@@ -3135,6 +3245,50 @@
   });
   window.addEventListener("focus", refresh);
   window.addEventListener("online", refresh);
+
+  // Show what was saved on the phone straight away (works with no signal), then refresh.
+  if (passcode) {
+    const savedItems = readSaved("kitchen.cache.items");
+    if (savedItems) { items = savedItems; render(); }
+    const savedMeals = readSaved("kitchen.cache.meals");
+    if (savedMeals) applyMeals(savedMeals, true);
+    week = readSaved("kitchen.cache.week");
+  }
+
+  // The offline helper keeps a copy of the app on the phone (https, or localhost when testing).
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  }
+
+  // "Add to home screen" tip: Android offers an Install button, iPhone needs Share → Add to Home Screen.
+  const installed = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  let installPrompt = null;
+  function showInstall(text, withButton) {
+    if (installed || store.get("kitchen.installHidden") === "1") return;
+    $("installText").textContent = text;
+    $("installBtn").hidden = !withButton;
+    $("installCard").hidden = false;
+  }
+  if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
+    showInstall("Tap the Share button, then \u201cAdd to Home Screen\u201d.", false);
+  }
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    installPrompt = e;
+    showInstall("Opens full screen, like an app.", true);
+  });
+  $("installBtn").addEventListener("click", async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    await installPrompt.userChoice.catch(() => {});
+    installPrompt = null;
+    $("installCard").hidden = true;
+  });
+  $("installClose").addEventListener("click", () => {
+    store.set("kitchen.installHidden", "1");
+    $("installCard").hidden = true;
+  });
+  window.addEventListener("appinstalled", () => { $("installCard").hidden = true; });
 
   showTab(store.get("kitchen.tab") || "list");
   if (passcode) {
