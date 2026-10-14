@@ -3,18 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#111311" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#19581F">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Home Butler">
 <meta name="robots" content="noindex">
 <title>The Home Butler</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9B%92%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght,SOFT@9..144,400,100&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #FFFFFF;
@@ -705,33 +704,168 @@
   /* Cards and headings */
   .meal-name, .ing-head h3, h2, .rv-title { letter-spacing: -0.02em; }
   .primary { font-weight: 700; }
+
+  /* ---------- Home Screen Concept 3 (Figma 5723:374) ---------- */
+  :root { --font-serif: "Fraunces", Georgia, serif; --row: #FCFBFA; --brand: #19581F; --tabbar-h: 63px; }
+  @media (prefers-color-scheme: dark) { :root { --row: #1A1D1A; } }
+  .serif, h1, .rv-title, .sheet-head h2, .lock-card h1 {
+    font-family: var(--font-serif); font-weight: 400; font-variation-settings: "SOFT" 100; letter-spacing: -0.02em;
+  }
+
+  /* Green masthead */
+  .masthead {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 4;
+    background: var(--brand); color: #F1F1F1;
+    border-radius: 0 0 50px 50px; box-shadow: 0 4px 10px 1px rgba(0, 0, 0, 0.15);
+    padding: calc(env(safe-area-inset-top) + 10px) 0 22px;
+    transition: padding 0.25s ease, border-radius 0.25s ease;
+  }
+  .mast-inner { max-width: 560px; margin: 0 auto; padding: 0 22px; }
+  .mast-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .masthead h1 { font-size: 28px; line-height: 1.25; color: #F1F1F1; transition: font-size 0.25s ease; }
+  .masthead .icon-btn { color: rgba(241, 241, 241, 0.8); margin-right: -10px; }
+  .masthead .icon-btn:active { background: rgba(255, 255, 255, 0.12); }
+  .mast-body { display: flex; flex-direction: column; }
+  /* The part that tucks away when you scroll (smooth height change) */
+  .mast-fold { display: grid; grid-template-rows: 1fr; transition: grid-template-rows 0.25s ease, opacity 0.2s ease; }
+  .mast-fold > div { overflow: hidden; min-height: 0; }
+  .mast-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 10px; }
+  .masthead .hero {
+    display: inline-flex; align-items: center; height: 42px; padding: 0 14px; margin: 0;
+    border-radius: 16px; background: #DEF8E5; border: 1px solid #7CD184;
+  }
+  .masthead .count { gap: 6px; align-items: baseline; }
+  .masthead .count-num { font-family: var(--font-ui); font-weight: 400; font-size: 28px; letter-spacing: -0.05em; color: #19581F; }
+  .masthead .count-label { font-weight: 500; font-size: 16px; letter-spacing: -0.05em; color: #19581F; }
+  .masthead .sync { color: rgba(241, 241, 241, 0.75); padding: 0; }
+  .masthead .sync[data-state="ok"] .dot { background: #7CD184; }
+  .masthead .add {
+    margin: 13px 0 0; height: 42px; padding: 0 4px 0 16px; border-radius: 50px;
+    background: #F1F1F1; border: 1px solid #7CD184; color: #1F1F1F;
+  }
+  .masthead .add:focus-within { background: #FFFFFF; border-color: #7CD184; }
+  .masthead .add input { height: 40px; font-size: 15px; letter-spacing: -0.02em; color: #1F1F1F; }
+  .masthead .add input::placeholder { color: #B2B2B2; }
+  .masthead .add-btn { width: 34px; height: 34px; background: #7CD184; color: #19581F; }
+  .masthead .add-btn svg { width: 20px; height: 20px; }
+  .masthead .week-status { background: rgba(255, 255, 255, 0.14); color: #F1F1F1; }
+  .masthead .add-meal-btn { height: 42px; background: #7CD184; color: #19581F; }
+  /* Shrunk (scrolled) */
+  .masthead.compact { padding-bottom: 14px; border-radius: 0 0 28px 28px; }
+  .masthead.compact h1 { font-size: 21px; }
+  .masthead.compact .mast-fold { grid-template-rows: 0fr; opacity: 0; }
+  .masthead.compact .add { margin-top: 8px; }
+  .mast-spacer { height: 190px; }
+  .app { padding-top: 22px; }
+
+  /* Sections and rows */
+  .aisle { margin: 20px 2px 4px; }
+  .aisle h3 { font-family: var(--font-ui); font-weight: 400; font-size: 16px; letter-spacing: -0.03em; color: var(--text); }
+  .aisle .mono { display: none; }
+  .items { gap: 4px; }
+  .item { background: var(--row); border: 0; border-radius: 10px; }
+  .item[data-ticked="true"] { background: var(--row); }
+  .tick { min-height: 40px; padding: 6px 4px 6px 11px; gap: 8px; }
+  .check { width: 17px; height: 17px; background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAiCAYAAAA6RwvCAAAACXBIWXMAABYlAAAWJQFJUiTwAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAAAdpJREFUeAHtWNFxgkAQ3bvBf1KBFOAMpgM7SAnSgaQCsYKYCiAdWEIqUOiAVKD/jpq3zJE5CTp6B+gHb2a9E+52Hyt7u6sgA2w2m7EQIj6dTh5Gl69hvsM8dxwnGI1GGd0Jh8yQQ5jM3wVFaLzf73+oS7BXIK723YVMyBDiiqEZhhDyCuzIAtDlYVhBEuha1q2RFzbO4eolxJNSvpE9JtDlQz6gO6JbiCgSxWKMoe/7X2QJeCHBy/yudM7ryIgKiRl7gufYGECBNYmK/oCjTRHih/ws7515BDeDclHTJBi6Z47HY0hXGHtZlk2pZbBn9Ijr0eMWCD6qMea2p6cp1EvrcfgmCNetTZ6wIMGJc4tpLDEZquspdY+cP4pUgrGI50f8NJpNV9KTgIkUrB5x0mk2dxJnf1FRDQaDIXUPjlhOsPnThC/16HEPVEsQUMtgG+v1+ixKqwdayjUlqrQZtUeC6+IY3cHqGpGycF624RnonJbFOcbkIhFufkAiUgtjbAypIShPJDyHjYVewRf2LmzSe5vAtrfR2wgmgQeOqmtqkx4WLrjsh2SHw+Gb7LHiVKLalIiaBBdSNU34mAwhyABsVFVW/4AnfzHJW6b1iAdJ+c8ZjQDPUzJMYL/IDvJ2K1JtuAAAAABJRU5ErkJggg==") center / 17px 17px no-repeat; border: 0; }
+  .check svg { width: 11px; height: 11px; }
+  .item[data-ticked="true"] .check { background: var(--accent); }
+  .item-text { font-size: 15px; letter-spacing: -0.03em; }
+  .item-meta { display: none; }
+  .qty-btn, .qty-btn.has-qty {
+    min-width: 47px; height: 24px; padding: 0 8px; border-radius: 10px; margin-right: 0;
+    font-family: var(--font-ui); font-size: 12px; letter-spacing: -0.03em; color: #1F1F1F;
+    background: #F1E1C4; border: 1px solid #D2B479;
+  }
+  .qty-btn:not(.has-qty) { background: transparent; border: 1px dashed var(--border); color: var(--faint); }
+  .more-btn { width: 34px; margin-right: 4px; }
+  .more-btn svg { width: 16px; height: 16px; }
+  .stepper, .move-row { padding-left: 36px; }
+  .item-tags { padding: 0 12px 8px 36px; margin-top: -6px; }
+  .tag { padding: 1px 10px; border: 0; border-radius: 50px; background: #E6F7E4; color: #4EA346; font-size: 11px; }
+  @media (prefers-color-scheme: dark) {
+    .tag { background: var(--accent-soft); color: var(--on-soft); }
+    .qty-btn.has-qty { background: var(--chip); border-color: var(--chip-line); color: var(--chip-ink); }
+  }
+
+  /* Pill navigation */
+  .tabs {
+    width: 282px; max-width: calc(100% - 32px); height: var(--tabbar-h); padding: 5px; gap: 0;
+    bottom: calc(env(safe-area-inset-bottom) + 20px);
+    border: 0; border-radius: 32px; background: #FFFFFF; box-shadow: 0 4px 20px 2px rgba(0, 0, 0, 0.1);
+  }
+  .tab { border-radius: 30px; gap: 4px; font-size: 10px; font-weight: 400; letter-spacing: -0.03em; color: #000000; }
+  .tab-icon { width: 24px; height: 24px; object-fit: contain; }
+  .tab[aria-selected="true"] { background: #E8E8E8; color: #000000; }
+  @media (prefers-color-scheme: dark) {
+    .tabs { background: #1F231F; box-shadow: 0 4px 20px 2px rgba(0, 0, 0, 0.5); }
+    .tab, .tab[aria-selected="true"] { color: #EEF1EE; }
+    .tab[aria-selected="true"] { background: #323832; }
+    .tab-icon { filter: invert(1); }
+  }
+
+  /* Cards and buttons: borderless and warm, like the list rows */
+  :root { --card: #F8F6F3; }
+  @media (prefers-color-scheme: dark) { :root { --card: #1A1D1A; } }
+  .glass { background: var(--card); border-color: transparent; }
+  .ghost-btn, .wk-btn, .recipe-link { border-color: transparent; }
+  .item.glass { background: var(--row); }
+  .seg button[aria-pressed="true"] { background: var(--bg); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08); }
 </style>
 </head>
 <body>
 
-<main class="app">
-  <header class="top">
-    <div>
-      <p class="eyebrow">The Home Butler</p>
-      <h1 id="title">Shopping list</h1>
+<!-- Green header: stays at the top and shrinks as you scroll -->
+<header class="masthead" id="masthead">
+  <div class="mast-inner">
+    <div class="mast-top">
+      <h1 id="title">Shopping List</h1>
+      <button class="icon-btn" id="lockBtn" aria-label="Lock this phone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="10.5" rx="2.5"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>
+      </button>
     </div>
-    <button class="icon-btn" id="lockBtn" aria-label="Lock this phone">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="10.5" rx="2.5"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>
-    </button>
-  </header>
+
+    <div class="mast-body" data-for="list">
+      <div class="mast-fold"><div>
+        <div class="mast-row">
+          <div class="hero"><div class="count"><span class="count-num" id="countNum">0</span><span class="count-label" id="countLabel">items to get</span></div></div>
+          <div class="sync" id="sync" data-state="loading"><span class="dot"></span><span id="syncText">Syncing…</span></div>
+        </div>
+      </div></div>
+      <form class="add" id="addForm" autocomplete="off">
+        <input id="addInput" type="text" placeholder="Add: milk x2, 500g mince…" enterkeyhint="done" maxlength="500" aria-label="Add items">
+        <button class="add-btn" type="submit" aria-label="Add to list">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+      </form>
+    </div>
+
+    <div class="mast-body" data-for="week" hidden>
+      <div class="mast-fold"><div>
+        <div class="mast-row" id="weekHero" hidden>
+          <div class="hero"><div class="count"><span class="count-num" id="weekCount">0</span><span class="count-label" id="weekLabel">dinners</span></div></div>
+          <span class="week-status" id="weekStatus"></span>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="mast-body" data-for="dinners" hidden>
+      <div class="mast-fold"><div>
+        <div class="mast-row">
+          <div class="hero"><div class="count"><span class="count-num" id="mealCount">0</span><span class="count-label" id="mealLabel">recipes</span></div></div>
+          <button class="add-meal-btn" id="newMealBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Add recipe
+          </button>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</header>
+<div class="mast-spacer" id="mastSpacer"></div>
+
+<main class="app">
 
   <section id="view-list">
-    <div class="hero glass">
-      <div class="count"><span class="count-num" id="countNum">0</span><span class="count-label" id="countLabel">to get</span></div>
-      <div class="sync" id="sync" data-state="loading"><span class="dot"></span><span id="syncText">Syncing…</span></div>
-    </div>
-
-    <form class="add glass" id="addForm" autocomplete="off">
-      <input id="addInput" type="text" placeholder="Add: milk x2, 500g mince…" enterkeyhint="done" maxlength="500" aria-label="Add items">
-      <button class="add-btn" type="submit" aria-label="Add to list">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-      </button>
-    </form>
 
     <ul class="items" id="todo"></ul>
 
@@ -771,10 +905,6 @@
     </div>
 
     <div id="weekPlan" hidden>
-      <div class="hero glass">
-        <div class="count"><span class="count-num" id="weekCount">0</span><span class="count-label" id="weekLabel">dinners</span></div>
-        <span class="week-status" id="weekStatus"></span>
-      </div>
       <ul class="week-list" id="weekList"></ul>
       <div class="week-actions" id="weekDraftActions">
         <button type="button" class="ghost-btn wide" id="weekAdd">+ Add another dinner</button>
@@ -800,13 +930,6 @@
   </section>
 
   <section id="view-dinners" hidden>
-    <div class="hero glass">
-      <div class="count"><span class="count-num" id="mealCount">0</span><span class="count-label" id="mealLabel">dinners</span></div>
-      <button class="add-meal-btn" id="newMealBtn" type="button">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-        Add dinner
-      </button>
-    </div>
     <div class="dinner-controls">
       <div>
         <span class="control-label">Show as</span>
@@ -850,18 +973,18 @@
   </section>
 </main>
 
-<nav class="tabs glass" role="tablist" aria-label="Sections">
+<nav class="tabs" role="tablist" aria-label="Sections">
   <button class="tab" role="tab" data-tab="list" aria-selected="true">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2.2l2.4 11.2a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.1L21 8H6.1"/><circle cx="9.5" cy="20" r="1.3"/><circle cx="17.5" cy="20" r="1.3"/></svg>
-    <span>List</span>
+    <img class="tab-icon" src="data:image/svg+xml;base64,PHN2ZyBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJub25lIiBvdmVyZmxvdz0idmlzaWJsZSIgc3R5bGU9ImRpc3BsYXk6IGJsb2NrOyIgd2lkdGg9IjE4Ljk5ODUiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAxOC45OTg1IDIwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8ZyBpZD0iR3JvdXAiPgo8cGF0aCBpZD0iVmVjdG9yIiBkPSJNNS40OTkyMyA4QzcuMDE4MDEgOCA4LjI0OTIzIDYuNzY4NzggOC4yNDkyMyA1LjI1QzguMjQ5MjMgMy43MzEyMiA3LjAxODAxIDIuNSA1LjQ5OTIzIDIuNUMzLjk4MDQ0IDIuNSAyLjc0OTIzIDMuNzMxMjIgMi43NDkyMyA1LjI1QzIuNzQ5MjMgNi43Njg3OCAzLjk4MDQ0IDggNS40OTkyMyA4WiIgc3Ryb2tlPSJibGFjayIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBpZD0iVmVjdG9yXzIiIGQ9Ik0xMi43NDkyIDAuNzVIMTIuMjQ5MkMxMS40MjA4IDAuNzUgMTAuNzQ5MiAxLjQyMTU3IDEwLjc0OTIgMi4yNVY2LjVDMTAuNzQ5MiA3LjMyODQzIDExLjQyMDggOCAxMi4yNDkyIDhIMTIuNzQ5MkMxMy41Nzc3IDggMTQuMjQ5MiA3LjMyODQzIDE0LjI0OTIgNi41VjIuMjVDMTQuMjQ5MiAxLjQyMTU3IDEzLjU3NzcgMC43NSAxMi43NDkyIDAuNzVaIiBzdHJva2U9ImJsYWNrIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGlkPSJWZWN0b3JfMyIgZD0iTTYuNDk5MjMgMTMuMjVWMTYuMjVNOS40OTkyMyAxMy4yNVYxNi4yNU0xMi40OTkyIDEzLjI1VjE2LjI1TTEuNzQ5MjMgMTFIMTcuMjQ5MkMxNy40MDA5IDExLjAwMDEgMTcuNTUwNiAxMS4wMzQ3IDE3LjY4NjkgMTEuMTAxMkMxNy44MjMyIDExLjE2NzcgMTcuOTQyNiAxMS4yNjQ0IDE4LjAzNjEgMTEuMzgzOUMxOC4xMjk2IDExLjUwMzMgMTguMTk0NiAxMS42NDI1IDE4LjIyNjMgMTEuNzkwOEMxOC4yNTgxIDExLjkzOTIgMTguMjU1NiAxMi4wOTI4IDE4LjIxOTIgMTIuMjRMMTYuOTY5MiAxNy4zNEMxNi44MzY5IDE3Ljg4NDcgMTYuNTI1NCAxOC4zNjkxIDE2LjA4NDggMTguNzE1NUMxNS42NDQxIDE5LjA2MTkgMTUuMDk5OCAxOS4yNTAxIDE0LjUzOTIgMTkuMjVINC40NTkyM0MzLjg5ODcgMTkuMjUwMSAzLjM1NDM5IDE5LjA2MTkgMi45MTM3IDE4LjcxNTVDMi40NzMwMSAxOC4zNjkxIDIuMTYxNTEgMTcuODg0NyAyLjAyOTIzIDE3LjM0TDAuNzc5MjI3IDEyLjI0QzAuNzQyODIzIDEyLjA5MjggMC43NDAzOTQgMTEuOTM5MiAwLjc3MjEyMiAxMS43OTA4QzAuODAzODUgMTEuNjQyNSAwLjg2ODkwNCAxMS41MDMzIDAuOTYyMzYxIDExLjM4MzlDMS4wNTU4MiAxMS4yNjQ0IDEuMTc1MjMgMTEuMTY3NyAxLjMxMTU1IDExLjEwMTJDMS40NDc4OCAxMS4wMzQ3IDEuNTk3NTUgMTEuMDAwMSAxLjc0OTIzIDExWiIgc3Ryb2tlPSJibGFjayIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L2c+Cjwvc3ZnPgo=" alt="" width="19" height="20">
+    <span>Shopping List</span>
   </button>
   <button class="tab" role="tab" data-tab="week" aria-selected="false">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 14.5h2M14 14.5h2M8 17.5h2"/></svg>
-    <span>This week</span>
+    <img class="tab-icon" src="data:image/svg+xml;base64,PHN2ZyBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJub25lIiBvdmVyZmxvdz0idmlzaWJsZSIgc3R5bGU9ImRpc3BsYXk6IGJsb2NrOyIgd2lkdGg9IjE5LjQ4IiBoZWlnaHQ9IjIxLjE4IiB2aWV3Qm94PSIwIDAgMTkuNDggMjEuMTgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxnIGlkPSJHcm91cCI+CjxnIGlkPSJWZWN0b3IiIG9wYWNpdHk9IjAuMiI+CjwvZz4KPHBhdGggaWQ9IlZlY3Rvcl8yIiBkPSJNMTUuNzMgMi40NUgzLjc1QzIuMDkzMTUgMi40NSAwLjc1IDMuNzkzMTUgMC43NSA1LjQ1VjE3LjQzQzAuNzUgMTkuMDg2OSAyLjA5MzE1IDIwLjQzIDMuNzUgMjAuNDNIMTUuNzNDMTcuMzg2OSAyMC40MyAxOC43MyAxOS4wODY5IDE4LjczIDE3LjQzVjUuNDVDMTguNzMgMy43OTMxNSAxNy4zODY5IDIuNDUgMTUuNzMgMi40NVoiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggaWQ9IlZlY3Rvcl8zIiBkPSJNNS40MyAwLjc1VjQuMTVNMTQuMTEgMC43NVY0LjE1TTE4LjMxIDcuNjlIMS41NyIgc3Ryb2tlPSJibGFjayIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBpZD0iVmVjdG9yXzQiIGQ9Ik01LjM3IDExLjc1QzUuMzcgMTEuODgyNiA1LjMxNzMyIDEyLjAwOTggNS4yMjM1NSAxMi4xMDM2QzUuMTI5NzkgMTIuMTk3MyA1LjAwMjYxIDEyLjI1IDQuODcgMTIuMjVDNC43MzczOSAxMi4yNSA0LjYxMDIyIDEyLjE5NzMgNC41MTY0NSAxMi4xMDM2QzQuNDIyNjggMTIuMDA5OCA0LjM3IDExLjg4MjYgNC4zNyAxMS43NUM0LjM3IDExLjYxNzQgNC40MjI2OCAxMS40OTAyIDQuNTE2NDUgMTEuMzk2NEM0LjYxMDIyIDExLjMwMjcgNC43MzczOSAxMS4yNSA0Ljg3IDExLjI1QzUuMDAyNjEgMTEuMjUgNS4xMjk3OSAxMS4zMDI3IDUuMjIzNTUgMTEuMzk2NEM1LjMxNzMyIDExLjQ5MDIgNS4zNyAxMS42MTc0IDUuMzcgMTEuNzVaTTUuMzcgMTUuOTlDNS4zNyAxNi4xMjI2IDUuMzE3MzIgMTYuMjQ5OCA1LjIyMzU1IDE2LjM0MzZDNS4xMjk3OSAxNi40MzczIDUuMDAyNjEgMTYuNDkgNC44NyAxNi40OUM0LjczNzM5IDE2LjQ5IDQuNjEwMjIgMTYuNDM3MyA0LjUxNjQ1IDE2LjM0MzZDNC40MjI2OCAxNi4yNDk4IDQuMzcgMTYuMTIyNiA0LjM3IDE1Ljk5QzQuMzcgMTUuODU3NCA0LjQyMjY4IDE1LjczMDIgNC41MTY0NSAxNS42MzY0QzQuNjEwMjIgMTUuNTQyNyA0LjczNzM5IDE1LjQ5IDQuODcgMTUuNDlDNS4wMDI2MSAxNS40OSA1LjEyOTc5IDE1LjU0MjcgNS4yMjM1NSAxNS42MzY0QzUuMzE3MzIgMTUuNzMwMiA1LjM3IDE1Ljg1NzQgNS4zNyAxNS45OVpNMTAuMjQgMTEuNzVDMTAuMjQgMTEuODgyNiAxMC4xODczIDEyLjAwOTggMTAuMDkzNiAxMi4xMDM2QzkuOTk5NzkgMTIuMTk3MyA5Ljg3MjYxIDEyLjI1IDkuNzQgMTIuMjVDOS42MDczOSAxMi4yNSA5LjQ4MDIxIDEyLjE5NzMgOS4zODY0NSAxMi4xMDM2QzkuMjkyNjggMTIuMDA5OCA5LjI0IDExLjg4MjYgOS4yNCAxMS43NUM5LjI0IDExLjYxNzQgOS4yOTI2OCAxMS40OTAyIDkuMzg2NDUgMTEuMzk2NEM5LjQ4MDIxIDExLjMwMjcgOS42MDczOSAxMS4yNSA5Ljc0IDExLjI1QzkuODcyNjEgMTEuMjUgOS45OTk3OSAxMS4zMDI3IDEwLjA5MzYgMTEuMzk2NEMxMC4xODczIDExLjQ5MDIgMTAuMjQgMTEuNjE3NCAxMC4yNCAxMS43NVpNMTAuMjQgMTUuOTlDMTAuMjQgMTYuMTIyNiAxMC4xODczIDE2LjI0OTggMTAuMDkzNiAxNi4zNDM2QzkuOTk5NzkgMTYuNDM3MyA5Ljg3MjYxIDE2LjQ5IDkuNzQgMTYuNDlDOS42MDczOSAxNi40OSA5LjQ4MDIxIDE2LjQzNzMgOS4zODY0NSAxNi4zNDM2QzkuMjkyNjggMTYuMjQ5OCA5LjI0IDE2LjEyMjYgOS4yNCAxNS45OUM5LjI0IDE1Ljg1NzQgOS4yOTI2OCAxNS43MzAyIDkuMzg2NDUgMTUuNjM2NEM5LjQ4MDIxIDE1LjU0MjcgOS42MDczOSAxNS40OSA5Ljc0IDE1LjQ5QzkuODcyNjEgMTUuNDkgOS45OTk3OSAxNS41NDI3IDEwLjA5MzYgMTUuNjM2NEMxMC4xODczIDE1LjczMDIgMTAuMjQgMTUuODU3NCAxMC4yNCAxNS45OVpNMTUuMTIgMTEuNzVDMTUuMTIgMTEuODgyNiAxNS4wNjczIDEyLjAwOTggMTQuOTczNiAxMi4xMDM2QzE0Ljg3OTggMTIuMTk3MyAxNC43NTI2IDEyLjI1IDE0LjYyIDEyLjI1QzE0LjQ4NzQgMTIuMjUgMTQuMzYwMiAxMi4xOTczIDE0LjI2NjQgMTIuMTAzNkMxNC4xNzI3IDEyLjAwOTggMTQuMTIgMTEuODgyNiAxNC4xMiAxMS43NUMxNC4xMiAxMS42MTc0IDE0LjE3MjcgMTEuNDkwMiAxNC4yNjY0IDExLjM5NjRDMTQuMzYwMiAxMS4zMDI3IDE0LjQ4NzQgMTEuMjUgMTQuNjIgMTEuMjVDMTQuNzUyNiAxMS4yNSAxNC44Nzk4IDExLjMwMjcgMTQuOTczNiAxMS4zOTY0QzE1LjA2NzMgMTEuNDkwMiAxNS4xMiAxMS42MTc0IDE1LjEyIDExLjc1WiIgZmlsbD0iYmxhY2siIHN0cm9rZT0iYmxhY2siIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9nPgo8L3N2Zz4K" alt="" width="19" height="21">
+    <span>Meal Planner</span>
   </button>
   <button class="tab" role="tab" data-tab="dinners" aria-selected="false">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="7"/><circle cx="12" cy="13" r="3.5"/><path d="M3 3v5a2 2 0 0 0 2 2M3 3v7M21 3c-1.5 1-2 3-2 5s1 2 1 2v11"/></svg>
-    <span>Dinners</span>
+    <img class="tab-icon" src="data:image/svg+xml;base64,PHN2ZyBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJub25lIiBvdmVyZmxvdz0idmlzaWJsZSIgc3R5bGU9ImRpc3BsYXk6IGJsb2NrOyIgd2lkdGg9IjIwLjk5MjUiIGhlaWdodD0iMTguNzUiIHZpZXdCb3g9IjAgMCAyMC45OTI1IDE4Ljc1IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8ZyBpZD0iR3JvdXAiPgo8cGF0aCBpZD0iVmVjdG9yIiBkPSJNMy42MTUgMTIuNDMxM1YxNS4zMDY4QzQuNDkzNTcgMTYuMzgzNyA1LjYwMDk1IDE3LjI1MTUgNi44NTY3MiAxNy44NDcxQzguMTEyNSAxOC40NDI2IDkuNDg1MTUgMTguNzUxMSAxMC44NzUgMTguNzVDMTQuMTE4IDE4Ljc1IDE2Ljk3NyAxNy4xMDMgMTguNjYgMTQuNjAwM1YxMC41Njk4QzE4LjA4NCAxNC4zNTIgMTQuODE3OCAxNy4yNSAxMC44NzUgMTcuMjVDNy42MDk1IDE3LjI1IDQuODA4MjUgMTUuMjYyNSAzLjYxNSAxMi40MzEzWk0xNy4yNzI1IDQuNzgyMDFWMy40OTA1MUMxNy4yNyAzLjIwNTY1IDE3LjMxNjcgMi45MjI0OSAxNy40MTA1IDIuNjUzNTFDMTUuNjYyMyAwLjk0OTIzNCAxMy4zMTY1IC0wLjAwMzE4Njc2IDEwLjg3NSAxLjAyOTQ2ZS0wNUM4LjY5MDE0IC0wLjAwMzIzMjYzIDYuNTczMzIgMC43NTk3ODggNC44OTMgMi4xNTYyNkw0Ljg5Njc1IDIuMjAyMDFMNC44OTc1IDIuMjIyMjZWNC4yNDcyNkM1LjYzNjIzIDMuMzg0NjkgNi41NTMxIDIuNjkyNDQgNy41ODUwMSAyLjIxODE4QzguNjE2OTEgMS43NDM5MiA5LjczOTMzIDEuNDk4OTEgMTAuODc1IDEuNTAwMDFDMTMuNTEwNSAxLjUwMDAxIDE1Ljg0MyAyLjc5NDUxIDE3LjI3MjUgNC43ODIwMVoiIGZpbGw9ImJsYWNrIi8+CjxwYXRoIGlkPSJWZWN0b3JfMiIgZD0iTTE2Ljg3NSA5LjM3NTAxQzE2Ljg3NSAxMC45NjYzIDE2LjI0MjkgMTIuNDkyNCAxNS4xMTc2IDEzLjYxNzdDMTMuOTkyNCAxNC43NDI5IDEyLjQ2NjMgMTUuMzc1IDEwLjg3NSAxNS4zNzVDOS4yODM3IDE1LjM3NSA3Ljc1NzU4IDE0Ljc0MjkgNi42MzIzNiAxMy42MTc3QzUuNTA3MTQgMTIuNDkyNCA0Ljg3NSAxMC45NjYzIDQuODc1IDkuMzc1MDFDNC44NzUgNy43ODM3MSA1LjUwNzE0IDYuMjU3NTkgNi42MzIzNiA1LjEzMjM3QzcuNzU3NTggNC4wMDcxNSA5LjI4MzcgMy4zNzUwMSAxMC44NzUgMy4zNzUwMUMxMi40NjYzIDMuMzc1MDEgMTMuOTkyNCA0LjAwNzE1IDE1LjExNzYgNS4xMzIzN0MxNi4yNDI5IDYuMjU3NTkgMTYuODc1IDcuNzgzNzEgMTYuODc1IDkuMzc1MDFaTTEwLjg3NSAxNC42MjVDMTEuNTY0NCAxNC42MjUgMTIuMjQ3MSAxNC40ODkyIDEyLjg4NDEgMTQuMjI1NEMxMy41MjEgMTMuOTYxNSAxNC4wOTk4IDEzLjU3NDggMTQuNTg3MyAxMy4wODczQzE1LjA3NDggMTIuNTk5OCAxNS40NjE1IDEyLjAyMTEgMTUuNzI1NCAxMS4zODQxQzE1Ljk4OTIgMTAuNzQ3MSAxNi4xMjUgMTAuMDY0NCAxNi4xMjUgOS4zNzUwMUMxNi4xMjUgOC42ODU1NyAxNS45ODkyIDguMDAyODggMTUuNzI1NCA3LjM2NTkyQzE1LjQ2MTUgNi43Mjg5NiAxNS4wNzQ4IDYuMTUwMjEgMTQuNTg3MyA1LjY2MjdDMTQuMDk5OCA1LjE3NTE5IDEzLjUyMSA0Ljc4ODQ4IDEyLjg4NDEgNC41MjQ2NEMxMi4yNDcxIDQuMjYwODEgMTEuNTY0NCA0LjEyNTAxIDEwLjg3NSA0LjEyNTAxQzkuNDgyNjEgNC4xMjUwMSA4LjE0NzI2IDQuNjc4MTMgNy4xNjI2OSA1LjY2MjdDNi4xNzgxMiA2LjY0NzI3IDUuNjI1IDcuOTgyNjIgNS42MjUgOS4zNzUwMUM1LjYyNSAxMC43Njc0IDYuMTc4MTIgMTIuMTAyOCA3LjE2MjY5IDEzLjA4NzNDOC4xNDcyNiAxNC4wNzE5IDkuNDgyNjEgMTQuNjI1IDEwLjg3NSAxNC42MjVaTTIwLjk5MjUgMi45NTUwMUMyMC45OTI1IDIuMjgwMDEgMjAuNDQ1IDEuNzMyNTEgMTkuNzcgMS43MzI1MUMxOC43OTUgMS43MzI1MSAxOC4wMTUgMi41MjAwMSAxOC4wMjI1IDMuNDg3NTFWNy42NTAwMUMxOC4wMjI1IDguNTg5NzYgMTguNTY3IDkuNDMxMjYgMTkuNDEgOS44MTIyNlYxNi4yNzVDMTkuNDEgMTYuNjY1IDE5LjcyNSAxNi45OCAyMC4xMTUgMTYuOThIMjAuMjg3NUMyMC42Nzc1IDE2Ljk4IDIwLjk5MjUgMTYuNjY1IDIwLjk5MjUgMTYuMjc1VjIuOTU1MDFaTTMuNjE1IDEuNzMyNTFDMy40Nzk3NCAxLjczMjUxIDMuMzUwMDIgMS43ODYyNCAzLjI1NDM4IDEuODgxODlDMy4xNTg3MyAxLjk3NzUzIDMuMTA1IDIuMTA3MjUgMy4xMDUgMi4yNDI1MVY0LjI2MDAxQzMuMTA1IDQuNDEwMDEgMi45ODUgNC41MjI1MSAyLjg0MjUgNC41MjI1MUMyLjY5MjUgNC41MjI1MSAyLjU4IDQuNDAyNTEgMi41OCA0LjI2MDAxVjIuMjY1MDFDMi41OCAxLjk4NzUxIDIuMzYyNSAxLjc0MDAxIDIuMDg1IDEuNzMyNTFDMS43OTI1IDEuNzI1MDEgMS41NTI1IDEuOTU3NTEgMS41NTI1IDIuMjQyNTFWNC4yNjAwMUMxLjU1MjUgNC40MTAwMSAxLjQzMjUgNC41MjI1MSAxLjI5IDQuNTIyNTFDMS4xNCA0LjUyMjUxIDEuMDI3NSA0LjQwMjUxIDEuMDI3NSA0LjI2MDAxVjIuMjY1MDFDMS4wMjc1IDEuOTg3NTEgMC44MSAxLjc0MDAxIDAuNTMyNSAxLjczMjUxQzAuMjQgMS43MjUwMSAwIDEuOTU3NTEgMCAyLjI0MjUxVjUuNjc3NTFDMCA2LjM1NDAxIDAuMzI3NzUgNi45NTc3NiAwLjgzMTc1IDcuMzM0MjZDMS4yODI1IDcuNTg4NTEgMS4yODI1IDguNzUyNTEgMS4yODI1IDguNzUyNTFWMTYuMjY3NUMxLjI4MjUgMTYuNjU3NSAxLjU5NzUgMTYuOTcyNSAxLjk4NzUgMTYuOTcyNUgyLjE2QzIuNTUgMTYuOTcyNSAyLjg2NSAxNi42NTc1IDIuODY1IDE2LjI2NzVWOC43NTI1MUMyLjg2NSA4Ljc1MjUxIDIuODY1IDcuNjM0MjYgMy4zMTU3NSA3LjMzNDI2QzMuNTczNjMgNy4xNDE3NiAzLjc4MzA3IDYuODkxNzkgMy45Mjc0NSA2LjYwNDJDNC4wNzE4NCA2LjMxNjYxIDQuMTQ3MTggNS45OTkzMSA0LjE0NzUgNS42Nzc1MVYyLjI0MjUxQzQuMTM5OTEgMi4xMDU4NCA0LjA4MDY5IDEuOTc3MTYgMy45ODE4NCAxLjg4MjQ4QzMuODgyOTkgMS43ODc4IDMuNzUxODcgMS43MzQyIDMuNjE1IDEuNzMyNTFaIiBmaWxsPSJibGFjayIvPgo8L2c+Cjwvc3ZnPgo=" alt="" width="21" height="19">
+    <span>Recipes</span>
   </button>
 </nav>
 
@@ -1083,8 +1206,8 @@
     ["household", "🧻", "Household"], ["other", "❓", "Other"],
   ];
   const sectionName = (key) => (SECTIONS.find(([k]) => k === key) ?? SECTIONS[SECTIONS.length - 1])[2];
-  const sectionOptions = (current) => SECTIONS.map(([k, emoji, label]) =>
-    `<option value="${k}"${k === current ? " selected" : ""}>${emoji} ${label}</option>`).join("");
+  const sectionOptions = (current) => SECTIONS.map(([k, , label]) =>
+    `<option value="${k}"${k === current ? " selected" : ""}>${label}</option>`).join("");
 
   // How much one tap of − / + changes the amount.
   function stepFor(unit) {
@@ -1197,13 +1320,13 @@
 
     // What's left to get, grouped by supermarket section in the order you walk the shop.
     // Ticking an item moves it to the trolley below, so finished sections disappear.
-    const groups = SECTIONS.map(([key, emoji, label]) => {
+    const groups = SECTIONS.map(([key, , label]) => {
       const inSection = todo.filter((i) => (SECTIONS.some(([k]) => k === i.section) ? i.section : "other") === key);
       if (!inSection.length) return [];
       const head = document.createElement("li");
       head.className = "aisle";
       head.innerHTML = `<h3></h3><span class="mono"></span>`;
-      head.querySelector("h3").textContent = `${emoji} ${label}`;
+      head.querySelector("h3").textContent = label;
       head.querySelector(".mono").textContent = inSection.length;
       return [head, ...inSection.map(itemEl)];
     });
@@ -1214,7 +1337,7 @@
     });
     shownIds = new Set(items.map((i) => String(i.id)));
     $("countNum").textContent = todo.length;
-    $("countLabel").textContent = todo.length === 1 ? "thing to get" : "to get";
+    $("countLabel").textContent = todo.length === 1 ? "item to get" : "items to get";
     $("doneCount").textContent = done.length;
     // The trolley list: everything ticked, most recent first. Tap one to put it back.
     $("trolleyToggle").setAttribute("aria-expanded", String(trolleyOpen));
@@ -1582,7 +1705,7 @@
     $("meals").classList.toggle("compact", mealView === "list");
     $("meals").replaceChildren(...(mealView === "list" ? mealListEls() : meals.map(mealEl)));
     $("mealCount").textContent = meals.length;
-    $("mealLabel").textContent = meals.length === 1 ? "dinner" : "dinners";
+    $("mealLabel").textContent = meals.length === 1 ? "recipe" : "recipes";
     $("mealsEmpty").hidden = !mealsLoaded || meals.length > 0;
   }
 
@@ -1839,13 +1962,7 @@
       uses.className = "hh-uses" + (ing.uses ? "" : " unused");
       uses.textContent = ing.uses ? `${ing.uses} dinner${ing.uses === 1 ? "" : "s"}` : "not used";
       const aisle = SECTIONS.find(([k]) => k === ing.section);
-      if (aisle) {
-        const icon = document.createElement("span");
-        icon.className = "hh-aisle";
-        icon.textContent = aisle[1];
-        icon.title = aisle[2];
-        uses.prepend(icon);
-      }
+      if (aisle) uses.textContent = `${aisle[2]} · ${uses.textContent}`;
       name.append(label, uses);
       const jar = document.createElement("button");
       jar.type = "button";
@@ -2504,6 +2621,7 @@
     $("weekEmpty").hidden = !noMeals;
     $("weekStart").hidden = !showStart;
     $("weekPlan").hidden = noMeals || showStart || !plan;
+    $("weekHero").hidden = $("weekPlan").hidden;
 
     $("planCount").textContent = planCount;
     $("planCountLabel").textContent = planCount === 1 ? "dinner" : "dinners";
@@ -2918,7 +3036,7 @@
 
   /* ---------- Tabs ---------- */
 
-  const TITLES = { list: "Shopping list", week: "This week", dinners: "Dinners" };
+  const TITLES = { list: "Shopping List", week: "Meal Planner", dinners: "Recipes" };
   let currentTab = "list";
   function showTab(name) {
     if (!TITLES[name]) name = "list";
@@ -2926,11 +3044,36 @@
     document.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === name)));
     for (const tab of Object.keys(TITLES)) $("view-" + tab).hidden = tab !== name;
     $("title").textContent = TITLES[name];
+    document.querySelectorAll(".mast-body").forEach((b) => { b.hidden = b.dataset.for !== name; });
+    window.scrollTo(0, 0);
+    setCompact(false);
     store.set("kitchen.tab", name);
     if (name === "dinners") loadMeals();
     if (name === "week") loadWeekTab();
   }
   document.querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () => showTab(t.dataset.tab)));
+
+  /* ---------- Green header: pinned, and shrinks once you scroll ---------- */
+
+  // The header floats over the page; a spacer of its full height keeps the page
+  // content below it. Shrinking never changes the page height, so nothing jumps.
+  const masthead = $("masthead");
+  let compact = false;
+  function setCompact(on) {
+    if (on === compact) return;
+    compact = on;
+    masthead.classList.toggle("compact", on);
+  }
+  function fitSpacer() {
+    if (!compact) $("mastSpacer").style.height = masthead.offsetHeight + "px";
+  }
+  window.addEventListener("scroll", () => {
+    // Two different points, so it doesn't flicker at the boundary.
+    if (!compact && scrollY > 40) setCompact(true);
+    else if (compact && scrollY < 6) setCompact(false);
+  }, { passive: true });
+  if ("ResizeObserver" in window) new ResizeObserver(fitSpacer).observe(masthead);
+  window.addEventListener("resize", fitSpacer);
 
   /* ---------- Passcode ---------- */
 
