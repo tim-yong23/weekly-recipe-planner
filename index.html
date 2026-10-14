@@ -15,7 +15,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght,SOFT@9..144,400,100&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght,SOFT,WONK@9..144,400,0,1&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #FFFFFF;
@@ -711,7 +711,7 @@
   :root { --font-serif: "Fraunces", Georgia, serif; --row: #FCFBFA; --brand: #19581F; --tabbar-h: 63px; }
   @media (prefers-color-scheme: dark) { :root { --row: #1A1D1A; } }
   .serif, h1, .rv-title, .sheet-head h2, .lock-card h1 {
-    font-family: var(--font-serif); font-weight: 400; font-variation-settings: "SOFT" 100; letter-spacing: -0.02em;
+    font-family: var(--font-serif); font-weight: 400; font-variation-settings: "SOFT" 0, "WONK" 1; letter-spacing: -0.02em;
   }
 
   /* Green masthead */
@@ -820,6 +820,52 @@
   .install-text strong { font-size: 14px; font-weight: 600; color: var(--text); }
   .install .icon-btn { width: 40px; height: 40px; }
   .install .icon-btn svg { width: 18px; height: 18px; }
+
+  /* ---------- Meal Planner (Figma 5727:486) ---------- */
+  :root { --tile: #F9F7F9; --pill: #F9F7F9; }
+  @media (prefers-color-scheme: dark) { :root { --tile: #1A1D1A; --pill: #232723; } }
+  .masthead { background: linear-gradient(123deg, #19581F 22%, #1D6D25 98%); }
+  .masthead .week-status { height: 28px; display: inline-flex; align-items: center; padding: 0 14px; border-radius: 50px;
+    background: rgba(255, 255, 255, 0.3); color: #FFFFFF; font-size: 14px; font-weight: 400; letter-spacing: -0.05em; }
+  .week-list { gap: 15px; }
+  .wk.glass { position: relative; background: var(--tile); border: 0; border-radius: 10px; }
+  .wk-main { min-height: 83px; padding: 17px 44px 17px 17px; gap: 19px; }
+  .wk-main .meal-photo { width: 49px; height: 49px; border-radius: 10px; font-size: 22px; background: #E1F3E3; }
+  .wk .meal-name { font-family: var(--font-ui); font-weight: 600; font-size: 16px; letter-spacing: -0.05em; }
+  .wk .meal-meta { margin-top: 4px; font-size: 12px; letter-spacing: -0.05em; color: #B4B4B4; }
+  .wk-arrow { position: absolute; top: 7px; right: 7px; width: 19px; height: 19px; pointer-events: none; }
+  .wk-drag {
+    position: absolute; right: 0; bottom: 0; width: 44px; height: 44px;
+    display: grid; place-items: end; padding: 0 7px 7px 0; touch-action: none; cursor: grab;
+  }
+  .wk-drag img { width: 19px; height: 19px; }
+  .wk.dragging { z-index: 3; box-shadow: 0 10px 24px -6px rgba(0, 0, 0, 0.25); transition: none; }
+  .wk.dragging .wk-drag { cursor: grabbing; }
+  .wk:not(.dragging) { transition: box-shadow 0.15s; }
+  .wk-actions { padding: 0 17px 14px; }
+  .pill-btn {
+    width: 100%; min-height: 46px; border-radius: 50px; background: var(--pill); color: var(--text);
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    font-size: 16px; font-weight: 600; letter-spacing: -0.05em;
+  }
+  .pill-btn:active { transform: scale(0.98); }
+  .pill-btn:disabled { opacity: 0.6; }
+  .pill-btn.mint { min-height: 54px; background: #E6F7E4; color: #4EA346; }
+  .pill-btn.mint img { width: 21px; height: 20px; }
+  .shop-btn.done { background: #E6F7E4; color: #4EA346; border: 0; font-size: 16px; }
+  @media (prefers-color-scheme: dark) { .pill-btn.mint, .shop-btn.done { background: var(--accent-soft); color: var(--on-soft); } }
+  @media (prefers-color-scheme: dark) { .wk-main .meal-photo { background: var(--accent-soft); } }
+  .wk-divider { width: 62px; height: 2px; margin: 18px auto; border: 0; border-radius: 2px; background: #F1F1F1; }
+  @media (prefers-color-scheme: dark) { .wk-divider { background: var(--border); } }
+  .week-actions { gap: 13px; }
+
+  /* Menu: the current tab in black, the others greyed out */
+  .tab:not([aria-selected="true"]) { color: #BCBCBC; }
+  .tab:not([aria-selected="true"]) .tab-icon { opacity: 0.27; }
+  @media (prefers-color-scheme: dark) {
+    .tab:not([aria-selected="true"]) { color: #6B726B; }
+    .tab:not([aria-selected="true"]) .tab-icon { opacity: 0.4; }
+  }
 </style>
 </head>
 <body>
@@ -925,18 +971,19 @@
     <div id="weekPlan" hidden>
       <ul class="week-list" id="weekList"></ul>
       <div class="week-actions" id="weekDraftActions">
-        <button type="button" class="ghost-btn wide" id="weekAdd">+ Add another dinner</button>
-        <button type="button" class="primary" id="weekLock">Lock in this week</button>
+        <button type="button" class="pill-btn" id="weekAdd">+ Add another dinner</button>
+        <button type="button" class="pill-btn mint" id="weekLock">Lock in this week</button>
         <button type="button" class="text-btn center-btn" id="weekRestart">Start over with new picks</button>
       </div>
       <div class="week-actions" id="weekLockedActions">
-        <button type="button" class="primary shop-btn" id="weekShop">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2.2l2.4 11.2a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.1L21 8H6.1"/><circle cx="9.5" cy="20" r="1.3"/><circle cx="17.5" cy="20" r="1.3"/></svg>
+        <button type="button" class="pill-btn mint shop-btn" id="weekShop">
+          <img src="data:image/svg+xml;base64,PHN2ZyBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJub25lIiBvdmVyZmxvdz0idmlzaWJsZSIgc3R5bGU9ImRpc3BsYXk6IGJsb2NrOyIgd2lkdGg9IjIwLjc4OTkiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMC43ODk5IDIwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8ZyBpZD0iR3JvdXAiPgo8cGF0aCBpZD0iVmVjdG9yIiBkPSJNNCA1SDE3Ljc5QzE4LjA2OTQgNS4wMDAwMSAxOC4zNDU3IDUuMDU4NTcgMTguNjAxMSA1LjE3MTkxQzE4Ljg1NjUgNS4yODUyNCAxOS4wODU0IDUuNDUwODMgMTkuMjcyOSA1LjY1ODAxQzE5LjQ2MDMgNS44NjUxOSAxOS42MDIzIDYuMTA5MzYgMTkuNjg5NyA2LjM3NDc4QzE5Ljc3NyA2LjY0MDE5IDE5LjgwNzggNi45MjA5NyAxOS43OCA3LjE5OUwxOS4xOCAxMy4xOTlDMTkuMTMwNyAxMy42OTI1IDE4Ljg5OTcgMTQuMTUwMSAxOC41MzIgMTQuNDgyOUMxOC4xNjQyIDE0LjgxNTcgMTcuNjg2IDE1IDE3LjE5IDE1SDcuNjRDNy4xNzc0NyAxNS4wMDAyIDYuNzI5MTggMTQuODQgNi4zNzE0NCAxNC41NDY5QzYuMDEzNzEgMTQuMjUzNyA1Ljc2ODY2IDEzLjg0NTYgNS42NzggMTMuMzkyTDQgNVoiIHN0cm9rZT0iIzRFQTM0NiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGlkPSJWZWN0b3JfMiIgZD0iTTQgNUwzLjE5IDEuNzU3QzMuMTM1ODMgMS41NDA3NSAzLjAxMDk1IDEuMzQ4ODEgMi44MzUyMSAxLjIxMTY2QzIuNjU5NDYgMS4wNzQ1IDIuNDQyOTMgMS4wMDAwMSAyLjIyIDFIMU03IDE5SDlNMTUgMTlIMTciIHN0cm9rZT0iIzRFQTM0NiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9nPgo8L3N2Zz4K" alt="" width="21" height="20">
           <span id="weekShopText">Add to shopping list</span>
         </button>
         <p class="hint center good" id="weekShopNote" hidden></p>
-        <button type="button" class="ghost-btn wide" id="weekEdit">Edit plan</button>
-        <button type="button" class="ghost-btn wide" id="weekNext">Start next week</button>
+        <hr class="wk-divider">
+        <button type="button" class="pill-btn" id="weekEdit">Edit Plan</button>
+        <button type="button" class="pill-btn" id="weekNext">Start new week</button>
       </div>
     </div>
 
@@ -2636,7 +2683,8 @@
 
   const SWAP_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h13l-3.5-3.5M20 15H7l3.5 3.5"/></svg>';
   const PICK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>';
-  const CHEVRON_SVG = '<svg class="wk-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+  const ARROW_ICON = "data:image/svg+xml;base64,PHN2ZyBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJub25lIiBvdmVyZmxvdz0idmlzaWJsZSIgc3R5bGU9ImRpc3BsYXk6IGJsb2NrOyIgd2lkdGg9IjE5IiBoZWlnaHQ9IjE5IiB2aWV3Qm94PSIwIDAgMTkgMTkiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxnIGlkPSJhbmRyc3J4bjphcnJvdy11cC1lbmQiPgo8cGF0aCBpZD0iVmVjdG9yIiBkPSJNNS43MDc5MiA0LjU3NTgzSDExLjI0OTZDMTIuNzUzOCA0LjU3NTgzIDEzLjQ5NzkgNC41NzU4MyAxMy45NTcxIDUuMDM1QzE0LjQxNjIgNS40OTQxNyAxNC40MjQyIDYuMjQ2MjUgMTQuNDI0MiA3LjczNDU4VjEzLjI5MjFNNC41NzU4MyAxNC40MjQyTDEzLjY4IDUuMzIiIHN0cm9rZT0iI0Q0RDRENCIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L2c+Cjwvc3ZnPgo=";
+  const REORDER_ICON = "data:image/svg+xml;base64,PHN2ZyBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJub25lIiBvdmVyZmxvdz0idmlzaWJsZSIgc3R5bGU9ImRpc3BsYXk6IGJsb2NrOyIgd2lkdGg9IjE5IiBoZWlnaHQ9IjE5IiB2aWV3Qm94PSIwIDAgMTkgMTkiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxnIGlkPSJmYW1pY29uczpyZW9yZGVyLXRocmVlIj4KPHBhdGggaWQ9IlZlY3RvciIgZD0iTTMuNzg1MTYgOS41SDE1LjIxNDhNMy43ODUxNiA2LjUzMTI1SDE1LjIxNDhNMy43ODUxNiAxMi40Njg4SDE1LjIxNDgiIHN0cm9rZT0iI0Q0RDRENCIgc3Ryb2tlLXdpZHRoPSIxLjM3NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjwvZz4KPC9zdmc+Cg==";
 
   const shortDate = (iso) => new Date(iso).toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
   const mealById = (id) => meals.find((m) => m.id === id);
@@ -2696,17 +2744,17 @@
     const meta = document.createElement("span");
     meta.className = "meal-meta";
     if (meal) {
-      const steps = methodParts(meal.method).filter((p) => !p.heading).length;
       meta.textContent = [
-        meal.servings && servingsText(meal.servings),
         meal.ingredients.length ? `${meal.ingredients.length} ingredients` : "No ingredients yet",
-        !steps && "no method",
+        meal.servings && servingsText(meal.servings),
       ].filter(Boolean).join(" · ");
     }
     body.append(name, meta);
     main.append(photoEl(meal?.image_url), body);
-    main.insertAdjacentHTML("beforeend", CHEVRON_SVG);
     li.append(main);
+    // The arrow is just a hint that the tile opens the recipe; the handle drags it to a new slot.
+    li.insertAdjacentHTML("beforeend", `<img class="wk-arrow" src="${ARROW_ICON}" alt="" width="19" height="19">`
+      + `<button type="button" class="wk-drag" aria-label="Drag to reorder"><img src="${REORDER_ICON}" alt="" width="19" height="19"></button>`);
 
     if (draft) {
       const actions = document.createElement("div");
@@ -2775,6 +2823,53 @@
   $("weekRestart").addEventListener("click", () => {
     if (confirm("Replace this week's dinners with new random picks?")) weekAction("plan_new", { count: planCount });
   });
+
+  /* Drag a dinner by its handle (bottom right of the tile) to move it to another slot */
+
+  let drag = null;
+  $("weekList").addEventListener("pointerdown", (e) => {
+    const handle = e.target.closest(".wk-drag");
+    if (!handle || weekBusy) return;
+    e.preventDefault();
+    const li = handle.closest(".wk");
+    try { handle.setPointerCapture(e.pointerId); } catch {} // keeps the drag going if your finger leaves the handle
+    drag = { li, handle, pointerId: e.pointerId, startY: e.clientY, before: plannedOrder() };
+    li.classList.add("dragging");
+    weekBusy = true; // the 5-second refresh waits until you let go
+    if (navigator.vibrate) navigator.vibrate(8);
+  });
+  $("weekList").addEventListener("pointermove", (e) => {
+    if (!drag || e.pointerId !== drag.pointerId) return;
+    const { li } = drag;
+    const list = $("weekList");
+    li.style.transform = `translateY(${e.clientY - drag.startY}px)`;
+    // Once the tile's middle passes a neighbour's middle, they swap slots.
+    const middle = li.getBoundingClientRect().top + li.offsetHeight / 2;
+    const others = [...list.children].filter((c) => c !== li);
+    const next = others.find((c) => middle < c.getBoundingClientRect().top + c.offsetHeight / 2) ?? null;
+    if (next !== li.nextElementSibling) {
+      const oldTop = li.offsetTop;
+      list.insertBefore(li, next);
+      drag.startY += li.offsetTop - oldTop; // keep the tile under your finger
+      li.style.transform = `translateY(${e.clientY - drag.startY}px)`;
+      if (navigator.vibrate) navigator.vibrate(4);
+    }
+  });
+  function endDrag(e) {
+    if (!drag || e.pointerId !== drag.pointerId) return;
+    const { li, before } = drag;
+    drag = null;
+    li.classList.remove("dragging");
+    li.style.transform = "";
+    weekBusy = false;
+    const after = plannedOrder();
+    if (after.join() === before.join()) return;
+    week.plan.meal_ids = after; // show the new order straight away
+    weekAction("reorder", { meal_ids: after });
+  }
+  const plannedOrder = () => [...$("weekList").children].map((c) => Number(c.dataset.id));
+  $("weekList").addEventListener("pointerup", endDrag);
+  $("weekList").addEventListener("pointercancel", endDrag);
 
   $("weekList").addEventListener("click", (e) => {
     const li = e.target.closest(".wk");
