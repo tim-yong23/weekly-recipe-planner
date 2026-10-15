@@ -921,6 +921,47 @@
     .wk.draft .wk-btn { background: var(--surface-strong); border-color: var(--border); color: var(--text); }
     .wk.draft .wk-btn svg, .wk.draft .wk-btn.icon { color: var(--text); }
   }
+
+  /* ---------- Recipes tab (same language as the Meal Planner and Shopping List) ---------- */
+  .control-label { font-size: 14px; font-weight: 600; letter-spacing: -0.05em; text-transform: none; color: #808080; }
+  @media (prefers-color-scheme: dark) { .control-label { color: var(--muted); } }
+  .household-btn.glass {
+    min-height: 46px; border-radius: 50px; background: var(--pill); border: 0;
+    font-size: 16px; font-weight: 600; letter-spacing: -0.05em;
+  }
+  .household-btn > svg:first-child { color: var(--on-soft); }
+  /* Recipe cards: like the planner tiles */
+  .meals { gap: 15px; }
+  .meal.glass { position: relative; background: var(--tile); border: 0; border-radius: 10px; }
+  .meal-main { min-height: 83px; padding: 17px 44px 17px 17px; gap: 19px; }
+  .meal-main .meal-photo { width: 49px; height: 49px; border-radius: 10px; font-size: 22px; background: #E1F3E3; }
+  @media (prefers-color-scheme: dark) { .meal-main .meal-photo { background: var(--accent-soft); } }
+  .meal .meal-name { font-family: var(--font-ui); font-weight: 600; font-size: 16px; letter-spacing: -0.05em; }
+  .meal .meal-meta { margin-top: 4px; font-size: 12px; letter-spacing: -0.05em; color: #B4B4B4; }
+  .meal .meal-check { color: var(--warn); }
+  /* "View original": small grey button lined up with the name */
+  .meal-foot { justify-content: flex-start; padding: 0 30px 16px 85px; margin-top: -6px; }
+  .meal-foot .recipe-link {
+    position: relative; min-height: 0; height: 30px; padding: 0 12px; border-radius: 10px; gap: 6px;
+    background: #F1F1F1; border: 1px solid #D9D9D9; color: #1F1F1F;
+    font-size: 14px; font-weight: 600; letter-spacing: -0.05em;
+  }
+  .meal-foot .recipe-link::after { content: ""; position: absolute; inset: -7px -4px; }
+  .meal-foot .recipe-link svg { width: 14px; height: 14px; color: #1F1F1F; }
+  @media (prefers-color-scheme: dark) {
+    .meal-foot .recipe-link { background: var(--surface-strong); border-color: var(--border); color: var(--text); }
+    .meal-foot .recipe-link svg { color: var(--text); }
+  }
+  /* List view: rows like the shopping list, letters like its section headings */
+  .meals.compact { gap: 4px; }
+  .meal-letter { padding: 18px 2px 6px; font-family: var(--font-ui); font-size: 16px; font-weight: 600; letter-spacing: -0.03em; color: var(--text); }
+  .meal-letter:first-child { padding-top: 0; }
+  .meal-row { background: var(--row); border: 0 !important; border-radius: 10px; }
+  .meal-row-main { min-height: 44px; padding: 8px 6px 8px 14px; gap: 10px; border-radius: 10px; }
+  .meal-row-name { font-size: 15px; font-weight: 400; letter-spacing: -0.03em; }
+  .meal-row-count { font-size: 12px; letter-spacing: -0.03em; color: #B4B4B4; }
+  .meal-row-link { color: #B4B4B4; }
+  .meal-row-link svg { width: 16px; height: 16px; }
 </style>
 </head>
 <body>
@@ -1824,12 +1865,9 @@
     const meta = document.createElement("span");
     meta.className = "meal-meta";
     const count = meal.ingredients.length;
-    const staples = meal.ingredients.filter((i) => i.staple).length;
     meta.textContent = [
-      meal.servings && servingsText(meal.servings),
-      cookText(meal.cook_minutes),
-      `${count} ingredient${count === 1 ? "" : "s"}`,
-      staples && `${staples} pantry staple${staples === 1 ? "" : "s"}`,
+      count ? `${count} ingredient${count === 1 ? "" : "s"}` : "No ingredients yet",
+      meal.cook_minutes ? `${cookText(meal.cook_minutes)} cooking time` : meal.servings && servingsText(meal.servings),
     ].filter(Boolean).join(" · ");
     const toCheck = meal.ingredients.filter((i) => i.review).length;
     if (toCheck) {
@@ -1841,6 +1879,7 @@
     body.append(name, meta);
     main.append(photoEl(meal.image_url), body);
     li.append(main);
+    li.insertAdjacentHTML("beforeend", `<img class="wk-arrow" src="${ARROW_ICON}" alt="" width="19" height="19">`);
 
     const href = meal.recipe_url && safeUrl(meal.recipe_url);
     if (href) {
