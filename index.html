@@ -866,6 +866,10 @@
     .tab:not([aria-selected="true"]) { color: #6B726B; }
     .tab:not([aria-selected="true"]) .tab-icon { opacity: 0.4; }
   }
+
+  /* This week / Last week switch */
+  .week-toggle { display: grid; grid-template-columns: 1fr 1fr; margin-bottom: 16px; }
+  .week-toggle button { justify-content: center; }
 </style>
 </head>
 <body>
@@ -954,6 +958,11 @@
   </section>
 
   <section id="view-week" hidden>
+    <div class="seg week-toggle glass" id="weekToggle" role="group" aria-label="Which week" hidden>
+      <button type="button" data-week="this" aria-pressed="true">This week</button>
+      <button type="button" data-week="last" aria-pressed="false">Last week</button>
+    </div>
+    <p class="hint center" id="lastWeekHint" hidden>Last week's dinners. Tap one for its recipe.</p>
     <div id="weekStart" hidden>
       <div class="card glass plan-start">
         <h2>Plan the week</h2>
@@ -2691,6 +2700,7 @@
   let week = null;            // { plan, recent } from the server
   let weekBusy = false;       // an action is in flight, so polls wait
   let weekPlanning = false;   // showing "Plan the week" even though a locked week exists
+  let viewingLast = false;    // looking back at last week's plan (read-only)
   let lastWeekRender = "";
   let planCount = Math.min(Math.max(Number(store.get("kitchen.planCount")) || 5, 1), 7);
   let pickerReplaceId = null; // dinner being replaced by "Pick", or null when adding
@@ -2721,7 +2731,7 @@
     document.querySelectorAll("#view-week button").forEach((b) => { b.disabled = true; });
     try {
       const data = await api(action, { plan_id: week?.plan?.id, ...body });
-      week = { plan: data.plan, recent: data.recent };
+      week = { plan: data.plan, previous: data.previous, recent: data.recent };
       keep("kitchen.cache.week", week);
       weekPlanning = false;
       if (data.short > 0) {
@@ -2741,7 +2751,7 @@
     }
   }
 
-  function weekCard(mealId, draft) {
+  function weekCard(mealId, draft, readOnly = false) {
     const meal = mealById(mealId);
     const li = document.createElement("li");
     li.className = "wk glass";
@@ -2768,7 +2778,7 @@
     li.append(main);
     // The arrow is just a hint that the tile opens the recipe; the handle drags it to a new slot.
     li.insertAdjacentHTML("beforeend", `<img class="wk-arrow" src="${ARROW_ICON}" alt="" width="19" height="19">`
-      + `<button type="button" class="wk-drag" aria-label="Drag to reorder"><img src="${REORDER_ICON}" alt="" width="19" height="19"></button>`);
+      + (readOnly ? "" : `<button type="button" class="wk-drag" aria-label="Drag to reorder"><img src="${REORDER_ICON}" alt="" width="19" height="19"></button>`));
 
     if (draft) {
       const actions = document.createElement("div");
@@ -2782,10 +2792,17 @@
   }
 
   function renderWeek() {
-    const plan = week?.plan;
-    const snapshot = JSON.stringify([week, weekPlanning, planCount, meals.length, mealsLoaded]);
+    const previous = week?.previous?.meal_ids?.length ? week.previous : null;
+    if (!previous) viewingLast = false;
+    const plan = viewingLast ? previous : week?.plan;
+    const snapshot = JSON.stringify([week, weekPlanning, planCount, meals.length, mealsLoaded, viewingLast]);
     if (snapshot === lastWeekRender) return;
     lastWeekRender = snapshot;
+
+    // This week / Last week switch (only once there is a last week to look at)
+    $("weekToggle").hidden = !previous || weekPlanning;
+    $("weekToggle").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String((b.dataset.week === "last") === viewingLast)));
+    $("lastWeekHint").hidden = !viewingLast;
 
     const noMeals = mealsLoaded && meals.length === 0;
     const showStart = !noMeals && (!plan || weekPlanning);
@@ -2801,15 +2818,16 @@
     $("planBack").hidden = !(plan && weekPlanning);
     if (!plan || showStart) return;
 
-    const draft = plan.status === "draft";
+    const draft = plan.status === "draft" && !viewingLast;
     $("weekCount").textContent = plan.meal_ids.length;
     $("weekLabel").textContent = plan.meal_ids.length === 1 ? "dinner" : "dinners";
     const status = $("weekStatus");
     status.className = "week-status " + (draft ? "draft" : "locked");
-    status.textContent = draft ? "Not locked in yet" : `Locked in ${shortDate(plan.locked_at)}`;
-    $("weekList").replaceChildren(...plan.meal_ids.map((id) => weekCard(id, draft)));
-    $("weekDraftActions").hidden = !draft;
-    $("weekLockedActions").hidden = draft;
+    status.textContent = viewingLast ? (plan.locked_at ? `Last week · ${shortDate(plan.locked_at)}` : "Last week")
+      : draft ? "Not locked in yet" : `Locked in ${shortDate(plan.locked_at)}`;
+    $("weekList").replaceChildren(...plan.meal_ids.map((id) => weekCard(id, draft, viewingLast)));
+    $("weekDraftActions").hidden = !draft || viewingLast;
+    $("weekLockedActions").hidden = draft || viewingLast;
     const added = plan.added_to_list_at;
     $("weekShop").classList.toggle("done", !!added);
     $("weekShopText").textContent = added ? "Added to the list ✓" : "Add to shopping list";
@@ -2824,6 +2842,14 @@
     renderWeek();
   }
 
+  $("weekToggle").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-week]");
+    if (!b) return;
+    viewingLast = b.dataset.week === "last";
+    window.scrollTo(0, 0);
+    renderWeek();
+  });
+
   $("planLess").addEventListener("click", () => { planCount = Math.max(1, planCount - 1); store.set("kitchen.planCount", planCount); renderWeek(); });
   $("planMore").addEventListener("click", () => { planCount = Math.min(7, planCount + 1); store.set("kitchen.planCount", planCount); renderWeek(); });
   $("planBtn").addEventListener("click", () => weekAction("plan_new", { count: planCount }));
@@ -2833,7 +2859,7 @@
     if (await weekAction("lock")) toast("🔒 Week locked in. Tap a dinner for its recipe.");
   });
   $("weekEdit").addEventListener("click", () => weekAction("unlock"));
-  $("weekNext").addEventListener("click", () => { weekPlanning = true; renderWeek(); });
+  $("weekNext").addEventListener("click", () => { weekPlanning = true; viewingLast = false; renderWeek(); });
   $("weekRestart").addEventListener("click", () => {
     if (confirm("Replace this week's dinners with new random picks?")) weekAction("plan_new", { count: planCount });
   });
@@ -3211,7 +3237,7 @@
       const data = await api("shop_add", { plan_id: shopPlanId, lines, by: myName });
       setItems(data.items);
       render();
-      week = { plan: data.plan, recent: data.recent };
+      week = { plan: data.plan, previous: data.previous, recent: data.recent };
       keep("kitchen.cache.week", week);
       lastWeekRender = "";
       renderWeek();
