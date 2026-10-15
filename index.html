@@ -870,6 +870,40 @@
   /* This week / Last week switch */
   .week-toggle { display: grid; grid-template-columns: 1fr 1fr; margin-bottom: 16px; }
   .week-toggle button { justify-content: center; }
+
+  /* ---------- Expanded list item (Figma 5746:601) ---------- */
+  .aisle h3 { font-weight: 600; }
+  /* The ⋯ button: dots line up with the edge of the card; when open, a small grey circle sits behind them */
+  .more-btn { position: relative; width: 30px; margin-right: 0; background: none !important; }
+  .more-btn::before {
+    content: ""; position: absolute; left: 50%; top: 50%; width: 23px; height: 23px; margin: -11.5px 0 0 -11.5px;
+    border-radius: 50%; background: #F1F1F1; border: 1px solid #D9D9D9; opacity: 0; transition: opacity 0.15s;
+  }
+  .more-btn svg { position: relative; }
+  .more-btn[aria-expanded="true"]::before, .more-btn:active::before { opacity: 1; }
+  /* Dinner tags, amount stepper and section all stop at the right edge of the amount chip */
+  .item-tags { padding-right: 30px; }
+  .item .stepper { display: flex; align-items: center; gap: 12px; padding: 6px 30px 0 36px; }
+  .item .stepper .step {
+    position: relative; width: 45px; height: 27px; border-radius: 10px;
+    background: #F1F1F1; border: 1px solid #D9D9D9; color: #1F1F1F;
+  }
+  .item .stepper .step::after { content: ""; position: absolute; inset: -9px -6px; } /* bigger area to tap than it looks */
+  .item .stepper .step svg { width: 14px; height: 14px; }
+  .item .stepper .step-value { font-family: var(--font-mono); font-size: 20px; font-weight: 400; letter-spacing: -0.05em; }
+  .item .move-row { gap: 19px; padding: 14px 30px 18px 36px; }
+  .item .move-row span { font-size: 14px; font-weight: 600; letter-spacing: -0.05em; color: #808080; }
+  .item .move-row select {
+    height: 30px; padding: 0 30px 0 12px; border-radius: 10px; font-size: 14px; letter-spacing: -0.03em;
+    background: #FFFFFF url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 10l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 10px center / 14px;
+    border: 1px solid #D9D9D9; color: #1F1F1F;
+  }
+  @media (prefers-color-scheme: dark) {
+    .more-btn::before, .item .stepper .step { background: var(--surface-strong); border-color: var(--border); }
+    .item .stepper .step { color: var(--text); }
+    .item .move-row select { background-color: var(--field); border-color: var(--border); color: var(--text); }
+    .item .move-row span { color: var(--muted); }
+  }
 </style>
 </head>
 <body>
