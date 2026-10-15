@@ -962,6 +962,12 @@
   .meal-row-count { font-size: 12px; letter-spacing: -0.03em; color: #B4B4B4; }
   .meal-row-link { color: #B4B4B4; }
   .meal-row-link svg { width: 16px; height: 16px; }
+
+  /* Show as / Tapping opens: each option sized to its label first, so the white pill
+     always has breathing room (longer labels like "Recipe" no longer touch its edges). */
+  .dinner-controls .seg { grid-template-columns: auto auto; }
+  .dinner-controls .seg button { padding: 0 12px; white-space: nowrap; gap: 5px; }
+  .dinner-controls .seg button svg { width: 15px; height: 15px; }
 </style>
 </head>
 <body>
