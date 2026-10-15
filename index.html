@@ -904,6 +904,23 @@
     .item .move-row select { background-color: var(--field); border-color: var(--border); color: var(--text); }
     .item .move-row span { color: var(--muted); }
   }
+
+  /* Meal Planner while planning (not locked in): arrow and drag handle stacked on the right,
+     and Swap / Pick / × styled like the shopping list's amount buttons. */
+  .wk.draft .wk-drag { top: 39px; bottom: auto; }
+  .wk.draft .wk-actions { display: grid; grid-template-columns: 1fr 1fr 45px; gap: 8px; padding: 0 30px 16px 85px; margin-top: -4px; }
+  .wk.draft .wk-btn {
+    position: relative; min-height: 0; height: 30px; border-radius: 10px; gap: 6px;
+    background: #F1F1F1; border: 1px solid #D9D9D9; color: #1F1F1F;
+    font-size: 14px; font-weight: 600; letter-spacing: -0.05em;
+  }
+  .wk.draft .wk-btn::after { content: ""; position: absolute; inset: -7px -4px; } /* bigger area to tap than it looks */
+  .wk.draft .wk-btn svg { width: 15px; height: 15px; color: #1F1F1F; }
+  .wk.draft .wk-btn.icon { color: #1F1F1F; }
+  @media (prefers-color-scheme: dark) {
+    .wk.draft .wk-btn { background: var(--surface-strong); border-color: var(--border); color: var(--text); }
+    .wk.draft .wk-btn svg, .wk.draft .wk-btn.icon { color: var(--text); }
+  }
 </style>
 </head>
 <body>
@@ -2788,7 +2805,7 @@
   function weekCard(mealId, draft, readOnly = false) {
     const meal = mealById(mealId);
     const li = document.createElement("li");
-    li.className = "wk glass";
+    li.className = "wk glass" + (draft ? " draft" : "");
     li.dataset.id = mealId;
 
     const main = document.createElement("button");
