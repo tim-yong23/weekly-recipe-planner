@@ -965,8 +965,12 @@
 
   /* Show as / Tapping opens: each option sized to its label first, so the white pill
      always has breathing room (longer labels like "Recipe" no longer touch its edges). */
-  .dinner-controls .seg { grid-template-columns: auto auto; }
-  .dinner-controls .seg button { padding: 0 12px; white-space: nowrap; gap: 5px; }
+  /* The two switches share a row when they fit; on a narrow screen the second drops below,
+     so neither can run off the edge of the page. */
+  .dinner-controls { display: flex; flex-wrap: wrap; gap: 10px; }
+  .dinner-controls > div { flex: 1 1 0; min-width: fit-content; }
+  .dinner-controls .seg { display: flex; }
+  .dinner-controls .seg button { flex: 1 1 auto; padding: 0 10px; white-space: nowrap; gap: 5px; }
   .dinner-controls .seg button svg { width: 15px; height: 15px; }
 </style>
 </head>
