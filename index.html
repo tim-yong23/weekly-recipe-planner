@@ -1022,6 +1022,39 @@
     .hh-edit .hh-field select, .hh-edit .hh-field input { background-color: var(--field); border-color: var(--border); color: var(--text); }
     .mini-btn, .suggest-actions .ghost-btn { background: var(--surface-strong); border-color: var(--border); color: var(--text); }
   }
+
+  /* ---------- Recipes tab: Figma 5751:668 ---------- */
+  /* Show as / Tapping opens: label on the left, switch on the right */
+  .dinner-controls { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .dinner-controls > div { flex: none; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .dinner-controls .control-label { flex: none; margin: 0; font-size: 16px; font-weight: 600; letter-spacing: -0.05em; white-space: nowrap; }
+  .dinner-controls .seg { flex: 0 1 212px; min-width: 0; height: 41px; padding: 3px; }
+  .dinner-controls .seg button { min-height: 0; padding: 0 8px; font-size: 15px; gap: 5px; }
+  .dinner-controls .seg button svg { width: 16px; height: 16px; }
+  /* Search Your Recipes */
+  .recipe-search { position: relative; margin: 2px 0 10px; }
+  .recipe-search svg { position: absolute; left: 20px; top: 50%; width: 18px; height: 18px; margin-top: -9px; color: #808080; pointer-events: none; }
+  #recipeSearch {
+    width: 100%; height: 48px; padding: 0 18px 0 54px; border: 0; border-radius: 24px; outline: 0;
+    font-size: 15px; letter-spacing: -0.03em; color: #1F1F1F;
+    background: #FFFFFF; box-shadow: inset 0 0 5px 1px rgba(0, 0, 0, 0.1);
+  }
+  #recipeSearch::placeholder { color: #808080; }
+  #recipeSearch:focus { box-shadow: inset 0 0 5px 1px rgba(0, 0, 0, 0.1), 0 0 0 2px #7CD184; }
+  /* Cooking-time filter: scrolls sideways on its own if a phone is too narrow */
+  .time-filter { display: flex; gap: 6px; margin: 0 -16px 16px; padding: 0 16px; overflow-x: auto; scrollbar-width: none; }
+  .time-filter::-webkit-scrollbar { display: none; }
+  .time-filter button {
+    flex: none; height: 30px; padding: 0 12px; border-radius: 50px; white-space: nowrap;
+    background: #F1F1F1; border: 1px solid #D9D9D9; color: #1F1F1F;
+    font-size: 14px; font-weight: 600; letter-spacing: -0.05em;
+  }
+  .time-filter button[aria-pressed="true"] { background: #E6F7E4; border-color: #7CD184; color: #19581F; }
+  @media (prefers-color-scheme: dark) {
+    #recipeSearch { background: var(--field); color: var(--text); box-shadow: inset 0 0 5px 1px rgba(255, 255, 255, 0.08); }
+    .time-filter button { background: var(--surface-strong); border-color: var(--border); color: var(--text); }
+    .time-filter button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent-line); color: var(--on-soft); }
+  }
 </style>
 </head>
 <body>
@@ -1190,6 +1223,16 @@
       <span class="badge" id="householdBadge" hidden></span>
       <svg class="wk-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
     </button>
+    <div class="recipe-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>
+      <input id="recipeSearch" type="search" placeholder="Search Your Recipes" autocomplete="off" autocapitalize="none" enterkeyhint="search" aria-label="Search your recipes">
+    </div>
+    <div class="time-filter" id="timeFilter" role="group" aria-label="Filter by cooking time">
+      <button type="button" data-time="all" aria-pressed="true">Any time</button>
+      <button type="button" data-time="quick" aria-pressed="false" aria-label="Under 30 minutes">&lt; 30 min</button>
+      <button type="button" data-time="medium" aria-pressed="false">30–60 min</button>
+      <button type="button" data-time="long" aria-pressed="false" aria-label="Over an hour">1 hr +</button>
+    </div>
     <ul class="meals" id="meals"></ul>
     <div class="empty glass" id="mealsEmpty" hidden>
       <div class="empty-emoji">🍝</div>
@@ -2002,10 +2045,10 @@
     return li;
   }
 
-  function mealListEls() {
+  function mealListEls(list = meals) {
     const els = [];
     let letter = null;
-    for (const meal of meals) {
+    for (const meal of list) {
       const first = meal.name.trim().charAt(0).toUpperCase();
       const heading = /[A-Z]/.test(first) ? first : "#";
       if (heading !== letter) {
@@ -2021,11 +2064,42 @@
     return els;
   }
 
+  /* Live search and cooking-time filter */
+  let recipeQuery = "";
+  let recipeTime = "all"; // all | quick (≤30 min) | medium (31–60) | long (over an hour)
+  function matchesRecipeFilters(meal) {
+    const m = meal.cook_minutes;
+    if (recipeTime === "quick" && !(m && m <= 30)) return false;
+    if (recipeTime === "medium" && !(m && m > 30 && m <= 60)) return false;
+    if (recipeTime === "long" && !(m && m > 60)) return false;
+    // Every word typed must appear in the recipe's name or one of its ingredients ("chicken rice").
+    const words = recipeQuery.toLowerCase().split(/\s+/).filter(Boolean);
+    if (!words.length) return true;
+    const haystack = [meal.name, ...meal.ingredients.map((i) => i.name)].join(" ").toLowerCase();
+    return words.every((w) => haystack.includes(w));
+  }
+  $("recipeSearch").addEventListener("input", (e) => { recipeQuery = e.target.value; renderMeals(); });
+  $("timeFilter").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-time]");
+    if (!b) return;
+    recipeTime = b.dataset.time;
+    $("timeFilter").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    renderMeals();
+  });
+
   function renderMeals() {
     document.querySelectorAll(".view-toggle button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === mealView)));
     document.querySelectorAll(".open-toggle button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.open === openMode)));
     $("meals").classList.toggle("compact", mealView === "list");
-    $("meals").replaceChildren(...(mealView === "list" ? mealListEls() : meals.map(mealEl)));
+    const shown = meals.filter(matchesRecipeFilters);
+    const els = mealView === "list" ? mealListEls(shown) : shown.map(mealEl);
+    if (!shown.length && meals.length) {
+      const none = document.createElement("li");
+      none.className = "rv-empty";
+      none.textContent = "No recipes match. Try another word or cooking time.";
+      els.push(none);
+    }
+    $("meals").replaceChildren(...els);
     $("mealCount").textContent = meals.length;
     $("mealLabel").textContent = meals.length === 1 ? "recipe" : "recipes";
     $("mealsEmpty").hidden = !mealsLoaded || meals.length > 0;
