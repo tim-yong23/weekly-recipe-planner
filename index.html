@@ -972,6 +972,56 @@
   .dinner-controls .seg { display: flex; }
   .dinner-controls .seg button { flex: 1 1 auto; padding: 0 10px; white-space: nowrap; gap: 5px; }
   .dinner-controls .seg button svg { width: 15px; height: 15px; }
+
+  /* ---------- Household ingredients (like the shopping list) ---------- */
+  #householdSearch {
+    min-height: 0; height: 42px; padding: 0 16px; border-radius: 50px; font-size: 15px; letter-spacing: -0.02em;
+    background: #F1F1F1; border: 1px solid #D9D9D9;
+  }
+  #householdSearch:focus { border-color: #7CD184; background: #FFFFFF; }
+  .hh-list { display: flex; flex-direction: column; gap: 4px; margin-top: 14px; }
+  .hh { background: var(--row); border: 0; border-radius: 10px; }
+  .hh-row { gap: 0; }
+  .hh-name { min-height: 44px; padding: 8px 6px 8px 14px; align-items: center; }
+  .hh-name span:first-child { font-size: 15px; font-weight: 400; letter-spacing: -0.03em; }
+  .hh-uses { font-size: 12px; letter-spacing: -0.03em; color: #B4B4B4; }
+  .hh-uses.unused { color: var(--warn); }
+  /* "Always have" jar: quiet until it's on */
+  .hh .ing-staple { width: 40px; height: 40px; margin-right: 2px; border: 0; background: none; color: #C9C9C9; }
+  .hh .ing-staple svg { width: 18px; height: 18px; }
+  .hh .ing-staple[aria-pressed="true"] { color: var(--on-soft); }
+  /* Editing an ingredient: label + field rows */
+  .hh-edit { display: flex; flex-direction: column; gap: 10px; padding: 4px 14px 16px; }
+  .hh-field { display: grid; grid-template-columns: 76px 1fr auto; align-items: center; gap: 10px; }
+  .hh-field > span { font-size: 14px; font-weight: 600; letter-spacing: -0.05em; color: #808080; }
+  .hh-field > :nth-child(2):last-child { grid-column: 2 / -1; }
+  .hh-edit .hh-field select, .hh-edit .hh-field input {
+    min-width: 0; width: 100%; min-height: 0; height: 30px; padding: 0 10px; border-radius: 10px; outline: 0;
+    font-size: 14px; letter-spacing: -0.03em; color: #1F1F1F;
+    background: #FFFFFF; border: 1px solid #D9D9D9;
+  }
+  .hh-edit .hh-field select {
+    padding-right: 30px; -webkit-appearance: none; appearance: none;
+    background: #FFFFFF url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 10l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 10px center / 14px;
+  }
+  .hh-edit .hh-field input:focus, .hh-edit .hh-field select:focus { border-color: #7CD184; }
+  /* Small grey buttons, as used for Swap / Pick and the amount − / + */
+  .mini-btn, .suggest-actions .ghost-btn {
+    position: relative; min-height: 0; height: 30px; padding: 0 12px; border-radius: 10px;
+    background: #F1F1F1; border: 1px solid #D9D9D9; color: #1F1F1F;
+    font-size: 14px; font-weight: 600; letter-spacing: -0.05em;
+  }
+  .mini-btn::after { content: ""; position: absolute; inset: -7px -4px; }
+  .suggest { padding: 12px 14px; border-radius: 10px; background: var(--row); }
+  .suggest p { font-size: 15px; letter-spacing: -0.03em; }
+  @media (prefers-color-scheme: dark) {
+    #householdSearch { background: var(--surface-strong); border-color: var(--border); }
+    #householdSearch:focus { background: var(--field); }
+    .hh .ing-staple { color: var(--faint); }
+    .hh-field > span { color: var(--muted); }
+    .hh-edit .hh-field select, .hh-edit .hh-field input { background-color: var(--field); border-color: var(--border); color: var(--text); }
+    .mini-btn, .suggest-actions .ghost-btn { background: var(--surface-strong); border-color: var(--border); color: var(--text); }
+  }
 </style>
 </head>
 <body>
@@ -1308,7 +1358,7 @@
       <h2 id="householdTitle">Ingredients</h2>
       <span></span>
     </header>
-    <p class="hint">Every ingredient your dinners use. Tap <span class="jar-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="3.5" rx="1"/><path d="M8 6c-1.8 1-3 2.7-3 4.6v7.9A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5v-7.9C19 8.7 17.8 7 16 6"/><path d="M8.5 13.5h7"/></svg></span> for things you always have. Tap a name to change its supermarket section, rename it or merge it into another.</p>
+    <p class="hint">Every ingredient your dinners use. Tap <span class="jar-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="3.5" rx="1"/><path d="M8 6c-1.8 1-3 2.7-3 4.6v7.9A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5v-7.9C19 8.7 17.8 7 16 6"/><path d="M8.5 13.5h7"/></svg></span> for things you always have. Tap a name to change its section, rename it or merge it.</p>
     <section class="card glass" id="suggestBox" hidden>
       <div class="ing-head"><h3>Same thing?</h3></div>
       <ul class="suggest-list" id="suggestList"></ul>
@@ -2235,8 +2285,6 @@
       const uses = document.createElement("span");
       uses.className = "hh-uses" + (ing.uses ? "" : " unused");
       uses.textContent = ing.uses ? `${ing.uses} dinner${ing.uses === 1 ? "" : "s"}` : "not used";
-      const aisle = SECTIONS.find(([k]) => k === ing.section);
-      if (aisle) uses.textContent = `${aisle[2]} · ${uses.textContent}`;
       name.append(label, uses);
       const jar = document.createElement("button");
       jar.type = "button";
@@ -2250,20 +2298,33 @@
       if (householdOpenId === ing.id) {
         const edit = document.createElement("div");
         edit.className = "hh-edit";
+        // Label + field rows, laid out like the shopping list's Section row.
+        const field = (label, ...controls) => {
+          const row = document.createElement("div");
+          row.className = "hh-field";
+          const l = document.createElement("span");
+          l.textContent = label;
+          row.append(l, ...controls);
+          return row;
+        };
+        const section = document.createElement("select");
+        section.className = "hh-section";
+        section.setAttribute("aria-label", "Supermarket section");
+        section.innerHTML = sectionOptions(ing.section || "other");
         const rename = document.createElement("input");
-        rename.className = "text-input hh-rename";
+        rename.className = "hh-rename";
         rename.value = ing.name;
         rename.maxLength = 100;
         rename.setAttribute("aria-label", "New name");
         const save = document.createElement("button");
         save.type = "button";
-        save.className = "ghost-btn";
+        save.className = "mini-btn";
         save.dataset.act = "rename";
-        save.textContent = "Rename";
+        save.textContent = "Save";
         const into = document.createElement("select");
         into.className = "hh-merge";
         into.setAttribute("aria-label", "Merge into");
-        into.innerHTML = `<option value="">Merge into…</option>`;
+        into.innerHTML = `<option value="">Choose…</option>`;
         for (const other of household.ingredients) {
           if (other.id === ing.id) continue;
           const o = document.createElement("option");
@@ -2273,14 +2334,10 @@
         }
         const merge = document.createElement("button");
         merge.type = "button";
-        merge.className = "ghost-btn";
+        merge.className = "mini-btn";
         merge.dataset.act = "merge";
         merge.textContent = "Merge";
-        const section = document.createElement("select");
-        section.className = "hh-section";
-        section.setAttribute("aria-label", "Supermarket section");
-        section.innerHTML = sectionOptions(ing.section || "other");
-        edit.append(section, rename, save, into, merge);
+        edit.append(field("Section", section), field("Name", rename, save), field("Merge into", into, merge));
         li.append(edit);
       }
       return li;
@@ -2340,7 +2397,6 @@
     } else if (e.target.closest(".hh-name")) {
       householdOpenId = householdOpenId === id ? null : id;
       renderHouseholdSheet();
-      if (householdOpenId) $("householdList").querySelector(`.hh[data-id="${id}"] .hh-rename`)?.focus();
     } else if (e.target.closest('[data-act="rename"]')) {
       householdAction("ingredient_rename", { id, name: li.querySelector(".hh-rename").value }, "Renamed");
     } else if (e.target.closest('[data-act="merge"]')) {
