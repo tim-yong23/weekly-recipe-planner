@@ -963,7 +963,7 @@
   .meal-row-link { color: #B4B4B4; }
   .meal-row-link svg { width: 16px; height: 16px; }
 
-  /* Show as / Tapping opens: each option sized to its label first, so the white pill
+  /* Show as: each option sized to its label first, so the white pill
      always has breathing room (longer labels like "Recipe" no longer touch its edges). */
   /* The two switches share a row when they fit; on a narrow screen the second drops below,
      so neither can run off the edge of the page. */
@@ -1024,7 +1024,7 @@
   }
 
   /* ---------- Recipes tab: Figma 5751:668 ---------- */
-  /* Show as / Tapping opens: label on the left, switch on the right */
+  /* Show as: label on the left, switch on the right */
   .dinner-controls { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
   .dinner-controls > div { flex: none; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .dinner-controls .control-label { flex: none; margin: 0; font-size: 16px; font-weight: 600; letter-spacing: -0.05em; white-space: nowrap; }
@@ -1202,19 +1202,6 @@
           List
         </button>
       </div>
-      </div>
-      <div>
-        <span class="control-label">Tapping opens</span>
-        <div class="seg open-toggle glass" role="group" aria-label="Tapping a dinner opens">
-          <button type="button" data-open="recipe" aria-pressed="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/><path d="M8.5 8h7M8.5 12h5"/></svg>
-            Recipe
-          </button>
-          <button type="button" data-open="edit" aria-pressed="false">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>
-            Edit
-          </button>
-        </div>
       </div>
     </div>
     <button type="button" class="household-btn glass" id="householdBtn">
@@ -1907,7 +1894,6 @@
   let mealsLoaded = false;
   let household = { ingredients: [], aliases: {}, suggestions: [] }; // the household ingredient list
   let mealView = store.get("kitchen.mealView") === "list" ? "list" : "cards";
-  let openMode = store.get("kitchen.openMode") === "edit" ? "edit" : "recipe"; // what tapping a dinner opens
   let draft = null;        // the dinner being added or edited
   let draftDirty = false;
 
@@ -2089,7 +2075,6 @@
 
   function renderMeals() {
     document.querySelectorAll(".view-toggle button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === mealView)));
-    document.querySelectorAll(".open-toggle button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.open === openMode)));
     $("meals").classList.toggle("compact", mealView === "list");
     const shown = meals.filter(matchesRecipeFilters);
     const els = mealView === "list" ? mealListEls(shown) : shown.map(mealEl);
@@ -2132,18 +2117,11 @@
     renderMeals();
   }));
 
-  document.querySelectorAll(".open-toggle button").forEach((b) => b.addEventListener("click", () => {
-    openMode = b.dataset.open;
-    store.set("kitchen.openMode", openMode);
-    renderMeals();
-  }));
-
   $("meals").addEventListener("click", (e) => {
     const btn = e.target.closest(".meal-main, .meal-row-main");
     if (!btn) return;
-    const meal = meals.find((m) => m.id === Number(btn.dataset.id));
-    if (openMode === "edit") openEditor(meal);
-    else openRecipe(meal);
+    // Always opens the recipe; its Edit button (top right) opens the editor.
+    openRecipe(meals.find((m) => m.id === Number(btn.dataset.id)));
   });
 
   /* ---------- Recipe view (for cooking) ---------- */
