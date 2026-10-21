@@ -976,6 +976,100 @@
   .dinner-controls .seg button { flex: 1 1 auto; padding: 0 10px; white-space: nowrap; gap: 5px; }
   .dinner-controls .seg button svg { width: 15px; height: 15px; }
 
+  /* ---------- Recipe tags ---------- */
+  /* Colours: soft tints that sit with the app's greens. No colour = plain grey. */
+  :where(.rtag, .swatch, .tag-filter button[data-tag]) {
+    --tag-bg: #F1F1F1; --tag-fg: #5E5E5E; --tag-line: #D9D9D9; --tag-dot: transparent;
+  }
+  .tc-green  { --tag-bg: #E6F7E4; --tag-fg: #2F7A2A; --tag-line: #9ED79A; --tag-dot: #4EA346; }
+  .tc-teal   { --tag-bg: #DDF3EF; --tag-fg: #1E6F64; --tag-line: #8FD3C7; --tag-dot: #2E9E8D; }
+  .tc-blue   { --tag-bg: #E2EEFB; --tag-fg: #2A5C9A; --tag-line: #9DC0EA; --tag-dot: #4A82C9; }
+  .tc-purple { --tag-bg: #EEE7F8; --tag-fg: #6243A0; --tag-line: #C2AEE6; --tag-dot: #8565C4; }
+  .tc-pink   { --tag-bg: #FBE6EF; --tag-fg: #A33A6B; --tag-line: #EDA8C6; --tag-dot: #D2618F; }
+  .tc-orange { --tag-bg: #FCEADB; --tag-fg: #A4521C; --tag-line: #F0B78C; --tag-dot: #DE7E3A; }
+  .tc-yellow { --tag-bg: #FBF3CF; --tag-fg: #7D6510; --tag-line: #E6D27A; --tag-dot: #C9A51E; }
+  @media (prefers-color-scheme: dark) {
+    :where(.rtag, .swatch, .tag-filter button[data-tag]) { --tag-bg: #2A2E2A; --tag-fg: #C9CCC9; --tag-line: #3A3F3A; }
+    .tc-green  { --tag-bg: #1F3A1F; --tag-fg: #9BD894; --tag-line: #3D6B39; }
+    .tc-teal   { --tag-bg: #173733; --tag-fg: #8AD6CA; --tag-line: #2F6A61; }
+    .tc-blue   { --tag-bg: #1B2B40; --tag-fg: #9CC2F0; --tag-line: #36557D; }
+    .tc-purple { --tag-bg: #2B2140; --tag-fg: #C6B1EE; --tag-line: #54417E; }
+    .tc-pink   { --tag-bg: #3A1F2C; --tag-fg: #F0A9C8; --tag-line: #723C56; }
+    .tc-orange { --tag-bg: #3B2618; --tag-fg: #F2B48A; --tag-line: #75482B; }
+    .tc-yellow { --tag-bg: #352F14; --tag-fg: #E8D27A; --tag-line: #6B5D24; }
+  }
+  .rtag {
+    display: inline-flex; align-items: center; gap: 5px; max-width: 100%; height: 22px; padding: 0 9px; border-radius: 50px;
+    background: var(--tag-bg); color: var(--tag-fg); font-size: 12px; font-weight: 600; letter-spacing: -0.03em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .tag-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag-pills:empty { display: none; }
+  .tag-pills .rtag { height: 28px; padding: 0 12px; font-size: 13px; }
+  /* "+ Tag" / "Edit tags": dashed, so it reads as an action rather than a tag */
+  .tag-pills .tag-add { background: none; border: 1px dashed #BDBDBD; color: #808080; }
+  .tag-pills .tag-add svg { width: 12px; height: 12px; }
+  #rvTags { margin: -2px 2px 4px; }
+  /* On recipe cards (lined up with the name) and list rows */
+  .meal-tags { display: flex; flex-wrap: wrap; gap: 5px; padding: 0 30px 14px 85px; margin-top: -8px; }
+  .meal-tags + .meal-foot { margin-top: -4px; }
+  .meal-row-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .meal-row-text .meal-row-name { flex: none; }
+  .meal-row-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .meal-row-tags .rtag { height: 18px; padding: 0 7px; font-size: 11px; }
+  /* Filter row: plain chips with a colour dot; a chosen tag fills with its colour */
+  .time-filter.tag-filter { margin-top: -8px; }
+  .tag-filter button[data-tag]::before {
+    content: ""; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: var(--tag-dot); display: inline-block;
+  }
+  .tag-filter button[data-tag]:not([class*="tc-"])::before { display: none; }
+  .tag-filter button[data-tag][aria-pressed="true"] { background: var(--tag-bg); border-color: var(--tag-fg); color: var(--tag-fg); }
+  .tag-filter button[data-tag]:not([class*="tc-"])[aria-pressed="true"] { background: #E6F7E4; border-color: #7CD184; color: #19581F; }
+  .tag-filter .tf-action { display: inline-flex; align-items: center; gap: 5px; }
+  .tag-filter .tf-action svg { width: 14px; height: 14px; }
+  .tag-filter .tf-action[aria-pressed="true"] { background: #E6F7E4; border-color: #7CD184; color: #19581F; }
+  .tag-filter .tf-sep { flex: none; width: 1px; margin: 5px 2px; background: #D9D9D9; }
+  .meal-letter .rtag { height: 24px; font-size: 14px; padding: 0 10px; }
+  @media (prefers-color-scheme: dark) {
+    .tag-pills .tag-add { border-color: var(--border-strong); color: var(--muted); }
+    .tag-filter button[data-tag]:not([class*="tc-"])[aria-pressed="true"], .tag-filter .tf-action[aria-pressed="true"] {
+      background: var(--accent-soft); border-color: var(--accent-line); color: var(--on-soft);
+    }
+    .tag-filter .tf-sep { background: var(--border); }
+  }
+  /* Tag picker: opens over the recipe or the editor */
+  .tag-sheet { z-index: 16; }
+  .tag-new { display: flex; gap: 8px; align-items: center; }
+  .tag-new input {
+    flex: 1; min-width: 0; height: 42px; padding: 0 16px; border-radius: 50px; outline: 0; font-size: 15px; letter-spacing: -0.02em;
+    background: #F1F1F1; border: 1px solid #D9D9D9; color: var(--text);
+  }
+  .tag-new input:focus { border-color: #7CD184; background: #FFFFFF; }
+  .tag-new .mini-btn { height: 42px; padding: 0 16px; border-radius: 50px; }
+  .tag-pick { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag-pick .rtag { height: 36px; padding: 0 14px; font-size: 15px; border: 1px solid transparent; }
+  .tag-pick .rtag[aria-pressed="false"] { background: transparent; border-color: var(--tag-line); color: var(--text); }
+  .tag-pick .rtag[aria-pressed="false"]::before {
+    content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--tag-dot);
+  }
+  .tag-pick .rtag[aria-pressed="true"] { border-color: var(--tag-fg); }
+  .tag-pick .rtag svg { width: 13px; height: 13px; }
+  /* Manage tags: rows like Household ingredients, colour swatches in the edit panel */
+  .hh-name .rtag { height: 26px; font-size: 14px; padding: 0 11px; flex: 0 1 auto; }
+  .swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+  .swatch {
+    position: relative; width: 28px; height: 28px; border-radius: 50%;
+    background: var(--tag-bg); border: 2px solid var(--tag-line);
+  }
+  .swatch::after { content: ""; position: absolute; inset: -5px; }
+  .swatch[aria-pressed="true"] { border-color: var(--tag-fg); box-shadow: 0 0 0 2px var(--bg); outline: 2px solid var(--tag-fg); }
+  .mini-btn.danger { color: var(--danger); }
+  .mini-btn.danger.confirm { background: var(--danger); border-color: var(--danger); color: #FFFFFF; }
+  @media (prefers-color-scheme: dark) {
+    .tag-new input { background: var(--surface-strong); border-color: var(--border); }
+    .tag-new input:focus { background: var(--field); }
+  }
+
   /* ---------- Household ingredients (like the shopping list) ---------- */
   #householdSearch {
     min-height: 0; height: 42px; padding: 0 16px; border-radius: 50px; font-size: 15px; letter-spacing: -0.02em;
@@ -1223,6 +1317,7 @@
       <button type="button" data-time="medium" aria-pressed="false">30–60 min</button>
       <button type="button" data-time="long" aria-pressed="false" aria-label="Over an hour">1 hr +</button>
     </div>
+    <div class="time-filter tag-filter" id="tagFilter" role="group" aria-label="Filter and group by tag" hidden></div>
     <ul class="meals" id="meals"></ul>
     <div class="empty glass" id="mealsEmpty" hidden>
       <div class="empty-emoji">🍝</div>
@@ -1303,6 +1398,11 @@
     </section>
 
     <section class="card glass">
+      <div class="ing-head"><h3>Tags</h3></div>
+      <div class="tag-pills" id="mealTags"></div>
+    </section>
+
+    <section class="card glass">
       <div class="ing-head">
         <h3>Ingredients<span class="mono" id="ingCount"></span></h3>
         <button type="button" class="ghost-btn" id="pasteToggle">Paste a list</button>
@@ -1341,6 +1441,7 @@
     <div class="photo glass" id="rvPhoto" hidden><img id="rvPhotoImg" alt="" referrerpolicy="no-referrer"></div>
     <h1 class="rv-title" id="rvTitle"></h1>
     <div class="rv-meta" id="rvMeta"></div>
+    <div class="tag-pills" id="rvTags"></div>
     <section class="card glass">
       <div class="ing-head"><h3>Ingredients<span class="mono" id="rvIngCount"></span></h3></div>
       <ul class="rv-ings" id="rvIngs"></ul>
@@ -1404,6 +1505,34 @@
     </section>
     <input class="text-input" id="householdSearch" type="search" placeholder="Search ingredients" autocomplete="off" aria-label="Search ingredients">
     <ul class="hh-list" id="householdList"></ul>
+  </div>
+</div>
+
+<div class="sheet tag-sheet" id="tagPicker" hidden role="dialog" aria-modal="true" aria-labelledby="tagPickerTitle">
+  <div class="sheet-inner">
+    <header class="sheet-head">
+      <button type="button" class="text-btn" id="tagPickerCancel">Cancel</button>
+      <h2 id="tagPickerTitle">Tags</h2>
+      <button type="button" class="text-btn end" id="tagPickerDone">Done</button>
+    </header>
+    <form class="tag-new" id="tagNewForm">
+      <input id="tagNew" maxlength="30" placeholder="New tag, e.g. Date night" autocomplete="off" enterkeyhint="done" aria-label="New tag name">
+      <button type="submit" class="mini-btn">Add</button>
+    </form>
+    <p class="hint" id="tagPickerHint">Tap tags to add them to this recipe, or tap again to take them off.</p>
+    <div class="tag-pick" id="tagPickList"></div>
+  </div>
+</div>
+
+<div class="sheet" id="tagsSheet" hidden role="dialog" aria-modal="true" aria-labelledby="tagsSheetTitle">
+  <div class="sheet-inner">
+    <header class="sheet-head">
+      <button type="button" class="text-btn" id="tagsSheetClose">Done</button>
+      <h2 id="tagsSheetTitle">Tags</h2>
+      <span></span>
+    </header>
+    <p class="hint">Tap a tag to rename it, give it a colour, merge it into another tag or delete it.</p>
+    <ul class="hh-list" id="tagsList"></ul>
   </div>
 </div>
 
@@ -1978,6 +2107,8 @@
     main.append(photoEl(meal.image_url), body);
     li.append(main);
     li.insertAdjacentHTML("beforeend", `<img class="wk-arrow" src="${ARROW_ICON}" alt="" width="19" height="19">`);
+    const tagRow = mealTagsEl(meal, "meal-tags");
+    if (tagRow) li.append(tagRow);
 
     const href = meal.recipe_url && safeUrl(meal.recipe_url);
     if (href) {
@@ -2019,7 +2150,15 @@
     } else {
       count.textContent = "No ingredients";
     }
-    main.append(name, count);
+    const tagRow = mealTagsEl(meal, "meal-row-tags");
+    if (tagRow) {
+      const text = document.createElement("span");
+      text.className = "meal-row-text";
+      text.append(name, tagRow);
+      main.append(text, count);
+    } else {
+      main.append(name, count);
+    }
     li.append(main);
 
     const href = meal.recipe_url && safeUrl(meal.recipe_url);
@@ -2059,10 +2198,15 @@
     return els;
   }
 
-  /* Live search and cooking-time filter */
+  /* Live search, cooking-time and tag filters */
   let recipeQuery = "";
+  let selectedTags = new Set();  // tag ids; a recipe must have every one
+  let groupByTag = store.get("kitchen.groupByTag") === "1";
   let recipeTime = "all"; // all | quick (≤30 min) | medium (31–60) | long (over an hour)
   function matchesRecipeFilters(meal) {
+    const ids = meal.tag_ids ?? [];
+    // Several tags chosen: only recipes that have all of them.
+    for (const t of selectedTags) if (!ids.includes(t)) return false;
     const m = meal.cook_minutes;
     if (recipeTime === "quick" && !(m && m <= 30)) return false;
     if (recipeTime === "medium" && !(m && m > 30 && m <= 60)) return false;
@@ -2070,7 +2214,8 @@
     // Every word typed must appear in the recipe's name or one of its ingredients ("chicken rice").
     const words = recipeQuery.toLowerCase().split(/\s+/).filter(Boolean);
     if (!words.length) return true;
-    const haystack = [meal.name, ...meal.ingredients.map((i) => i.name)].join(" ").toLowerCase();
+    const haystack = [meal.name, ...meal.ingredients.map((i) => i.name), ...ids.map((id) => tagById(id)?.name ?? "")]
+      .join(" ").toLowerCase();
     return words.every((w) => haystack.includes(w));
   }
   $("recipeSearch").addEventListener("input", (e) => { recipeQuery = e.target.value; renderMeals(); });
@@ -2082,15 +2227,361 @@
     renderMeals();
   });
 
+  /* ---------- Recipe tags ---------- */
+
+  let tags = [];  // [{ id, name, colour, uses }], A–Z
+  const TAG_COLOURS = [
+    [null, "Grey"], ["green", "Green"], ["teal", "Teal"], ["blue", "Blue"], ["purple", "Purple"],
+    ["pink", "Pink"], ["orange", "Orange"], ["yellow", "Yellow"],
+  ];
+  const GROUP_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h7M4 12h16M4 18h16M15 6h5"/></svg>';
+  const tagById = (id) => tags.find((t) => t.id === id);
+  const tagClass = (tag) => tag?.colour ? ` tc-${tag.colour}` : "";
+  // "  Date   night " → "Date night" (same tidying as the server)
+  const cleanTag = (v) => String(v || "").replace(/\s+/g, " ").trim().slice(0, 30);
+
+  function tagEl(tag, tagName = "span") {
+    const el = document.createElement(tagName);
+    el.className = "rtag" + tagClass(tag);
+    el.textContent = tag.name;
+    return el;
+  }
+  function mealTagsEl(meal, className) {
+    const list = (meal.tag_ids ?? []).map(tagById).filter(Boolean);
+    if (!list.length) return null;
+    const box = document.createElement("div");
+    box.className = className;
+    box.append(...list.map((t) => tagEl(t)));
+    return box;
+  }
+
+  // Filter row: Group, then every tag in use (plus any chosen), then Edit tags.
+  function renderTagFilter() {
+    const row = $("tagFilter");
+    row.hidden = !tags.length;
+    if (!tags.length) return;
+    const group = document.createElement("button");
+    group.type = "button";
+    group.className = "tf-action";
+    group.dataset.act = "group";
+    group.setAttribute("aria-pressed", String(groupByTag));
+    group.innerHTML = GROUP_SVG + "Group";
+    const sep = document.createElement("span");
+    sep.className = "tf-sep";
+    const chips = tags.filter((t) => t.uses || selectedTags.has(t.id)).map((t) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = tagClass(t).trim();
+      b.dataset.tag = t.id;
+      b.textContent = t.name;
+      b.setAttribute("aria-pressed", String(selectedTags.has(t.id)));
+      return b;
+    });
+    const manage = document.createElement("button");
+    manage.type = "button";
+    manage.className = "tf-action";
+    manage.dataset.act = "manage";
+    manage.textContent = "Edit tags";
+    row.replaceChildren(group, sep, ...chips, manage);
+  }
+  $("tagFilter").addEventListener("click", (e) => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    if (b.dataset.act === "group") {
+      groupByTag = !groupByTag;
+      store.set("kitchen.groupByTag", groupByTag ? "1" : "0");
+    } else if (b.dataset.act === "manage") {
+      return openTagsSheet();
+    } else {
+      const id = Number(b.dataset.tag);
+      if (selectedTags.has(id)) selectedTags.delete(id);
+      else selectedTags.add(id);
+    }
+    renderMeals();
+  });
+
+  // Grouped by tag: a heading per tag, then its recipes (a recipe with two tags shows under both).
+  function tagGroupEls(shown) {
+    const els = [];
+    const heading = (content) => {
+      const h = document.createElement("li");
+      h.className = "meal-letter";
+      h.append(content);
+      els.push(h);
+    };
+    const add = (list) => els.push(...list.map(mealView === "list" ? mealRowEl : mealEl));
+    for (const t of tags) {
+      const list = shown.filter((m) => (m.tag_ids ?? []).includes(t.id));
+      if (!list.length) continue;
+      heading(tagEl(t));
+      add(list);
+    }
+    const untagged = shown.filter((m) => !(m.tag_ids ?? []).length);
+    if (untagged.length) {
+      heading("No tag");
+      add(untagged);
+    }
+    return els;
+  }
+
+  /* Tag picker: used from the recipe page (saves straight away) and the editor (saves with the recipe) */
+  let pick = null;  // { chosen: names, extra: new names not saved yet, done(names) }
+
+  function openTagPicker(names, done) {
+    pick = { chosen: [...names], extra: [], done };
+    $("tagNew").value = "";
+    $("tagPicker").hidden = false;
+    $("tagPicker").scrollTop = 0;
+    document.body.classList.add("sheet-open");
+    renderTagPicker();
+  }
+  function closeTagPicker() {
+    $("tagPicker").hidden = true;
+    pick = null;
+    // Another sheet (the recipe or the editor) is still open underneath.
+    if ([...document.querySelectorAll(".sheet")].every((el) => el.hidden)) document.body.classList.remove("sheet-open");
+  }
+  const sameTag = (a, b) => a.toLowerCase() === b.toLowerCase();
+  function renderTagPicker() {
+    const names = [...tags.map((t) => t.name), ...pick.extra.filter((n) => !tags.some((t) => sameTag(t.name, n)))];
+    $("tagPickerHint").textContent = names.length
+      ? "Tap tags to add them to this recipe, or tap again to take them off."
+      : "No tags yet. Type one above, like Quick, Date night or Freezer friendly.";
+    $("tagPickList").replaceChildren(...names.map((name) => {
+      const tag = tags.find((t) => sameTag(t.name, name)) ?? { name };
+      const b = tagEl(tag, "button");
+      b.type = "button";
+      b.dataset.name = name;
+      const on = pick.chosen.some((n) => sameTag(n, name));
+      b.setAttribute("aria-pressed", String(on));
+      if (on) b.insertAdjacentHTML("afterbegin", CHECK_SVG);
+      return b;
+    }));
+  }
+  $("tagPickList").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-name]");
+    if (!b || !pick) return;
+    const name = b.dataset.name;
+    const i = pick.chosen.findIndex((n) => sameTag(n, name));
+    if (i >= 0) pick.chosen.splice(i, 1);
+    else pick.chosen.push(name);
+    renderTagPicker();
+  });
+  // A typed tag is chosen straight away; an existing tag with that name is reused ("quick" → "Quick").
+  function addTypedTag() {
+    const typed = cleanTag($("tagNew").value);
+    $("tagNew").value = "";
+    if (!typed || !pick) return;
+    const name = tags.find((t) => sameTag(t.name, typed))?.name ?? pick.extra.find((n) => sameTag(n, typed)) ?? typed;
+    if (!tags.some((t) => sameTag(t.name, name)) && !pick.extra.some((n) => sameTag(n, name))) pick.extra.push(name);
+    if (!pick.chosen.some((n) => sameTag(n, name))) pick.chosen.push(name);
+    renderTagPicker();
+  }
+  $("tagNewForm").addEventListener("submit", (e) => { e.preventDefault(); addTypedTag(); });
+  $("tagPickerCancel").addEventListener("click", closeTagPicker);
+  $("tagPickerDone").addEventListener("click", () => {
+    if (!pick) return;
+    addTypedTag(); // something typed but not added yet still counts
+    const { chosen, done } = pick;
+    closeTagPicker();
+    done(chosen);
+  });
+
+  // The recipe's tags, plus a dashed button to change them.
+  function tagPillsEls(names, onEdit) {
+    const els = names.map((n) => tagEl(tags.find((t) => sameTag(t.name, n)) ?? { name: n }));
+    const edit = document.createElement("button");
+    edit.type = "button";
+    edit.className = "rtag tag-add";
+    edit.innerHTML = names.length ? "Edit tags" : PLUS_SVG + "Add tag";
+    edit.addEventListener("click", onEdit);
+    return [...els, edit];
+  }
+  const tagNamesOf = (meal) => (meal?.tag_ids ?? []).map(tagById).filter(Boolean).map((t) => t.name);
+
+  function renderRecipeTags() {
+    const meal = recipeMeal;
+    if (!meal) return;
+    $("rvTags").replaceChildren(...tagPillsEls(tagNamesOf(meal), () => openTagPicker(tagNamesOf(meal), async (names) => {
+      try {
+        applyMeals(await api("meal_tags", { meal_id: meal.id, tags: names }));
+        recipeMeal = meals.find((m) => m.id === meal.id) ?? meal;
+        renderRecipeTags();
+      } catch (err) {
+        handleError(err);
+      }
+    })));
+  }
+
+  function renderEditorTags() {
+    if (!draft) return;
+    $("mealTags").replaceChildren(...tagPillsEls(draft.tags, () => openTagPicker(draft.tags, (names) => {
+      if (!draft) return;
+      draft.tags = names;
+      draftDirty = true;
+      renderEditorTags();
+    })));
+  }
+
+  /* Edit tags sheet: rename, colour, merge, delete */
+  let tagsOpenId = null;
+  let tagDeleteArmed = null;
+
+  function openTagsSheet() {
+    tagsOpenId = null;
+    $("tagsSheet").hidden = false;
+    $("tagsSheet").scrollTop = 0;
+    document.body.classList.add("sheet-open");
+    renderTagsSheet();
+  }
+  $("tagsSheetClose").addEventListener("click", () => {
+    $("tagsSheet").hidden = true;
+    document.body.classList.remove("sheet-open");
+  });
+
+  function renderTagsSheet() {
+    if (!tags.length) {
+      const li = document.createElement("li");
+      li.className = "rv-empty";
+      li.textContent = "No tags yet. Add one from any recipe.";
+      $("tagsList").replaceChildren(li);
+      return;
+    }
+    $("tagsList").replaceChildren(...tags.map((tag) => {
+      const li = document.createElement("li");
+      li.className = "hh";
+      li.dataset.id = tag.id;
+      const name = document.createElement("button");
+      name.type = "button";
+      name.className = "hh-name";
+      name.dataset.act = "open";
+      const uses = document.createElement("span");
+      uses.className = "hh-uses" + (tag.uses ? "" : " unused");
+      uses.textContent = tag.uses ? `${tag.uses} recipe${tag.uses === 1 ? "" : "s"}` : "not used";
+      name.append(tagEl(tag), uses);
+      const row = document.createElement("div");
+      row.className = "hh-row";
+      row.append(name);
+      li.append(row);
+
+      if (tagsOpenId === tag.id) {
+        const edit = document.createElement("div");
+        edit.className = "hh-edit";
+        const field = (label, ...controls) => {
+          const r = document.createElement("div");
+          r.className = "hh-field";
+          const l = document.createElement("span");
+          l.textContent = label;
+          r.append(l, ...controls);
+          return r;
+        };
+        const rename = document.createElement("input");
+        rename.className = "tag-rename";
+        rename.value = tag.name;
+        rename.maxLength = 30;
+        rename.setAttribute("aria-label", "Tag name");
+        const save = document.createElement("button");
+        save.type = "button";
+        save.className = "mini-btn";
+        save.dataset.act = "rename";
+        save.textContent = "Save";
+
+        const swatches = document.createElement("div");
+        swatches.className = "swatches";
+        for (const [colour, label] of TAG_COLOURS) {
+          const sw = document.createElement("button");
+          sw.type = "button";
+          sw.className = "swatch" + (colour ? ` tc-${colour}` : "");
+          sw.dataset.act = "colour";
+          sw.dataset.colour = colour ?? "";
+          sw.setAttribute("aria-label", label);
+          sw.setAttribute("aria-pressed", String((tag.colour ?? null) === colour));
+          swatches.append(sw);
+        }
+
+        const into = document.createElement("select");
+        into.className = "tag-merge";
+        into.setAttribute("aria-label", "Merge into");
+        into.innerHTML = `<option value="">Choose…</option>`;
+        for (const other of tags) {
+          if (other.id === tag.id) continue;
+          const o = document.createElement("option");
+          o.value = other.id;
+          o.textContent = other.name;
+          into.append(o);
+        }
+        const merge = document.createElement("button");
+        merge.type = "button";
+        merge.className = "mini-btn";
+        merge.dataset.act = "merge";
+        merge.textContent = "Merge";
+
+        const del = document.createElement("button");
+        del.type = "button";
+        del.className = "mini-btn danger";
+        del.dataset.act = "delete";
+        del.textContent = tag.uses ? `Delete from ${tag.uses} recipe${tag.uses === 1 ? "" : "s"}` : "Delete tag";
+
+        edit.append(field("Name", rename, save), field("Colour", swatches));
+        if (tags.length > 1) edit.append(field("Merge into", into, merge));
+        edit.append(field("", del));
+        li.append(edit);
+      }
+      return li;
+    }));
+  }
+
+  $("tagsList").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-act]");
+    const li = e.target.closest(".hh");
+    if (!b || !li) return;
+    const id = Number(li.dataset.id);
+    const tag = tagById(id);
+    if (!tag) return;
+    const act = b.dataset.act;
+    if (act === "open") {
+      tagsOpenId = tagsOpenId === id ? null : id;
+      renderTagsSheet();
+    } else if (act === "rename") {
+      const name = cleanTag(li.querySelector(".tag-rename").value);
+      if (name && name !== tag.name) householdAction("tag_update", { id, name }, `Renamed to ${name}`);
+    } else if (act === "colour") {
+      householdAction("tag_update", { id, colour: b.dataset.colour || null });
+    } else if (act === "merge") {
+      const into = tagById(Number(li.querySelector(".tag-merge").value));
+      if (!into) return;
+      tagsOpenId = into.id;
+      householdAction("tag_merge", { from_id: id, into_id: into.id }, `Merged ${tag.name} into ${into.name}`);
+    } else if (act === "delete") {
+      // Two taps, like Delete dinner.
+      if (!tagDeleteArmed) {
+        b.classList.add("confirm");
+        b.textContent = "Tap again to delete";
+        tagDeleteArmed = setTimeout(() => { tagDeleteArmed = null; renderTagsSheet(); }, 3000);
+        return;
+      }
+      clearTimeout(tagDeleteArmed);
+      tagDeleteArmed = null;
+      tagsOpenId = null;
+      selectedTags.delete(id);
+      householdAction("tag_delete", { id }, `Deleted ${tag.name}`);
+    }
+  });
+  $("tagsList").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && e.target.classList.contains("tag-rename")) e.target.closest(".hh").querySelector('[data-act="rename"]').click();
+  });
+
   function renderMeals() {
     document.querySelectorAll(".view-toggle button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === mealView)));
     $("meals").classList.toggle("compact", mealView === "list");
+    renderTagFilter();
     const shown = meals.filter(matchesRecipeFilters);
-    const els = mealView === "list" ? mealListEls(shown) : shown.map(mealEl);
+    const els = groupByTag && tags.length ? tagGroupEls(shown)
+      : mealView === "list" ? mealListEls(shown) : shown.map(mealEl);
     if (!shown.length && meals.length) {
       const none = document.createElement("li");
       none.className = "rv-empty";
-      none.textContent = "No recipes match. Try another word or cooking time.";
+      none.textContent = "No recipes match. Try another word, cooking time or tag.";
       els.push(none);
     }
     $("meals").replaceChildren(...els);
@@ -2102,10 +2593,17 @@
   function applyMeals(data, fromCache = false) {
     if (!fromCache) keep("kitchen.cache.meals", data);
     meals = data.meals;
+    tags = data.tags ?? [];
+    for (const id of selectedTags) if (!tagById(id)) selectedTags.delete(id);
     mealsLoaded = true;
     household = { ingredients: data.ingredients ?? [], aliases: data.aliases ?? {}, suggestions: data.suggestions ?? [] };
     renderHousehold();
     renderMeals();
+    if (!$("tagsSheet").hidden) renderTagsSheet();
+    if (!$("recipeView").hidden && recipeMeal) {
+      recipeMeal = meals.find((m) => m.id === recipeMeal.id) ?? recipeMeal;
+      renderRecipeTags();
+    }
     if (currentTab === "week") renderWeek();
     if (!fromCache) setSync("ok");
     openPendingMeal();
@@ -2181,6 +2679,8 @@
       a.innerHTML = "View original " + LINK_SVG;
       meta.append(a);
     }
+
+    renderRecipeTags();
 
     $("rvIngCount").textContent = meal.ingredients.length || "";
     if (meal.ingredients.length) {
@@ -2477,6 +2977,7 @@
     draft = {
       id: meal?.id ?? null,
       image_url: null,
+      tags: tagNamesOf(meal),
       // touched: someone tapped the jar on this row, so saving updates the household staples list
       ingredients: (meal?.ingredients ?? []).map(editRow),
     };
@@ -2497,6 +2998,7 @@
     photoUploads = [];
     setPhotoBusy(false, "");
     setPhoto(meal?.image_url);
+    renderEditorTags();
     $("editor").hidden = false;
     $("editor").scrollTop = 0;
     document.body.classList.add("sheet-open");
@@ -2942,6 +3444,7 @@
         servings: $("mealServings").value.trim(),
         cook_minutes: $("mealCook").value.trim(),
         method: $("mealMethod").value,
+        tags: draft.tags,
         rows: draft.ingredients
           .filter((i) => i.name.trim())
           .map((i) => ({
