@@ -960,7 +960,7 @@
   .meal-letter { padding: 18px 2px 6px; font-family: var(--font-ui); font-size: 16px; font-weight: 600; letter-spacing: -0.03em; color: var(--text); }
   .meal-letter:first-child { padding-top: 0; }
   .meal-row { background: var(--row); border: 0 !important; border-radius: 10px; }
-  .meal-row-main { min-height: 44px; padding: 8px 6px 8px 14px; gap: 10px; border-radius: 10px; }
+  .meal-row-main { min-height: 44px; padding: 8px 14px; gap: 10px; border-radius: 10px; }
   .meal-row-name { font-size: 15px; font-weight: 400; letter-spacing: -0.03em; }
   .meal-row-count { font-size: 12px; letter-spacing: -0.03em; color: #B4B4B4; }
   .meal-row-link { color: #B4B4B4; }
@@ -1092,7 +1092,8 @@
   .sel-check svg { width: 14px; height: 14px; opacity: 0; }
   .meal-row .sel-check { top: 50%; right: 12px; margin-top: -12px; }
   .meals.selecting .sel-check { display: grid; }
-  .meals.selecting .wk-arrow, .meals.selecting .meal-row-link { visibility: hidden; }
+  .meals.selecting .wk-arrow { visibility: hidden; }
+  .meals.selecting .meal-row-main { padding-right: 46px; } /* room for the tick */
   .meals.selecting .meal-foot { pointer-events: none; opacity: 0.4; }
   .meals.selecting .picked .sel-check { background: #4EA346; border-color: #4EA346; }
   .meals.selecting .picked .sel-check svg { opacity: 1; }
@@ -2279,10 +2280,6 @@
     }
     li.append(main);
 
-    // Room on the right for the tick when selecting. The recipe's own page links to the original.
-    const spacer = document.createElement("span");
-    spacer.className = "meal-row-spacer";
-    li.append(spacer);
     return li;
   }
 
