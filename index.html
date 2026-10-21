@@ -1082,6 +1082,41 @@
       background: var(--accent-soft); border-color: var(--accent-line); color: var(--on-soft);
     }
   }
+  /* Bulk select: hold a recipe, then tap others; a bar replaces the navigation */
+  .meal-main, .meal-row-main { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  .meal-row { position: relative; }
+  .sel-check {
+    display: none; position: absolute; top: 14px; right: 14px; width: 24px; height: 24px; border-radius: 50%;
+    border: 2px solid #C9C9C9; background: #FFFFFF; color: #FFFFFF; place-items: center; pointer-events: none;
+  }
+  .sel-check svg { width: 14px; height: 14px; opacity: 0; }
+  .meal-row .sel-check { top: 50%; right: 12px; margin-top: -12px; }
+  .meals.selecting .sel-check { display: grid; }
+  .meals.selecting .wk-arrow, .meals.selecting .meal-row-link { visibility: hidden; }
+  .meals.selecting .meal-foot { pointer-events: none; opacity: 0.4; }
+  .meals.selecting .picked .sel-check { background: #4EA346; border-color: #4EA346; }
+  .meals.selecting .picked .sel-check svg { opacity: 1; }
+  .meals.selecting .meal.picked { box-shadow: inset 0 0 0 2px #7CD184; }
+  .meals.selecting .meal-row.picked { box-shadow: inset 0 0 0 2px #7CD184; }
+  body.selecting .tabs { display: none; }
+  .select-bar {
+    position: fixed; z-index: 6; left: 50%; transform: translateX(-50%);
+    bottom: calc(env(safe-area-inset-bottom) + 20px); width: 343px; max-width: calc(100% - 24px); height: var(--tabbar-h);
+    display: flex; align-items: center; gap: 4px; padding: 0 6px 0 4px; border-radius: 32px;
+    background: #FFFFFF; box-shadow: 0 4px 20px 2px rgba(0, 0, 0, 0.12);
+  }
+  .select-bar button { height: 44px; padding: 0 12px; border-radius: 22px; font-size: 15px; font-weight: 600; letter-spacing: -0.03em; }
+  .sb-cancel { color: var(--accent-ink); }
+  .sb-count { flex: 1; min-width: 0; text-align: center; font-size: 14px; color: #808080; white-space: nowrap; }
+  .sb-all { color: var(--text); }
+  .sb-tag { padding: 0 20px !important; background: #19581F; color: #FFFFFF; }
+  .sb-tag:disabled { opacity: 0.4; }
+  .tag-pick .rtag[aria-pressed="mixed"] { border-color: var(--tag-fg); border-style: dashed; }
+  @media (prefers-color-scheme: dark) {
+    .sel-check { background: var(--field); border-color: var(--border-strong); }
+    .select-bar { background: #1F231F; box-shadow: 0 4px 20px 2px rgba(0, 0, 0, 0.5); }
+    .sb-count { color: var(--muted); }
+  }
   /* Tag picker: opens over the recipe or the editor */
   .tag-sheet { z-index: 16; }
   .tag-new { display: flex; gap: 8px; align-items: center; }
@@ -1098,6 +1133,7 @@
     content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--tag-dot);
   }
   .tag-pick .rtag[aria-pressed="true"] { border-color: var(--tag-fg); }
+  .tag-pick .rtag:not([class*="tc-"])[aria-pressed="false"]::before { display: none; }
   .tag-pick .rtag svg { width: 13px; height: 13px; }
   /* Manage tags: rows like Household ingredients, colour swatches in the edit panel */
   .hh-name .rtag { height: 26px; font-size: 14px; padding: 0 11px; flex: 0 1 auto; }
@@ -1371,6 +1407,13 @@
     </div>
   </section>
 </main>
+
+<div class="select-bar" id="selectBar" hidden role="toolbar" aria-label="Selected recipes">
+  <button type="button" class="sb-cancel" id="selectCancel">Cancel</button>
+  <span class="sb-count" id="selectCount" role="status" aria-live="polite">0 selected</span>
+  <button type="button" class="sb-all" id="selectAll">All</button>
+  <button type="button" class="sb-tag" id="selectTag">Tag</button>
+</div>
 
 <nav class="tabs" role="tablist" aria-label="Sections">
   <button class="tab" role="tab" data-tab="list" aria-selected="true">
@@ -2151,7 +2194,8 @@
 
   function mealEl(meal) {
     const li = document.createElement("li");
-    li.className = "meal glass";
+    li.className = "meal glass" + (picked.has(meal.id) ? " picked" : "");
+    li.insertAdjacentHTML("beforeend", `<span class="sel-check" aria-hidden="true">${CHECK_SVG}</span>`);
 
     const main = document.createElement("button");
     main.type = "button";
@@ -2202,7 +2246,8 @@
   // Compact A–Z row: name, ingredient count, and a recipe link if there is one.
   function mealRowEl(meal) {
     const li = document.createElement("li");
-    li.className = "meal-row";
+    li.className = "meal-row" + (picked.has(meal.id) ? " picked" : "");
+    li.insertAdjacentHTML("beforeend", `<span class="sel-check" aria-hidden="true">${CHECK_SVG}</span>`);
 
     const main = document.createElement("button");
     main.type = "button";
@@ -2462,10 +2507,14 @@
   }
 
   /* Tag picker: used from the recipe page (saves straight away) and the editor (saves with the recipe) */
-  let pick = null;  // { chosen: names, extra: new names not saved yet, done(names) }
+  // { chosen: names, mixed: names only some recipes have (bulk tagging), extra: new names not saved yet,
+  //   done(chosen, mixed), hint }
+  let pick = null;
+  const MIXED_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><path d="M6 12h12"/></svg>';
 
-  function openTagPicker(names, done) {
-    pick = { chosen: [...names], extra: [], done };
+  function openTagPicker(names, done, opts = {}) {
+    pick = { chosen: [...names], mixed: [...(opts.mixed ?? [])], extra: [], done, hint: opts.hint };
+    $("tagPickerTitle").textContent = opts.title ?? "Tags";
     $("tagNew").value = "";
     $("tagPicker").hidden = false;
     $("tagPicker").scrollTop = 0;
@@ -2482,7 +2531,7 @@
   function renderTagPicker() {
     const names = [...tags.map((t) => t.name), ...pick.extra.filter((n) => !tags.some((t) => sameTag(t.name, n)))];
     $("tagPickerHint").textContent = names.length
-      ? "Tap tags to add them to this recipe, or tap again to take them off."
+      ? pick.hint ?? "Tap tags to add them to this recipe, or tap again to take them off."
       : "No tags yet. Type one above, like Quick, Date night or Freezer friendly.";
     $("tagPickList").replaceChildren(...names.map((name) => {
       const tag = tags.find((t) => sameTag(t.name, name)) ?? { name };
@@ -2490,8 +2539,10 @@
       b.type = "button";
       b.dataset.name = name;
       const on = pick.chosen.some((n) => sameTag(n, name));
-      b.setAttribute("aria-pressed", String(on));
+      const some = !on && pick.mixed.some((n) => sameTag(n, name));
+      b.setAttribute("aria-pressed", on ? "true" : some ? "mixed" : "false");
       if (on) b.insertAdjacentHTML("afterbegin", CHECK_SVG);
+      else if (some) b.insertAdjacentHTML("afterbegin", MIXED_SVG);
       return b;
     }));
   }
@@ -2499,6 +2550,8 @@
     const b = e.target.closest("[data-name]");
     if (!b || !pick) return;
     const name = b.dataset.name;
+    // Some have it → all have it → none have it → all have it …
+    pick.mixed = pick.mixed.filter((n) => !sameTag(n, name));
     const i = pick.chosen.findIndex((n) => sameTag(n, name));
     if (i >= 0) pick.chosen.splice(i, 1);
     else pick.chosen.push(name);
@@ -2511,6 +2564,7 @@
     if (!typed || !pick) return;
     const name = tags.find((t) => sameTag(t.name, typed))?.name ?? pick.extra.find((n) => sameTag(n, typed)) ?? typed;
     if (!tags.some((t) => sameTag(t.name, name)) && !pick.extra.some((n) => sameTag(n, name))) pick.extra.push(name);
+    pick.mixed = pick.mixed.filter((n) => !sameTag(n, name));
     if (!pick.chosen.some((n) => sameTag(n, name))) pick.chosen.push(name);
     renderTagPicker();
   }
@@ -2519,9 +2573,9 @@
   $("tagPickerDone").addEventListener("click", () => {
     if (!pick) return;
     addTypedTag(); // something typed but not added yet still counts
-    const { chosen, done } = pick;
+    const { chosen, mixed, done } = pick;
     closeTagPicker();
-    done(chosen);
+    done(chosen, mixed);
   });
 
   // The recipe's tags, plus a dashed button to change them.
@@ -2713,6 +2767,7 @@
     $("meals").classList.toggle("compact", mealView === "list");
     renderTagFilter();
     renderFilterUi();
+    renderSelection();
     const shown = meals.filter(matchesRecipeFilters);
     const els = groupByTag && tags.length ? tagGroupEls(shown)
       : mealView === "list" ? mealListEls(shown) : shown.map(mealEl);
@@ -2763,11 +2818,133 @@
   }));
 
   $("meals").addEventListener("click", (e) => {
+    if (pressFired) { pressFired = false; e.preventDefault(); return; } // the hold already selected it
     const btn = e.target.closest(".meal-main, .meal-row-main");
     if (!btn) return;
-    // Always opens the recipe; its Edit button (top right) opens the editor.
+    if (selecting) return togglePicked(Number(btn.dataset.id));
+    // Opens the recipe; its Edit button (top right) opens the editor.
     openRecipe(meals.find((m) => m.id === Number(btn.dataset.id)));
   });
+
+  /* ---------- Bulk select: hold a recipe to start, tap others, then Tag them together ---------- */
+
+  let selecting = false;
+  const picked = new Set();  // recipe ids
+  let pressTimer = null, pressAt = null, pressFired = false;
+  const HOLD_MS = 450;
+
+  function startSelecting() {
+    selecting = true;
+    document.body.classList.add("selecting");
+    $("selectBar").hidden = false;
+  }
+  function stopSelecting() {
+    selecting = false;
+    picked.clear();
+    document.body.classList.remove("selecting");
+    $("selectBar").hidden = true;
+    renderMeals();
+  }
+  function togglePicked(id) {
+    if (picked.has(id)) picked.delete(id);
+    else picked.add(id);
+    renderMeals();
+  }
+  function renderSelection() {
+    $("meals").classList.toggle("selecting", selecting);
+    if (!selecting) return;
+    for (const id of picked) if (!meals.some((m) => m.id === id)) picked.delete(id); // deleted on the other phone
+    const n = picked.size;
+    $("selectCount").textContent = `${n} selected`;
+    $("selectTag").disabled = !n;
+    const shown = meals.filter(matchesRecipeFilters);
+    const allPicked = shown.length > 0 && shown.every((m) => picked.has(m.id));
+    $("selectAll").textContent = allPicked ? "None" : "All";
+  }
+
+  $("meals").addEventListener("pointerdown", (e) => {
+    const btn = e.target.closest(".meal-main, .meal-row-main");
+    if (!btn || e.button > 0) return;
+    pressFired = false;
+    pressAt = { x: e.clientX, y: e.clientY };
+    clearTimeout(pressTimer);
+    pressTimer = setTimeout(() => {
+      pressFired = true;
+      navigator.vibrate?.(15);
+      const id = Number(btn.dataset.id);
+      if (!selecting) startSelecting();
+      picked.add(id);
+      renderMeals();
+    }, HOLD_MS);
+  });
+  $("meals").addEventListener("pointermove", (e) => {
+    if (pressAt && Math.hypot(e.clientX - pressAt.x, e.clientY - pressAt.y) > 10) clearTimeout(pressTimer); // scrolling
+  });
+  for (const ev of ["pointerup", "pointercancel", "pointerleave"]) {
+    $("meals").addEventListener(ev, () => { clearTimeout(pressTimer); pressAt = null; });
+  }
+  // Holding shouldn't bring up the phone's own menu (copy, open in new tab…).
+  $("meals").addEventListener("contextmenu", (e) => { if (e.target.closest(".meal-main, .meal-row-main")) e.preventDefault(); });
+
+  $("selectCancel").addEventListener("click", stopSelecting);
+  $("selectAll").addEventListener("click", () => {
+    const shown = meals.filter(matchesRecipeFilters);
+    if (shown.every((m) => picked.has(m.id))) shown.forEach((m) => picked.delete(m.id));
+    else shown.forEach((m) => picked.add(m.id));
+    renderMeals();
+  });
+
+  // Tick = every chosen recipe has it; dash = some do. Untouched tags stay as they are on each recipe.
+  $("selectTag").addEventListener("click", () => {
+    const chosenMeals = meals.filter((m) => picked.has(m.id));
+    if (!chosenMeals.length) return;
+    const n = chosenMeals.length;
+    const all = [], some = [];
+    for (const t of tags) {
+      const has = chosenMeals.filter((m) => (m.tag_ids ?? []).includes(t.id)).length;
+      if (has === n) all.push(t.name);
+      else if (has) some.push(t.name);
+    }
+    openTagPicker(all, (chosen, mixed) => bulkTag(chosenMeals, chosen, mixed), {
+      mixed: some,
+      title: `Tag ${n} recipe${n === 1 ? "" : "s"}`,
+      hint: n === 1 ? undefined
+        : `Tap a tag to add it to all ${n}, or tap again to take it off all of them. A dash means only some have it.`,
+    });
+  });
+
+  async function bulkTag(chosenMeals, chosen, mixed) {
+    const has = (list, name) => list.some((n) => sameTag(n, name));
+    const jobs = chosenMeals.map((m) => {
+      const now = tagNamesOf(m);
+      const next = [...now.filter((n) => has(chosen, n) || has(mixed, n)), ...chosen.filter((n) => !has(now, n))];
+      const changed = next.length !== now.length || next.some((n) => !has(now, n));
+      return changed ? { id: m.id, tags: next } : null;
+    }).filter(Boolean);
+    if (!jobs.length) return stopSelecting();
+
+    const btn = $("selectTag");
+    btn.disabled = true;
+    btn.textContent = "Saving…";
+    let failed = null;
+    // A few at a time, so a big batch doesn't swamp the server.
+    const queue = [...jobs];
+    await Promise.all(Array.from({ length: Math.min(3, queue.length) }, async () => {
+      while (queue.length && !failed) {
+        const job = queue.shift();
+        try { await api("meal_tags", { meal_id: job.id, tags: job.tags }); } catch (err) { failed = err; }
+      }
+    }));
+    btn.textContent = "Tag";
+    try { applyMeals(await api("meals")); } catch (err) { failed ??= err; }
+    if (failed) {
+      btn.disabled = false;
+      if (failed instanceof AuthError) return handleError(failed);
+      return toast(failed instanceof TypeError ? "No connection. Check your signal and try again." : failed.message);
+    }
+    toast(`Updated tags on ${jobs.length} recipe${jobs.length === 1 ? "" : "s"}`);
+    stopSelecting();
+  }
 
   /* ---------- Recipe view (for cooking) ---------- */
 
@@ -4218,6 +4395,7 @@
   let currentTab = "list";
   function showTab(name) {
     if (!TITLES[name]) name = "list";
+    if (selecting && name !== "dinners") stopSelecting();
     currentTab = name;
     document.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === name)));
     for (const tab of Object.keys(TITLES)) $("view-" + tab).hidden = tab !== name;
