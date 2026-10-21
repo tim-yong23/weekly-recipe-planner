@@ -2236,14 +2236,14 @@
       a.href = href;
       a.target = "_blank";
       a.rel = "noopener noreferrer";
-      a.innerHTML = "View original " + LINK_SVG;
+      a.textContent = "View original";
       foot.append(a);
       li.append(foot);
     }
     return li;
   }
 
-  // Compact A–Z row: name, ingredient count, and a recipe link if there is one.
+  // Compact A–Z row: name, tags and ingredient count.
   function mealRowEl(meal) {
     const li = document.createElement("li");
     li.className = "meal-row" + (picked.has(meal.id) ? " picked" : "");
@@ -2279,21 +2279,10 @@
     }
     li.append(main);
 
-    const href = meal.recipe_url && safeUrl(meal.recipe_url);
-    if (href) {
-      const a = document.createElement("a");
-      a.className = "meal-row-link";
-      a.href = href;
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-      a.innerHTML = LINK_SVG;
-      a.setAttribute("aria-label", `Open the recipe for ${meal.name}`);
-      li.append(a);
-    } else {
-      const spacer = document.createElement("span");
-      spacer.className = "meal-row-spacer";
-      li.append(spacer);
-    }
+    // Room on the right for the tick when selecting. The recipe's own page links to the original.
+    const spacer = document.createElement("span");
+    spacer.className = "meal-row-spacer";
+    li.append(spacer);
     return li;
   }
 
