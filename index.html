@@ -1018,24 +1018,69 @@
   .meal-row-tags { display: flex; flex-wrap: wrap; gap: 4px; }
   .meal-row-tags .rtag { height: 18px; padding: 0 7px; font-size: 11px; }
   /* Filter row: plain chips with a colour dot; a chosen tag fills with its colour */
-  .time-filter.tag-filter { margin-top: -8px; }
+  /* Search + filter button; whatever is on shows as pills underneath */
+  .search-row { display: flex; align-items: center; gap: 8px; margin: 2px 0 12px; }
+  .search-row .recipe-search { flex: 1; min-width: 0; margin: 0; }
+  .filter-btn {
+    position: relative; flex: none; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center;
+    background: #FFFFFF; color: #1F1F1F; box-shadow: inset 0 0 5px 1px rgba(0, 0, 0, 0.1);
+  }
+  .filter-btn svg { width: 20px; height: 20px; }
+  .filter-btn.on { background: #E6F7E4; color: #19581F; box-shadow: inset 0 0 0 1px #7CD184; }
+  .filter-count {
+    position: absolute; top: -2px; right: -2px; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 10px;
+    display: grid; place-items: center; background: #19581F; color: #FFFFFF; font-family: var(--font-mono); font-size: 11px;
+  }
+  .active-filters button { display: inline-flex; align-items: center; gap: 5px; }
+  .active-filters button svg { width: 11px; height: 11px; }
+  .active-filters .af-clear { background: none !important; border-color: transparent !important; color: #808080 !important; }
+  /* Filters panel: slides up from the bottom, list still visible behind */
+  .panel-sheet { display: flex; flex-direction: column; justify-content: flex-end; background: rgba(0, 0, 0, 0.32); }
+  .filter-panel {
+    width: 100%; max-width: 560px; max-height: 88vh; margin: 0 auto; overflow-y: auto; overscroll-behavior: contain;
+    padding: 6px 16px calc(env(safe-area-inset-bottom) + 18px); border-radius: 22px 22px 0 0; background: var(--bg);
+    display: flex; flex-direction: column; animation: panel-up 0.22s ease-out;
+  }
+  @keyframes panel-up { from { transform: translateY(40px); opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .filter-panel { animation: none; } }
+  .filter-panel .sheet-head { min-height: 50px; }
+  .filter-h { margin: 8px 0 8px; font-family: var(--font-ui); font-size: 14px; font-weight: 600; letter-spacing: -0.05em; color: #808080; }
+  .filter-h-row { display: flex; align-items: baseline; justify-content: space-between; }
+  .filter-link { min-height: 32px; padding: 0 2px; font-size: 14px; font-weight: 600; color: var(--accent-ink); }
+  .filter-panel .time-filter { flex-wrap: wrap; margin: 0 0 10px; padding: 0; overflow: visible; }
+  .filter-panel .time-filter button { height: 34px; padding: 0 12px; }
+  .filter-panel .hint { margin: 0 0 10px; }
+  .group-switch {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 8px 0 16px; padding: 12px 14px;
+    border-radius: 10px; background: var(--row); text-align: left;
+  }
+  .group-switch strong { display: block; font-size: 15px; font-weight: 600; letter-spacing: -0.03em; }
+  .group-switch small { display: block; margin-top: 2px; font-size: 12px; color: #9A9A9A; }
+  .switch { position: relative; flex: none; width: 44px; height: 26px; border-radius: 13px; background: #D9D9D9; transition: background 0.15s; }
+  .switch::after {
+    content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%;
+    background: #FFFFFF; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); transition: transform 0.15s;
+  }
+  .group-switch[aria-checked="true"] .switch { background: #4EA346; }
+  .group-switch[aria-checked="true"] .switch::after { transform: translateX(18px); }
+  @media (prefers-color-scheme: dark) {
+    .filter-btn { background: var(--field); color: var(--text); box-shadow: inset 0 0 5px 1px rgba(255, 255, 255, 0.08); }
+    .filter-btn.on { background: var(--accent-soft); color: var(--on-soft); box-shadow: inset 0 0 0 1px var(--accent-line); }
+    .filter-h, .group-switch small { color: var(--muted); }
+    .switch { background: var(--border-strong); }
+  }
   .tag-filter button[data-tag]::before {
     content: ""; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: var(--tag-dot); display: inline-block;
   }
   .tag-filter button[data-tag]:not([class*="tc-"])::before { display: none; }
   .tag-filter button[data-tag][aria-pressed="true"] { background: var(--tag-bg); border-color: var(--tag-fg); color: var(--tag-fg); }
   .tag-filter button[data-tag]:not([class*="tc-"])[aria-pressed="true"] { background: #E6F7E4; border-color: #7CD184; color: #19581F; }
-  .tag-filter .tf-action { display: inline-flex; align-items: center; gap: 5px; }
-  .tag-filter .tf-action svg { width: 14px; height: 14px; }
-  .tag-filter .tf-action[aria-pressed="true"] { background: #E6F7E4; border-color: #7CD184; color: #19581F; }
-  .tag-filter .tf-sep { flex: none; width: 1px; margin: 5px 2px; background: #D9D9D9; }
   .meal-letter .rtag { height: 24px; font-size: 14px; padding: 0 10px; }
   @media (prefers-color-scheme: dark) {
     .tag-pills .tag-add { border-color: var(--border-strong); color: var(--muted); }
-    .tag-filter button[data-tag]:not([class*="tc-"])[aria-pressed="true"], .tag-filter .tf-action[aria-pressed="true"] {
+    .tag-filter button[data-tag]:not([class*="tc-"])[aria-pressed="true"] {
       background: var(--accent-soft); border-color: var(--accent-line); color: var(--on-soft);
     }
-    .tag-filter .tf-sep { background: var(--border); }
   }
   /* Tag picker: opens over the recipe or the editor */
   .tag-sheet { z-index: 16; }
@@ -1307,17 +1352,17 @@
       <span class="badge" id="householdBadge" hidden></span>
       <svg class="wk-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
     </button>
-    <div class="recipe-search">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>
-      <input id="recipeSearch" type="search" placeholder="Search Your Recipes" autocomplete="off" autocapitalize="none" enterkeyhint="search" aria-label="Search your recipes">
+    <div class="search-row">
+      <div class="recipe-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>
+        <input id="recipeSearch" type="search" placeholder="Search Your Recipes" autocomplete="off" autocapitalize="none" enterkeyhint="search" aria-label="Search your recipes">
+      </div>
+      <button type="button" class="filter-btn" id="filterBtn" aria-label="Filters" aria-haspopup="dialog">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg>
+        <span class="filter-count" id="filterCount" hidden></span>
+      </button>
     </div>
-    <div class="time-filter" id="timeFilter" role="group" aria-label="Filter by cooking time">
-      <button type="button" data-time="all" aria-pressed="true">Any time</button>
-      <button type="button" data-time="quick" aria-pressed="false" aria-label="Under 30 minutes">&lt; 30 min</button>
-      <button type="button" data-time="medium" aria-pressed="false">30–60 min</button>
-      <button type="button" data-time="long" aria-pressed="false" aria-label="Over an hour">1 hr +</button>
-    </div>
-    <div class="time-filter tag-filter" id="tagFilter" role="group" aria-label="Filter and group by tag" hidden></div>
+    <div class="time-filter tag-filter active-filters" id="activeFilters" role="group" aria-label="Filters that are on" hidden></div>
     <ul class="meals" id="meals"></ul>
     <div class="empty glass" id="mealsEmpty" hidden>
       <div class="empty-emoji">🍝</div>
@@ -1505,6 +1550,34 @@
     </section>
     <input class="text-input" id="householdSearch" type="search" placeholder="Search ingredients" autocomplete="off" aria-label="Search ingredients">
     <ul class="hh-list" id="householdList"></ul>
+  </div>
+</div>
+
+<div class="sheet panel-sheet" id="filterSheet" hidden role="dialog" aria-modal="true" aria-labelledby="filterTitle">
+  <div class="filter-panel">
+    <header class="sheet-head">
+      <button type="button" class="text-btn" id="filterClear">Clear all</button>
+      <h2 id="filterTitle">Filters</h2>
+      <button type="button" class="text-btn end" id="filterDone">Done</button>
+    </header>
+    <h3 class="filter-h">Cooking time</h3>
+    <div class="time-filter" id="timeFilter" role="group" aria-label="Cooking time">
+      <button type="button" data-time="all" aria-pressed="true">Any time</button>
+      <button type="button" data-time="quick" aria-pressed="false" aria-label="Under 30 minutes">&lt; 30 min</button>
+      <button type="button" data-time="medium" aria-pressed="false">30–60 min</button>
+      <button type="button" data-time="long" aria-pressed="false" aria-label="Over an hour">1 hr +</button>
+    </div>
+    <div class="filter-h-row">
+      <h3 class="filter-h">Tags</h3>
+      <button type="button" class="filter-link" id="filterEditTags">Edit tags</button>
+    </div>
+    <div class="time-filter tag-filter" id="tagFilter" role="group" aria-label="Tags"></div>
+    <p class="hint" id="tagFilterEmpty" hidden>No tags yet. Open any recipe and tap Add tag.</p>
+    <button type="button" class="group-switch" id="groupSwitch" role="switch" aria-checked="false">
+      <span><strong>Group by tag</strong><small>Show recipes under their tag headings</small></span>
+      <span class="switch" aria-hidden="true"></span>
+    </button>
+    <button type="button" class="primary" id="filterShow">Show recipes</button>
   </div>
 </div>
 
@@ -2223,7 +2296,91 @@
     const b = e.target.closest("[data-time]");
     if (!b) return;
     recipeTime = b.dataset.time;
-    $("timeFilter").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    renderMeals();
+  });
+
+  /* Filters panel (cooking time, tags, grouping); changes show in the list straight away */
+  const TIME_LABELS = { quick: "< 30 min", medium: "30–60 min", long: "1 hr +" };
+  const PILL_X_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+  function openFilterSheet() {
+    $("filterSheet").hidden = false;
+    document.body.classList.add("sheet-open");
+    renderFilterUi();
+  }
+  function closeFilterSheet() {
+    $("filterSheet").hidden = true;
+    if ([...document.querySelectorAll(".sheet")].every((el) => el.hidden)) document.body.classList.remove("sheet-open");
+  }
+  function clearFilters() {
+    recipeTime = "all";
+    selectedTags.clear();
+    groupByTag = false;
+    store.set("kitchen.groupByTag", "0");
+    renderMeals();
+  }
+  $("filterBtn").addEventListener("click", openFilterSheet);
+  $("filterDone").addEventListener("click", closeFilterSheet);
+  $("filterShow").addEventListener("click", closeFilterSheet);
+  $("filterClear").addEventListener("click", clearFilters);
+  // Tapping the dimmed list above the panel closes it too.
+  $("filterSheet").addEventListener("click", (e) => { if (e.target === $("filterSheet")) closeFilterSheet(); });
+  $("filterEditTags").addEventListener("click", () => { closeFilterSheet(); openTagsSheet(); });
+  $("groupSwitch").addEventListener("click", () => {
+    groupByTag = !groupByTag;
+    store.set("kitchen.groupByTag", groupByTag ? "1" : "0");
+    renderMeals();
+  });
+
+  // The filter button's count, the pills under the search box, and the panel's own state.
+  function renderFilterUi() {
+    const on = (recipeTime !== "all" ? 1 : 0) + selectedTags.size;
+    $("filterBtn").classList.toggle("on", on > 0);
+    $("filterCount").hidden = !on;
+    $("filterCount").textContent = on;
+    $("filterBtn").setAttribute("aria-label", on ? `Filters, ${on} on` : "Filters");
+
+    const pills = [];
+    const pill = (label, act, extra = {}) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.dataset.off = act;
+      b.setAttribute("aria-pressed", "true");
+      b.setAttribute("aria-label", `Remove filter: ${label}`);
+      Object.assign(b.dataset, extra.data ?? {});
+      if (extra.className) b.className = extra.className;
+      b.append(label);
+      b.insertAdjacentHTML("beforeend", PILL_X_SVG);
+      pills.push(b);
+    };
+    if (recipeTime !== "all") pill(TIME_LABELS[recipeTime], "time");
+    for (const t of tags) if (selectedTags.has(t.id)) pill(t.name, "tag", { data: { tag: t.id }, className: tagClass(t).trim() });
+    if (groupByTag && tags.length) pill("Grouped by tag", "group");
+    if (pills.length) {
+      const clear = document.createElement("button");
+      clear.type = "button";
+      clear.className = "af-clear";
+      clear.dataset.off = "all";
+      clear.textContent = "Clear";
+      pills.push(clear);
+    }
+    $("activeFilters").replaceChildren(...pills);
+    $("activeFilters").hidden = !pills.length;
+
+    $("timeFilter").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.time === recipeTime)));
+    $("groupSwitch").setAttribute("aria-checked", String(groupByTag));
+    $("groupSwitch").hidden = !tags.length;
+    const n = meals.filter(matchesRecipeFilters).length;
+    $("filterShow").textContent = n ? `Show ${n} recipe${n === 1 ? "" : "s"}` : "No recipes match";
+  }
+  $("activeFilters").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-off]");
+    if (!b) return;
+    const off = b.dataset.off;
+    if (off === "all") return clearFilters();
+    if (off === "time") recipeTime = "all";
+    else if (off === "tag") selectedTags.delete(Number(b.dataset.tag));
+    else if (off === "group") { groupByTag = false; store.set("kitchen.groupByTag", "0"); }
     renderMeals();
   });
 
@@ -2234,7 +2391,6 @@
     [null, "Grey"], ["green", "Green"], ["teal", "Teal"], ["blue", "Blue"], ["purple", "Purple"],
     ["pink", "Pink"], ["orange", "Orange"], ["yellow", "Yellow"],
   ];
-  const GROUP_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h7M4 12h16M4 18h16M15 6h5"/></svg>';
   const tagById = (id) => tags.find((t) => t.id === id);
   const tagClass = (tag) => tag?.colour ? ` tc-${tag.colour}` : "";
   // "  Date   night " → "Date night" (same tidying as the server)
@@ -2255,19 +2411,12 @@
     return box;
   }
 
-  // Filter row: Group, then every tag in use (plus any chosen), then Edit tags.
+  // Tag chips in the Filters panel: every tag in use, plus any chosen.
   function renderTagFilter() {
     const row = $("tagFilter");
     row.hidden = !tags.length;
-    if (!tags.length) return;
-    const group = document.createElement("button");
-    group.type = "button";
-    group.className = "tf-action";
-    group.dataset.act = "group";
-    group.setAttribute("aria-pressed", String(groupByTag));
-    group.innerHTML = GROUP_SVG + "Group";
-    const sep = document.createElement("span");
-    sep.className = "tf-sep";
+    $("tagFilterEmpty").hidden = tags.length > 0;
+    $("filterEditTags").hidden = !tags.length;
     const chips = tags.filter((t) => t.uses || selectedTags.has(t.id)).map((t) => {
       const b = document.createElement("button");
       b.type = "button";
@@ -2277,26 +2426,14 @@
       b.setAttribute("aria-pressed", String(selectedTags.has(t.id)));
       return b;
     });
-    const manage = document.createElement("button");
-    manage.type = "button";
-    manage.className = "tf-action";
-    manage.dataset.act = "manage";
-    manage.textContent = "Edit tags";
-    row.replaceChildren(group, sep, ...chips, manage);
+    row.replaceChildren(...chips);
   }
   $("tagFilter").addEventListener("click", (e) => {
-    const b = e.target.closest("button");
+    const b = e.target.closest("[data-tag]");
     if (!b) return;
-    if (b.dataset.act === "group") {
-      groupByTag = !groupByTag;
-      store.set("kitchen.groupByTag", groupByTag ? "1" : "0");
-    } else if (b.dataset.act === "manage") {
-      return openTagsSheet();
-    } else {
-      const id = Number(b.dataset.tag);
-      if (selectedTags.has(id)) selectedTags.delete(id);
-      else selectedTags.add(id);
-    }
+    const id = Number(b.dataset.tag);
+    if (selectedTags.has(id)) selectedTags.delete(id);
+    else selectedTags.add(id);
     renderMeals();
   });
 
@@ -2575,6 +2712,7 @@
     document.querySelectorAll(".view-toggle button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === mealView)));
     $("meals").classList.toggle("compact", mealView === "list");
     renderTagFilter();
+    renderFilterUi();
     const shown = meals.filter(matchesRecipeFilters);
     const els = groupByTag && tags.length ? tagGroupEls(shown)
       : mealView === "list" ? mealListEls(shown) : shown.map(mealEl);
