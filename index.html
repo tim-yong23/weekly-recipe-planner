@@ -976,6 +976,81 @@
   .dinner-controls .seg button { flex: 1 1 auto; padding: 0 10px; white-space: nowrap; gap: 5px; }
   .dinner-controls .seg button svg { width: 15px; height: 15px; }
 
+  /* ---------- Recipe editor: same language as the rest of the app ---------- */
+  /* Main green button: Inter like the other pills, not the serif headings */
+  .primary { height: 54px; font-family: var(--font-ui); font-size: 16px; font-weight: 600; letter-spacing: -0.05em; }
+  #editor .sheet-inner { gap: 14px; }
+  #editor .card.glass { background: var(--tile); border-radius: 10px; padding: 16px; }
+  #editor .ing-head h3 { font-family: var(--font-ui); font-size: 16px; font-weight: 600; letter-spacing: -0.05em; }
+  #editor .ing-head .mono { font-size: 14px; color: #B4B4B4; margin-left: 6px; }
+  #editor .card > .ing-head + .tag-pills { margin-top: 10px; }
+  #editor .field-label { margin: 0 0 6px; font-size: 14px; font-weight: 600; letter-spacing: -0.05em; color: #808080; }
+  #editor .field-label em { color: #B4B4B4; }
+  #editor .text-input + .field-label { margin-top: 14px; }
+  #editor .hint { margin: 8px 0 0; font-size: 13px; letter-spacing: -0.02em; color: #9A9A9A; line-height: 1.4; }
+  #editor .hint.warn { color: var(--warn); }
+  #editor .hint.good { color: var(--accent-ink); }
+  /* Fields: white, light grey edge, green when typing (like Search Your Recipes and the household fields) */
+  #editor .text-input, #editor .url-row input, #editor .paste-box textarea, #editor .method-input {
+    min-height: 44px; border-radius: 10px; font-size: 15px; letter-spacing: -0.03em; color: #1F1F1F;
+    background: #FFFFFF; border: 1px solid #D9D9D9;
+  }
+  #editor .text-input, #editor .url-row input { height: 44px; padding: 0 14px; }
+  #editor .method-input { margin-top: 10px; min-height: 150px; line-height: 1.5; }
+  #editor .text-input:focus, #editor .url-row input:focus, #editor .paste-box textarea:focus, #editor .method-input:focus,
+  #editor .ing input:focus, #editor .ing select:focus { border-color: #7CD184; }
+  #editor .fetch-btn {
+    min-width: 0; min-height: 44px; height: 44px; padding: 0 16px; border-radius: 10px;
+    font-size: 15px; font-weight: 600; letter-spacing: -0.03em;
+    background: #E6F7E4; color: #19581F; border: 1px solid #7CD184;
+  }
+  /* Small grey buttons, as used for Swap / Pick and the amount − / + */
+  #editor .ing-head .ghost-btn, #editor .ghost-btn.wide, #editor .paste-box .ghost-btn {
+    min-height: 0; height: 30px; padding: 0 12px; border-radius: 10px;
+    background: #F1F1F1; border: 1px solid #D9D9D9; color: #1F1F1F;
+    font-size: 14px; font-weight: 600; letter-spacing: -0.05em;
+  }
+  #editor .ghost-btn.wide { height: 40px; }
+  /* Ingredient rows: white rows on the card, quiet fields inside */
+  #editor .ing-list { gap: 6px; margin: 12px 0 10px; }
+  #editor .ing { padding: 8px 6px 8px 8px; border-radius: 10px; background: #FFFFFF; border: 1px solid transparent; }
+  #editor .ing[data-staple="true"] { border: 1px dashed #9ED79A; }
+  #editor .ing[data-review="true"] { border-color: var(--warn-line); background: var(--warn-soft); }
+  #editor .ing input, #editor .ing select {
+    min-height: 0; height: 36px; border-radius: 8px; font-size: 15px; letter-spacing: -0.03em;
+    background-color: #F7F7F7; border: 1px solid #E6E6E6; color: #1F1F1F;
+  }
+  #editor .ing .ing-name { font-weight: 600; }
+  #editor .ing .ing-note { color: #808080; }
+  #editor .ing-bottom { grid-template-columns: 58px 92px 1fr; margin-top: 6px; }
+  #editor .ing-staple, #editor .ing-del { width: 36px; height: 36px; border: 0; background: none; border-radius: 50%; color: #C9C9C9; }
+  #editor .ing-staple svg { width: 18px; height: 18px; }
+  #editor .ing-del svg { width: 16px; height: 16px; }
+  #editor .ing-staple[aria-pressed="true"] { color: #19581F; background: #E6F7E4; }
+  /* Save and Delete: full-width pills like the planner's buttons */
+  #editor .sheet-actions { gap: 10px; margin-top: 10px; }
+  #editor .error:empty { min-height: 0; margin: 0; }
+  #editor .danger-btn {
+    min-height: 54px; border-radius: 50px; border: 0; background: var(--pill);
+    font-size: 16px; font-weight: 600; letter-spacing: -0.05em; color: var(--danger);
+  }
+  #editor .danger-btn.confirm { background: var(--danger); color: #FFFFFF; }
+  @media (prefers-color-scheme: dark) {
+    #editor .field-label, #editor .hint { color: var(--muted); }
+    #editor .text-input, #editor .url-row input, #editor .paste-box textarea, #editor .method-input {
+      background: var(--field); border-color: var(--border); color: var(--text);
+    }
+    #editor .fetch-btn { background: var(--accent-soft); color: var(--on-soft); border-color: var(--accent-line); }
+    #editor .ing-head .ghost-btn, #editor .ghost-btn.wide, #editor .paste-box .ghost-btn {
+      background: var(--surface-strong); border-color: var(--border); color: var(--text);
+    }
+    #editor .ing { background: var(--surface-strong); }
+    #editor .ing input, #editor .ing select { background-color: var(--field); border-color: var(--border); color: var(--text); }
+    #editor .ing .ing-note { color: var(--muted); }
+    #editor .ing-staple, #editor .ing-del { color: var(--faint); }
+    #editor .ing-staple[aria-pressed="true"] { color: var(--on-soft); background: var(--accent-soft); }
+  }
+
   /* ---------- Recipe tags ---------- */
   /* Colours: soft tints that sit with the app's greens. No colour = plain grey. */
   :where(.rtag, .swatch, .tag-filter button[data-tag]) {
@@ -1453,7 +1528,7 @@
   <form class="sheet-inner" id="mealForm" novalidate autocomplete="off">
     <header class="sheet-head">
       <button type="button" class="text-btn" id="editorCancel">Cancel</button>
-      <h2 id="editorTitle">New dinner</h2>
+      <h2 id="editorTitle">Add recipe</h2>
       <button type="button" class="text-btn end" id="editorToRecipe" hidden>Recipe</button>
     </header>
 
@@ -1514,8 +1589,8 @@
 
     <p class="error" id="editorError" role="alert"></p>
     <div class="sheet-actions">
-      <button type="submit" class="primary" id="saveMeal">Save dinner</button>
-      <button type="button" class="danger-btn" id="deleteMeal" hidden>Delete dinner</button>
+      <button type="submit" class="primary" id="saveMeal">Save recipe</button>
+      <button type="button" class="danger-btn" id="deleteMeal" hidden>Delete recipe</button>
     </div>
   </form>
 </div>
@@ -2730,7 +2805,7 @@
       tagsOpenId = into.id;
       householdAction("tag_merge", { from_id: id, into_id: into.id }, `Merged ${tag.name} into ${into.name}`);
     } else if (act === "delete") {
-      // Two taps, like Delete dinner.
+      // Two taps, like Delete recipe.
       if (!tagDeleteArmed) {
         b.classList.add("confirm");
         b.textContent = "Tap again to delete";
@@ -3283,7 +3358,7 @@
       ingredients: (meal?.ingredients ?? []).map(editRow),
     };
     draftDirty = false;
-    $("editorTitle").textContent = meal ? "Edit dinner" : "New dinner";
+    $("editorTitle").textContent = meal ? "Edit recipe" : "Add recipe";
     $("mealUrl").value = meal?.recipe_url ?? "";
     $("mealName").value = meal?.name ?? "";
     $("mealServings").value = meal?.servings ?? "";
@@ -3329,7 +3404,7 @@
   }
 
   $("editorCancel").addEventListener("click", () => {
-    if (!draftDirty || confirm("Discard your changes to this dinner?")) closeEditor();
+    if (!draftDirty || confirm("Discard your changes to this recipe?")) closeEditor();
   });
   $("mealForm").addEventListener("input", () => { draftDirty = true; });
 
@@ -3728,7 +3803,7 @@
     e.preventDefault();
     const name = $("mealName").value.trim();
     if (!name) {
-      $("editorError").textContent = "Give the dinner a name.";
+      $("editorError").textContent = "Give the recipe a name.";
       $("mealName").focus();
       return;
     }
@@ -3761,7 +3836,7 @@
       $("editorError").textContent = err instanceof TypeError ? "No connection. Check your signal and try again." : err.message;
     } finally {
       btn.disabled = false;
-      btn.textContent = "Save dinner";
+      btn.textContent = "Save recipe";
     }
   });
 
@@ -3778,7 +3853,7 @@
     try {
       applyMeals(await api("delete_meal", { id: draft.id }));
       closeEditor();
-      toast("Dinner deleted");
+      toast("Recipe deleted");
     } catch (err) {
       if (err instanceof AuthError) return handleError(err);
       $("editorError").textContent = err instanceof TypeError ? "No connection. Check your signal and try again." : err.message;
@@ -3788,7 +3863,7 @@
     clearTimeout(deleteArmed);
     deleteArmed = null;
     $("deleteMeal").classList.remove("confirm");
-    $("deleteMeal").textContent = "Delete dinner";
+    $("deleteMeal").textContent = "Delete recipe";
   }
 
   /* ---------- This week ---------- */
