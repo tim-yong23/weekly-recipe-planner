@@ -972,6 +972,150 @@
   .dinner-controls .seg button { flex: 1 1 auto; padding: 0 10px; white-space: nowrap; gap: 5px; }
   .dinner-controls .seg button svg { width: 15px; height: 15px; }
 
+  /* ---------- Welcome and sign-in prototype ---------- */
+  .proto { position: fixed; inset: 0; z-index: 40; background: var(--bg); overflow: hidden; }
+  .proto-exit {
+    position: absolute; z-index: 3; top: calc(env(safe-area-inset-top) + 12px); right: 12px;
+    width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center;
+    background: rgba(255, 255, 255, 0.92); color: #1F1F1F; font-size: 15px; box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12);
+  }
+  .ps {
+    position: absolute; inset: 0; display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain;
+    padding: calc(env(safe-area-inset-top) + 8px) 20px calc(env(safe-area-inset-bottom) + 20px);
+    animation: ps-in 0.25s ease-out;
+  }
+  @keyframes ps-in { from { opacity: 0; transform: translateX(16px); } }
+  @media (prefers-reduced-motion: reduce) { .ps { animation: none; } }
+  .ps-top { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 8px; min-height: 52px; margin-right: 40px; }
+  .ps-back { width: 40px; height: 40px; margin-left: -8px; border-radius: 50%; display: grid; place-items: center; color: var(--text); }
+  .ps-back svg { width: 22px; height: 22px; }
+  .ps-progress { height: 4px; border-radius: 2px; background: #EDEDED; overflow: hidden; }
+  .ps-progress span { display: block; height: 100%; border-radius: 2px; background: #4EA346; }
+  .ps-body { display: flex; flex-direction: column; gap: 12px; padding-top: 14px; }
+  .ps-foot { margin-top: auto; padding-top: 20px; display: flex; flex-direction: column; gap: 6px; }
+  .ps-title {
+    margin: 0; font-family: var(--font-serif); font-weight: 400; font-size: 30px; line-height: 1.12;
+    letter-spacing: -0.01em; font-variation-settings: "SOFT" 0, "WONK" 1; color: var(--text);
+  }
+  .ps-sub { margin: 0 0 6px; font-size: 15px; line-height: 1.45; letter-spacing: -0.02em; color: #808080; }
+  .ps-small { margin: 4px 0 0; font-size: 12px; letter-spacing: -0.02em; color: #9A9A9A; text-align: center; }
+  .ps-error { margin: 0; font-size: 13px; color: var(--danger); }
+  .ps-error:empty { display: none; }
+  .ps-input {
+    width: 100%; height: 52px; padding: 0 16px; border-radius: 12px; outline: 0; font-size: 17px; letter-spacing: -0.02em;
+    color: #1F1F1F; background: #FFFFFF; border: 1px solid #D9D9D9;
+  }
+  .ps-input:focus { border-color: #7CD184; box-shadow: 0 0 0 3px #E6F7E4; }
+  .ps .primary { margin-top: 6px; }
+  .ps .center-btn { margin-top: 2px; font-size: 15px; letter-spacing: -0.03em; }
+  /* Welcome slides: photo on top, words below; swipe sideways */
+  .ps-welcome { padding: 0; }
+  .slides { flex: 1 0 auto; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+  .slides::-webkit-scrollbar { display: none; }
+  .slide { flex: 0 0 100%; margin: 0; scroll-snap-align: start; display: flex; flex-direction: column; }
+  .slide img { width: 100%; height: 54vh; min-height: 200px; object-fit: cover; object-position: center 12%; border-radius: 0 0 32px 32px; display: block; }
+  @media (max-height: 720px) {
+    .slide img { height: 42vh; }
+    .slide figcaption { padding-top: 18px; }
+    .slide h1, .ps-title { font-size: 26px; }
+  }
+  .slide figcaption { padding: 24px 24px 0; }
+  .slide h1 { margin: 0 0 8px; font-family: var(--font-serif); font-weight: 400; font-size: 30px; line-height: 1.12; font-variation-settings: "SOFT" 0, "WONK" 1; }
+  .slide p { margin: 0; font-size: 15px; line-height: 1.45; letter-spacing: -0.02em; color: #808080; }
+  .brand {
+    position: absolute; top: calc(env(safe-area-inset-top) + 14px); left: 16px; display: flex; align-items: center; gap: 8px;
+    padding: 4px 12px 4px 4px; border-radius: 50px; background: rgba(255, 255, 255, 0.92);
+    font-family: var(--font-serif); font-size: 16px; color: #19581F; box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12);
+  }
+  .brand img { width: 30px; height: 30px; border-radius: 50%; }
+  .ps-welcome .ps-foot { padding: 12px 20px calc(env(safe-area-inset-bottom) + 18px); margin-top: 0; }
+  .dots { display: flex; justify-content: center; gap: 6px; margin-bottom: 8px; }
+  .dots span { width: 7px; height: 7px; border-radius: 4px; background: #D9D9D9; transition: width 0.2s, background 0.2s; }
+  .dots span.on { width: 20px; background: #4EA346; }
+  /* Sign-in buttons */
+  .auth-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+  .auth-btn {
+    width: 100%; height: 54px; border-radius: 50px; display: flex; align-items: center; justify-content: center; gap: 10px;
+    font-size: 16px; font-weight: 600; letter-spacing: -0.04em;
+  }
+  .auth-btn svg { width: 20px; height: 20px; flex: none; }
+  .auth-btn.apple { background: #000000; color: #FFFFFF; }
+  .auth-btn.google { background: #FFFFFF; color: #1F1F1F; border: 1px solid #D9D9D9; }
+  .auth-btn.email { background: var(--pill); color: var(--text); }
+  .auth-btn:active { transform: scale(0.98); }
+  /* 6-digit code: one real input over six boxes */
+  .code-boxes { position: relative; display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin: 4px 0; }
+  .code-boxes input { position: absolute; inset: 0; width: 100%; opacity: 0; font-size: 16px; }
+  .code-boxes span {
+    height: 56px; border-radius: 12px; display: grid; place-items: center; font-family: var(--font-mono); font-size: 24px;
+    color: #1F1F1F; background: #FFFFFF; border: 1px solid #D9D9D9;
+  }
+  .code-boxes span.cur { border-color: #7CD184; box-shadow: 0 0 0 3px #E6F7E4; }
+  .code-input { font-family: var(--font-mono); letter-spacing: 0.3em; text-align: center; font-size: 22px; }
+  /* Household choices */
+  .choice {
+    display: flex; align-items: center; gap: 14px; width: 100%; padding: 16px; border-radius: 14px; text-align: left;
+    background: var(--tile); color: var(--text);
+  }
+  .choice > span:nth-child(2) { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+  .choice strong { font-size: 16px; font-weight: 600; letter-spacing: -0.04em; }
+  .choice small { font-size: 13px; letter-spacing: -0.02em; color: #9A9A9A; }
+  .choice > svg { width: 16px; height: 16px; color: #B4B4B4; flex: none; }
+  .choice-icon { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: #E6F7E4; color: #19581F; flex: none; }
+  .choice-icon svg { width: 22px; height: 22px; }
+  .choice:active { transform: scale(0.99); }
+  .ps .plan-q { margin: 10px 0 0; }
+  .ps .count-chips { margin-bottom: 8px; }
+  /* Starter recipes */
+  .proto-url { margin-top: 2px; }
+  .proto-url input { flex: 1; min-width: 0; height: 48px; padding: 0 14px; border-radius: 12px; outline: 0; font-size: 15px; background: #FFFFFF; border: 1px solid #D9D9D9; color: #1F1F1F; }
+  .proto-url input:focus { border-color: #7CD184; }
+  .proto-url .fetch-btn { min-width: 0; min-height: 48px; height: 48px; padding: 0 18px; border-radius: 12px; background: #E6F7E4; color: #19581F; border: 1px solid #7CD184; font-size: 15px; font-weight: 600; }
+  .starter { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .starter button {
+    position: relative; min-height: 64px; padding: 12px 34px 12px 12px; border-radius: 12px; text-align: left;
+    background: var(--tile); color: var(--text); font-size: 14px; font-weight: 600; letter-spacing: -0.04em; line-height: 1.25;
+    border: 1.5px solid transparent;
+  }
+  .starter button small { display: block; margin-top: 3px; font-weight: 400; font-size: 12px; color: #9A9A9A; }
+  .starter button::after {
+    content: ""; position: absolute; top: 10px; right: 10px; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid #C9C9C9;
+  }
+  .starter button[aria-pressed="true"] { border-color: #7CD184; background: #F3FBF2; }
+  .starter button[aria-pressed="true"]::after {
+    border-color: #4EA346; background: #4EA346 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") no-repeat center / 12px;
+  }
+  .starter .added { grid-column: 1 / -1; }
+  /* Invite */
+  .invite-card {
+    display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 22px 16px; margin: 4px 0 6px;
+    border-radius: 16px; background: #E6F7E4; color: #19581F;
+  }
+  .invite-label { font-size: 13px; font-weight: 600; letter-spacing: -0.03em; color: #2F7A2A; }
+  .invite-code { font-family: var(--font-mono); font-size: 34px; letter-spacing: 0.22em; padding-left: 0.22em; }
+  .invite-note { font-size: 12px; color: #4EA346; }
+  /* Trial started */
+  .ps-trial { padding-top: 0; }
+  .trial-hero { margin: 0 -20px; }
+  .trial-hero img { width: 100%; height: 38vh; min-height: 200px; object-fit: cover; display: block; border-radius: 0 0 32px 32px; }
+  .ps-trial .ps-body { padding-top: 22px; }
+  .trial-list { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .trial-list li { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; letter-spacing: -0.02em; line-height: 1.4; }
+  .trial-list svg { width: 20px; height: 20px; flex: none; padding: 3px; border-radius: 50%; background: #E6F7E4; color: #19581F; }
+  @media (prefers-color-scheme: dark) {
+    .ps-sub, .slide p, .choice small, .starter button small { color: var(--muted); }
+    .ps-progress, .dots span { background: var(--border); }
+    .ps-input, .code-boxes span, .proto-url input { background: var(--field); border-color: var(--border); color: var(--text); }
+    .auth-btn.apple { background: #FFFFFF; color: #000000; }
+    .auth-btn.google { background: var(--surface-strong); color: var(--text); border-color: var(--border); }
+    .choice-icon, .invite-card, .trial-list svg { background: var(--accent-soft); color: var(--on-soft); }
+    .invite-label, .invite-note { color: var(--on-soft); }
+    .proto-url .fetch-btn { background: var(--accent-soft); color: var(--on-soft); border-color: var(--accent-line); }
+    .starter button[aria-pressed="true"] { background: var(--accent-soft); }
+    .brand, .proto-exit { background: rgba(20, 22, 20, 0.85); color: #EEF1EE; }
+    .brand { color: #9BD894; }
+  }
+
   /* ---------- Figma icons: shopping sections and meals without a photo ---------- */
   .aisle { align-items: center; }
   .aisle-icon { display: grid; place-items: center; width: 18px; height: 18px; flex: none; color: var(--text); }
@@ -1010,7 +1154,7 @@
   }
   .trial-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
   .trial-badge { padding: 3px 10px; border-radius: 50px; background: #19581F; color: #FFFFFF; font-size: 12px; font-weight: 600; letter-spacing: -0.02em; }
-  .trial-days { font-family: var(--font-display); font-size: 22px; font-variation-settings: "SOFT" 0, "WONK" 1; }
+  .trial-days { font-family: var(--font-serif); font-size: 22px; font-variation-settings: "SOFT" 0, "WONK" 1; }
   .trial-bar { height: 6px; border-radius: 3px; background: rgba(25, 88, 31, 0.15); overflow: hidden; }
   .trial-bar span { display: block; height: 100%; min-width: 6px; border-radius: 3px; background: #4EA346; }
   .trial-card p { margin: 0; font-size: 13px; line-height: 1.45; letter-spacing: -0.02em; color: #2F7A2A; }
@@ -1841,6 +1985,12 @@
       <button type="button" class="set-row link" id="setTags"><span>Tags</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
     </div>
 
+    <h3 class="set-h">Coming to the app</h3>
+    <div class="set-group">
+      <button type="button" class="set-row link" id="setProto"><span>Preview welcome and sign-in</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+    </div>
+    <p class="set-note">A clickable preview of the store app's first-time screens. Nothing in it is saved.</p>
+
     <h3 class="set-h">This phone</h3>
     <div class="set-group">
       <button type="button" class="set-row link danger" id="lockBtn"><span>Lock this phone</span></button>
@@ -1848,6 +1998,190 @@
     <p class="set-note">You'll need the household passcode to open the app again.</p>
     <p class="set-note center">The Home Butler · web version</p>
   </div>
+</div>
+
+<!-- Welcome and sign-in: a clickable PROTOTYPE for the store apps. Nothing here signs in for real,
+     saves anything or talks to the server. Opened from Settings, or with …/#welcome. -->
+<div class="proto" id="proto" hidden role="dialog" aria-modal="true" aria-label="Welcome and sign-in preview">
+  <button type="button" class="proto-exit" id="protoExit" aria-label="Close preview">✕</button>
+
+  <section class="ps ps-welcome" data-step="welcome">
+    <div class="slides" id="slides">
+      <figure class="slide">
+        <img src="images/welcome-plan.jpg" alt="A family chatting round a kitchen table" width="880" height="1100">
+        <figcaption><h1>Plan the week in a tap</h1><p>Pick how many meals and get a week of ideas, without repeating what you had last week.</p></figcaption>
+      </figure>
+      <figure class="slide">
+        <img src="images/welcome-shop.jpg" alt="A mesh shopping bag with cucumbers, herbs and a lemon" width="880" height="1100" loading="lazy">
+        <figcaption><h1>One list, shared</h1><p>The week's ingredients added up and sorted by supermarket aisle, on everyone's phone.</p></figcaption>
+      </figure>
+      <figure class="slide">
+        <img src="images/welcome-recipes.jpg" alt="A couple cooking together in their kitchen" width="880" height="1100" loading="lazy">
+        <figcaption><h1>All your recipes in one place</h1><p>Paste a link from any recipe site and the ingredients fill themselves in.</p></figcaption>
+      </figure>
+    </div>
+    <div class="brand"><img src="apple-touch-icon.png" alt="" width="34" height="34"><span>The Home Butler</span></div>
+    <div class="ps-foot">
+      <div class="dots" id="dots"><span class="on"></span><span></span><span></span></div>
+      <button type="button" class="primary" data-go="account" data-mode="signup">Get started</button>
+      <button type="button" class="text-btn center-btn" data-go="account" data-mode="signin">I already have an account</button>
+    </div>
+  </section>
+
+  <section class="ps" data-step="account" hidden>
+    <header class="ps-top"><button type="button" class="ps-back" data-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><span></span><span></span></header>
+    <div class="ps-body">
+      <h1 class="ps-title" id="accTitle">Create your account</h1>
+      <p class="ps-sub" id="accSub">It takes a minute. Your 30-day free trial starts straight away, no card needed.</p>
+      <div class="auth-btns">
+        <button type="button" class="auth-btn apple" data-auth="Apple"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.37 12.95c-.02-2.3 1.88-3.4 1.96-3.46-1.07-1.56-2.73-1.78-3.32-1.8-1.41-.14-2.76.83-3.47.83-.72 0-1.82-.81-2.99-.79-1.54.02-2.96.9-3.75 2.27-1.6 2.78-.41 6.89 1.15 9.14.76 1.1 1.67 2.34 2.86 2.3 1.15-.05 1.58-.74 2.97-.74 1.38 0 1.77.74 2.98.72 1.23-.02 2.01-1.12 2.76-2.23.87-1.28 1.23-2.52 1.25-2.58-.03-.01-2.39-.92-2.4-3.66zM14.1 6.2c.63-.77 1.06-1.83.94-2.9-.91.04-2.02.61-2.67 1.37-.58.67-1.1 1.76-.96 2.8 1.02.08 2.05-.52 2.69-1.27z"/></svg>Continue with Apple</button>
+        <button type="button" class="auth-btn google" data-auth="Google"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/></svg>Continue with Google</button>
+        <button type="button" class="auth-btn email" data-go="email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5l8.5 6.5 8.5-6.5"/></svg>Continue with email</button>
+      </div>
+      <p class="ps-small">By continuing you agree to our <u>Terms</u> and <u>Privacy Policy</u>.</p>
+    </div>
+    <div class="ps-foot"><button type="button" class="text-btn center-btn" id="accSwitch">Already have an account? Sign in</button></div>
+  </section>
+
+  <section class="ps" data-step="email" hidden>
+    <header class="ps-top"><button type="button" class="ps-back" data-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><span></span><span></span></header>
+    <form class="ps-body" id="emailForm" novalidate>
+      <h1 class="ps-title">What's your email?</h1>
+      <p class="ps-sub">We'll send you a 6-digit code. No password to remember.</p>
+      <input class="ps-input" id="protoEmail" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" aria-label="Email">
+      <p class="ps-error" id="emailError"></p>
+      <button type="submit" class="primary">Send code</button>
+    </form>
+  </section>
+
+  <section class="ps" data-step="code" hidden>
+    <header class="ps-top"><button type="button" class="ps-back" data-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><span></span><span></span></header>
+    <div class="ps-body">
+      <h1 class="ps-title">Check your email</h1>
+      <p class="ps-sub">We sent a code to <strong id="codeTo">you@example.com</strong>.</p>
+      <label class="code-boxes" id="codeBoxes">
+        <input id="protoCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" aria-label="6-digit code">
+        <span></span><span></span><span></span><span></span><span></span><span></span>
+      </label>
+      <p class="ps-small">Prototype: any 6 digits will do.</p>
+      <button type="button" class="text-btn center-btn" id="codeResend">Send a new code</button>
+    </div>
+  </section>
+
+  <section class="ps" data-step="name" hidden>
+    <header class="ps-top"><button type="button" class="ps-back" data-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><div class="ps-progress" aria-hidden="true"><span style="width:20%"></span></div><span></span></header>
+    <form class="ps-body" id="nameForm" novalidate>
+      <h1 class="ps-title">What should we call you?</h1>
+      <p class="ps-sub">This shows on things you add to the shopping list.</p>
+      <input class="ps-input" id="protoName" autocomplete="given-name" maxlength="30" placeholder="Your first name" aria-label="Your name">
+      <button type="submit" class="primary">Continue</button>
+    </form>
+  </section>
+
+  <section class="ps" data-step="household" hidden>
+    <header class="ps-top"><button type="button" class="ps-back" data-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><div class="ps-progress" aria-hidden="true"><span style="width:40%"></span></div><span></span></header>
+    <div class="ps-body">
+      <h1 class="ps-title">Set up your household</h1>
+      <p class="ps-sub">Everyone in a household shares the same meal plan, recipes and shopping list.</p>
+      <button type="button" class="choice" data-go="create">
+        <span class="choice-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5L12 4l8 6.5V19a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19z"/><path d="M9.5 20.5V14h5v6.5"/></svg></span>
+        <span><strong>Start a new household</strong><small>For you, or you and the people you live with</small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+      <button type="button" class="choice" data-go="join">
+        <span class="choice-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="M10.8 12.2L20 3M16 7l3 3M18 5l2 2"/></svg></span>
+        <span><strong>Join a household</strong><small>Someone's invited you and sent a code</small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <section class="ps" data-step="create" hidden>
+    <header class="ps-top"><button type="button" class="ps-back" data-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><div class="ps-progress" aria-hidden="true"><span style="width:40%"></span></div><span></span></header>
+    <form class="ps-body" id="createForm" novalidate>
+      <h1 class="ps-title">Name your household</h1>
+      <p class="ps-sub">You can change it later. Up to 6 people can join.</p>
+      <input class="ps-input" id="protoHouse" maxlength="40" placeholder="e.g. Tim and Soph's" aria-label="Household name">
+      <button type="submit" class="primary">Continue</button>
+    </form>
+  </section>
+
+  <section class="ps" data-step="join" hidden>
+    <header class="ps-top"><button type="button" class="ps-back" data-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><div class="ps-progress" aria-hidden="true"><span style="width:40%"></span></div><span></span></header>
+    <form class="ps-body" id="joinForm" novalidate>
+      <h1 class="ps-title">Join a household</h1>
+      <p class="ps-sub">Type the 6-letter code from your invite. If you tapped an invite link, you'd skip this step.</p>
+      <input class="ps-input code-input" id="protoJoin" maxlength="6" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="K7M2QP" aria-label="Invite code">
+      <p class="ps-error" id="joinError"></p>
+      <button type="submit" class="primary">Join household</button>
+    </form>
+  </section>
+
+  <section class="ps" data-step="setup" hidden>
+    <header class="ps-top"><button type="button" class="ps-back" data-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><div class="ps-progress" aria-hidden="true"><span style="width:60%"></span></div><span></span></header>
+    <div class="ps-body">
+      <h1 class="ps-title">Make it yours</h1>
+      <p class="ps-sub">All optional. You can change these any time in Settings.</p>
+      <p class="plan-q">How many meals do you usually plan a week?</p>
+      <div class="count-chips" id="protoCounts" role="radiogroup" aria-label="Meals a week"></div>
+      <div class="set-group">
+        <div class="set-row"><span>Week starts</span>
+          <div class="seg set-seg" role="group" aria-label="Week starts on"><button type="button" data-pseg="week" data-val="mon" aria-pressed="true">Mon</button><button type="button" data-pseg="week" data-val="sun" aria-pressed="false">Sun</button></div></div>
+        <div class="set-row"><span>Meal plan</span>
+          <div class="seg set-seg" role="group" aria-label="Show the meal plan as"><button type="button" data-pseg="view" data-val="days" aria-pressed="true">Days</button><button type="button" data-pseg="view" data-val="list" aria-pressed="false">List</button></div></div>
+      </div>
+    </div>
+    <div class="ps-foot">
+      <button type="button" class="primary" data-go="recipes">Continue</button>
+      <button type="button" class="text-btn center-btn" data-go="recipes">Skip</button>
+    </div>
+  </section>
+
+  <section class="ps" data-step="recipes" hidden>
+    <header class="ps-top"><button type="button" class="ps-back" data-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><div class="ps-progress" aria-hidden="true"><span style="width:80%"></span></div><span></span></header>
+    <div class="ps-body">
+      <h1 class="ps-title">Add your first recipes</h1>
+      <p class="ps-sub">The planner picks from your recipes, so a few to start with makes the first week work.</p>
+      <form class="url-row proto-url" id="protoUrlForm">
+        <input id="protoUrl" type="url" inputmode="url" placeholder="Paste a recipe link" aria-label="Recipe link">
+        <button type="submit" class="fetch-btn">Add</button>
+      </form>
+      <p class="plan-q">Or pick a few to start with</p>
+      <div class="starter" id="starter"></div>
+    </div>
+    <div class="ps-foot">
+      <button type="button" class="primary" id="recipesNext" data-go="invite">Skip for now</button>
+    </div>
+  </section>
+
+  <section class="ps" data-step="invite" hidden>
+    <header class="ps-top"><button type="button" class="ps-back" data-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><div class="ps-progress" aria-hidden="true"><span style="width:100%"></span></div><span></span></header>
+    <div class="ps-body">
+      <h1 class="ps-title">Plan together</h1>
+      <p class="ps-sub">Invite the people you live with. They'll see the same meal plan and shopping list, and can add to it.</p>
+      <div class="invite-card">
+        <span class="invite-label">Your invite code</span>
+        <span class="invite-code" id="inviteCode">K7M2QP</span>
+        <span class="invite-note">Works for up to 5 more people</span>
+      </div>
+      <button type="button" class="pill-btn mint" id="inviteShare">Share invite</button>
+      <button type="button" class="pill-btn" id="inviteCopy">Copy code</button>
+    </div>
+    <div class="ps-foot">
+      <button type="button" class="text-btn center-btn" data-go="trial">I'll do this later</button>
+    </div>
+  </section>
+
+  <section class="ps ps-trial" data-step="trial" hidden>
+    <div class="trial-hero"><img src="images/welcome-cook.jpg" alt="A couple putting dinner in the oven" width="880" height="1100" loading="lazy"></div>
+    <div class="ps-body">
+      <h1 class="ps-title" id="trialTitle">Your 30-day free trial has started</h1>
+      <ul class="trial-list">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Everything's unlocked, including sharing with your household</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>No card needed</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>We'll remind you 5 days before it ends</li>
+      </ul>
+    </div>
+    <div class="ps-foot"><button type="button" class="primary" id="protoFinish">Start planning</button></div>
+  </section>
 </div>
 
 <datalist id="ingredientNames"></datalist>
@@ -4762,6 +5096,208 @@
   $("setHousehold").addEventListener("click", () => { closeSettings(); $("householdBtn").click(); });
   $("setTags").addEventListener("click", () => { closeSettings(); openTagsSheet(); });
   $("plansBtn").addEventListener("click", () => toast("Plans are coming soon. Enjoy the free trial."));
+
+  /* ---------- Welcome and sign-in PROTOTYPE (store apps) ----------
+     Clickable only: no real accounts, nothing saved, nothing sent to the server. */
+
+  const proto = { trail: [], mode: "signup", joined: false, count: 5 };
+  const STARTERS = [
+    ["Spaghetti bolognese", "45 min"], ["Chicken stir-fry", "25 min"], ["Beef tacos", "30 min"],
+    ["Pumpkin soup", "40 min"], ["Salmon traybake", "30 min"], ["Chickpea curry", "35 min"],
+  ];
+
+  function protoShow(step, push = true) {
+    const current = $("proto").querySelector(".ps:not([hidden])");
+    if (push && current && current.dataset.step !== step) proto.trail.push(current.dataset.step);
+    $("proto").querySelectorAll(".ps").forEach((el) => { el.hidden = el.dataset.step !== step; });
+    const next = $("proto").querySelector(`.ps[data-step="${step}"]`);
+    next.scrollTop = 0;
+    if (step === "account") protoAccountMode();
+    if (step === "code") protoCode("");
+    if (step === "trial") {
+      const name = $("protoName").value.trim();
+      $("trialTitle").textContent = proto.joined
+        ? `You're in${name ? `, ${name}` : ""}! Welcome to Tim and Soph's household`
+        : `${name ? `${name}, your` : "Your"} 30-day free trial has started`;
+    }
+    const field = next.querySelector(".ps-input, #protoCode");
+    if (field) setTimeout(() => field.focus({ preventScroll: true }), 260);
+  }
+  function protoBack() {
+    const prev = proto.trail.pop();
+    if (prev) protoShow(prev, false);
+    else closeProto();
+  }
+  function openProto() {
+    closeSettings();
+    proto.trail = [];
+    proto.joined = false;
+    proto.count = 5;
+    for (const id of ["protoEmail", "protoCode", "protoName", "protoHouse", "protoJoin", "protoUrl"]) $(id).value = "";
+    $("starter").replaceChildren(...STARTERS.map(([name, time]) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.setAttribute("aria-pressed", "false");
+      b.append(name);
+      const small = document.createElement("small");
+      small.textContent = time;
+      b.append(small);
+      return b;
+    }));
+    protoRecipesButton();
+    protoCounts();
+    $("proto").hidden = false;
+    $("slides").scrollLeft = 0;
+    document.body.classList.add("sheet-open");
+    protoShow("welcome", false);
+  }
+  function closeProto() {
+    $("proto").hidden = true;
+    if ([...document.querySelectorAll(".sheet")].every((el) => el.hidden)) document.body.classList.remove("sheet-open");
+    if (location.hash === "#welcome") history.replaceState(null, "", location.pathname + location.search);
+  }
+
+  function protoAccountMode() {
+    const signin = proto.mode === "signin";
+    $("accTitle").textContent = signin ? "Welcome back" : "Create your account";
+    $("accSub").textContent = signin
+      ? "Sign in the same way you did before, and you'll be straight back to your list."
+      : "It takes a minute. Your 30-day free trial starts straight away, no card needed.";
+    $("accSwitch").textContent = signin ? "New here? Create an account" : "Already have an account? Sign in";
+  }
+  // Signing in takes a returning person straight to the app; someone new carries on setting up.
+  function protoSignedIn(how) {
+    if (proto.mode === "signin") {
+      closeProto();
+      toast(`Prototype: signed in with ${how}. In the real app you'd land on your list.`);
+    } else {
+      protoShow("name");
+    }
+  }
+
+  function protoCode(value) {
+    const digits = value.replace(/\D/g, "").slice(0, 6);
+    $("protoCode").value = digits;
+    $("codeBoxes").querySelectorAll("span").forEach((box, i) => {
+      box.textContent = digits[i] ?? "";
+      box.classList.toggle("cur", i === Math.min(digits.length, 5));
+    });
+    if (digits.length === 6) setTimeout(() => protoSignedIn("email"), 300);
+  }
+
+  function protoCounts() {
+    $("protoCounts").replaceChildren(...[1, 2, 3, 4, 5, 6, 7].map((n) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.dataset.count = n;
+      b.textContent = n;
+      b.setAttribute("role", "radio");
+      b.setAttribute("aria-checked", String(n === proto.count));
+      return b;
+    }));
+  }
+  function protoRecipesButton() {
+    const n = $("starter").querySelectorAll('[aria-pressed="true"]').length;
+    $("recipesNext").textContent = n ? `Add ${n} recipe${n === 1 ? "" : "s"}` : "Skip for now";
+  }
+
+  $("setProto").addEventListener("click", openProto);
+  $("protoExit").addEventListener("click", closeProto);
+  $("protoFinish").addEventListener("click", () => {
+    closeProto();
+    showTab("week");
+    toast("That's the end of the preview. New users would start here.");
+  });
+  $("proto").addEventListener("click", (e) => {
+    if (e.target.closest("[data-back]")) return protoBack();
+    const go = e.target.closest("[data-go]");
+    if (go) {
+      if (go.dataset.mode) proto.mode = go.dataset.mode;
+      if (go.dataset.go === "trial") proto.joined = false;
+      return protoShow(go.dataset.go);
+    }
+    const auth = e.target.closest("[data-auth]");
+    if (auth) return protoSignedIn(auth.dataset.auth);
+    const count = e.target.closest("#protoCounts [data-count]");
+    if (count) { proto.count = Number(count.dataset.count); return protoCounts(); }
+    const seg = e.target.closest("[data-pseg]");
+    if (seg) {
+      seg.parentElement.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b === seg)));
+      return;
+    }
+    const starter = e.target.closest("#starter button");
+    if (starter) {
+      starter.setAttribute("aria-pressed", String(starter.getAttribute("aria-pressed") !== "true"));
+      protoRecipesButton();
+    }
+  });
+  $("accSwitch").addEventListener("click", () => { proto.mode = proto.mode === "signin" ? "signup" : "signin"; protoAccountMode(); });
+  $("slides").addEventListener("scroll", () => {
+    const i = Math.round($("slides").scrollLeft / $("slides").clientWidth);
+    $("dots").querySelectorAll("span").forEach((d, n) => d.classList.toggle("on", n === i));
+  }, { passive: true });
+  $("emailForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const email = $("protoEmail").value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      $("emailError").textContent = "That email doesn't look quite right.";
+      return;
+    }
+    $("emailError").textContent = "";
+    $("codeTo").textContent = email;
+    protoShow("code");
+  });
+  $("protoEmail").addEventListener("input", () => { $("emailError").textContent = ""; });
+  $("protoCode").addEventListener("input", (e) => protoCode(e.target.value));
+  $("codeResend").addEventListener("click", () => toast("Prototype: a new code would be on its way."));
+  $("nameForm").addEventListener("submit", (e) => { e.preventDefault(); protoShow("household"); });
+  $("createForm").addEventListener("submit", (e) => { e.preventDefault(); protoShow("setup"); });
+  $("joinForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    if ($("protoJoin").value.length !== 6) {
+      $("joinError").textContent = "Invite codes are 6 letters and numbers.";
+      return;
+    }
+    $("joinError").textContent = "";
+    proto.joined = true;
+    protoShow("trial"); // someone joining skips setup, recipes and inviting: the household already has them
+  });
+  $("protoJoin").addEventListener("input", (e) => {
+    e.target.value = e.target.value.replace(/[^a-z0-9]/gi, "").toUpperCase().slice(0, 6);
+    $("joinError").textContent = "";
+  });
+  $("protoUrlForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const url = $("protoUrl").value.trim();
+    if (!url) return;
+    let host = "that site";
+    try { host = new URL(url).hostname.replace(/^www\./, ""); } catch {}
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "added";
+    b.setAttribute("aria-pressed", "true");
+    b.append("Recipe from " + host);
+    const small = document.createElement("small");
+    small.textContent = "The ingredients would fill in automatically";
+    b.append(small);
+    $("starter").prepend(b);
+    $("protoUrl").value = "";
+    protoRecipesButton();
+  });
+  $("inviteShare").addEventListener("click", async () => {
+    const text = "Join our household on The Home Butler. Use code K7M2QP when you sign up.";
+    if (navigator.share) {
+      try { await navigator.share({ text }); } catch {}
+    } else {
+      toast("Prototype: this opens your phone's share menu (Messages, WhatsApp…).");
+    }
+  });
+  $("inviteCopy").addEventListener("click", () => {
+    navigator.clipboard?.writeText("K7M2QP").catch(() => {});
+    toast("Code copied: K7M2QP");
+  });
+  if (location.hash === "#welcome") setTimeout(openProto, 0);
+  window.addEventListener("hashchange", () => { if (location.hash === "#welcome") openProto(); });
 
   /* ---------- Start ---------- */
 
