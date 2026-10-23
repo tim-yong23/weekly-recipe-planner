@@ -972,6 +972,33 @@
   .dinner-controls .seg button { flex: 1 1 auto; padding: 0 10px; white-space: nowrap; gap: 5px; }
   .dinner-controls .seg button svg { width: 15px; height: 15px; }
 
+  /* ---------- Add recipes panel and import ---------- */
+  .add-choices { display: flex; flex-direction: column; gap: 8px; margin: 6px 0 4px; }
+  .import-list { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+  .import-row {
+    position: relative; width: 100%; display: flex; flex-direction: column; gap: 3px; padding: 11px 44px 11px 14px;
+    border-radius: 10px; background: var(--row); text-align: left; color: var(--text);
+  }
+  .import-row strong { font-size: 15px; font-weight: 600; letter-spacing: -0.03em; overflow-wrap: anywhere; }
+  .import-row small { font-size: 12px; letter-spacing: -0.02em; color: #9A9A9A; }
+  .import-row small.warn { color: var(--warn); }
+  .import-row small.bad { color: var(--danger); }
+  .import-row small.good { color: #2F7A2A; }
+  .import-row::after {
+    content: ""; position: absolute; top: 50%; right: 14px; width: 20px; height: 20px; margin-top: -10px;
+    border-radius: 50%; border: 1.5px solid #C9C9C9;
+  }
+  .import-row[aria-pressed="true"]::after {
+    border-color: #4EA346; background: #4EA346 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") no-repeat center / 12px;
+  }
+  .import-row:disabled::after { display: none; }
+  .import-row:disabled { opacity: 1; }
+  .import-go { position: sticky; bottom: calc(env(safe-area-inset-bottom) + 12px); margin-top: 12px; }
+  @media (prefers-color-scheme: dark) {
+    .import-row small { color: var(--muted); }
+    .import-row small.good { color: var(--on-soft); }
+  }
+
   /* ---------- Welcome and sign-in prototype ---------- */
   .proto { position: fixed; inset: 0; z-index: 40; background: var(--bg); overflow: hidden; }
   .proto-exit {
@@ -1870,6 +1897,47 @@
   </div>
 </div>
 
+<div class="sheet panel-sheet" id="addSheet" hidden role="dialog" aria-modal="true" aria-labelledby="addTitle">
+  <div class="filter-panel">
+    <header class="sheet-head">
+      <span></span>
+      <h2 id="addTitle">Add recipes</h2>
+      <button type="button" class="text-btn end" id="addClose">Cancel</button>
+    </header>
+    <div class="add-choices">
+      <button type="button" class="choice" id="addLink">
+        <span class="choice-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1"/></svg></span>
+        <span><strong>Paste a link</strong><small>From any recipe website. The ingredients fill themselves in.</small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+      <button type="button" class="choice" id="addBlank">
+        <span class="choice-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></span>
+        <span><strong>Type it in</strong><small>Start with a blank recipe</small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+      <button type="button" class="choice" id="addFile">
+        <span class="choice-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17M3.5 15h17M9.5 4v16"/></svg></span>
+        <span><strong>Import from a spreadsheet</strong><small>Lots of recipes at once, from a CSV file (or a Home Butler backup)</small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+    <button type="button" class="text-btn center-btn" id="importTemplate">Download a spreadsheet template</button>
+    <input type="file" id="importFile" accept=".csv,text/csv,.tsv,.txt,text/plain,.json,application/json" hidden>
+  </div>
+</div>
+
+<div class="sheet" id="importSheet" hidden role="dialog" aria-modal="true" aria-labelledby="importTitle">
+  <div class="sheet-inner">
+    <header class="sheet-head">
+      <button type="button" class="text-btn" id="importCancel">Cancel</button>
+      <h2 id="importTitle">Import recipes</h2>
+      <span></span>
+    </header>
+    <p class="hint" id="importSummary"></p>
+    <ul class="import-list" id="importList"></ul>
+    <div class="import-go">
+      <button type="button" class="primary" id="importGo">Import</button>
+    </div>
+  </div>
+</div>
+
 <div class="sheet panel-sheet" id="filterSheet" hidden role="dialog" aria-modal="true" aria-labelledby="filterTitle">
   <div class="filter-panel">
     <header class="sheet-head">
@@ -1996,6 +2064,10 @@
       <button type="button" class="set-row link" id="setExport"><span>Download all my data</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10.5l5 5 5-5M5 19.5h14"/></svg></button>
     </div>
     <p class="set-note">Saves a backup file of your recipes, tags, ingredients, shopping list and meal plans to this phone.</p>
+    <div class="set-group" style="margin-top: 8px">
+      <button type="button" class="set-row link" id="setImport"><span>Import recipes</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15.5V4.5M7 9l5-5 5 5M5 19.5h14"/></svg></button>
+    </div>
+    <p class="set-note">From a spreadsheet (CSV) or a backup file.</p>
 
     <h3 class="set-h">This phone</h3>
     <div class="set-group">
@@ -3629,7 +3701,7 @@
     closeRecipe();
     openEditor(meal);
   });
-  $("newMealBtn").addEventListener("click", () => openEditor(null));
+  $("newMealBtn").addEventListener("click", () => openAddSheet());
 
   /* ---------- Household ingredients ---------- */
 
@@ -5102,6 +5174,290 @@
   $("setHousehold").addEventListener("click", () => { closeSettings(); $("householdBtn").click(); });
   $("setTags").addEventListener("click", () => { closeSettings(); openTagsSheet(); });
   $("plansBtn").addEventListener("click", () => toast("Plans are coming soon. Enjoy the free trial."));
+
+  /* ---------- Add recipes: a link, a blank recipe, or many at once from a spreadsheet ---------- */
+
+  function openAddSheet() {
+    $("addSheet").hidden = false;
+    document.body.classList.add("sheet-open");
+  }
+  function closeAddSheet() {
+    $("addSheet").hidden = true;
+    if ([...document.querySelectorAll(".sheet")].every((el) => el.hidden)) document.body.classList.remove("sheet-open");
+  }
+  $("addClose").addEventListener("click", closeAddSheet);
+  $("addSheet").addEventListener("click", (e) => { if (e.target === $("addSheet")) closeAddSheet(); });
+  $("addLink").addEventListener("click", () => {
+    closeAddSheet();
+    openEditor(null);
+    setTimeout(() => $("mealUrl").focus(), 150);
+  });
+  $("addBlank").addEventListener("click", () => {
+    closeAddSheet();
+    openEditor(null);
+    setTimeout(() => $("mealName").focus(), 150);
+  });
+  $("addFile").addEventListener("click", () => $("importFile").click());
+  $("setImport").addEventListener("click", () => $("importFile").click());
+
+  // A starting point: the headings the importer understands, and two examples.
+  $("importTemplate").addEventListener("click", () => {
+    const rows = [
+      ["Name", "Link", "Serves", "Cooking time", "Tags", "Ingredients", "Method", "Photo"],
+      ["Spaghetti bolognese", "", "4", "45 min", "Freezer friendly, Quick",
+        "500g beef mince\n1 onion, finely chopped\n2 tins chopped tomatoes\n400g spaghetti",
+        "Brown the mince in a large pan.\nAdd the onion and cook until soft.\nStir in the tomatoes and simmer for 20 minutes.\nServe with the spaghetti.", ""],
+      ["Teriyaki chicken", "", "4", "25 min", "Quick",
+        "600g chicken thigh; 3 tbsp soy sauce; 2 tbsp honey; 2 cups rice",
+        "Cook the rice.\nFry the chicken until golden.\nAdd the soy sauce and honey and simmer until sticky.", ""],
+      // Just a link: the app reads the ingredients, method and photo from the website.
+      ["Beef stroganoff", "https://www.recipetineats.com/beef-stroganoff/", "", "", "Date night", "", "", ""],
+    ];
+    const csv = "﻿" + rows.map((r) => r.map(csvCell).join(",")).join("\r\n");
+    saveFile("home-butler-recipe-template.csv", csv, "text/csv");
+    toast("Template saved. Fill it in, then come back and import it.");
+  });
+  const csvCell = (v) => /[",\r\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+  function saveFile(name, text, type) {
+    const url = URL.createObjectURL(new Blob([text], { type }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name;
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  }
+
+  // Reads a CSV (or tab- or semicolon-separated) file, including cells with commas and line breaks in quotes.
+  function parseCSV(text) {
+    text = text.replace(/^﻿/, "");
+    const firstLine = text.split(/\r?\n/, 1)[0];
+    const count = (ch) => firstLine.split(ch).length - 1;
+    const sep = [",", "\t", ";"].sort((a, b) => count(b) - count(a))[0];
+    const rows = [];
+    let row = [], cell = "", quoted = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (quoted) {
+        if (c === '"' && text[i + 1] === '"') { cell += '"'; i++; }
+        else if (c === '"') quoted = false;
+        else cell += c;
+      } else if (c === '"' && cell === "") quoted = true;
+      else if (c === sep) { row.push(cell); cell = ""; }
+      else if (c === "\n" || c === "\r") {
+        if (c === "\r" && text[i + 1] === "\n") i++;
+        row.push(cell); rows.push(row); row = []; cell = "";
+      } else cell += c;
+    }
+    if (cell !== "" || row.length) { row.push(cell); rows.push(row); }
+    return rows.filter((r) => r.some((c) => c.trim()));
+  }
+
+  // Column headings people use, mapped to what each one means.
+  const IMPORT_COLUMNS = {
+    name: ["name", "title", "recipe", "recipename", "recipetitle", "dish", "meal"],
+    link: ["link", "url", "source", "website", "recipelink", "recipeurl", "sourceurl", "web"],
+    serves: ["serves", "servings", "serving", "yield", "portions", "people"],
+    cook: ["cookingtime", "cooktime", "time", "totaltime", "minutes", "duration", "cookingminutes", "mins"],
+    tags: ["tags", "tag", "category", "categories", "labels", "label", "cuisine", "type"],
+    ingredients: ["ingredients", "ingredient", "ingredientlist", "ingredientslist"],
+    method: ["method", "instructions", "steps", "directions", "preparation", "recipe instructions"],
+    photo: ["photo", "image", "picture", "imageurl", "photourl", "img"],
+  };
+  // "- 500g mince" / "1. Brown the mince" → "500g mince" / "Brown the mince"
+  const cleanLine = (l) => l.replace(/^\s*(?:[-•*·]|\d+[.)])\s+/, "").trim();
+  function splitLines(v, allowSemicolons) {
+    const text = String(v || "").trim();
+    if (!text) return [];
+    const parts = /\n/.test(text) ? text.split(/\r?\n/) : allowSemicolons ? text.split(/\s*;\s*/) : [text];
+    return parts.map(cleanLine).filter(Boolean);
+  }
+  const splitTags = (v) => [...new Set(String(v || "").split(/[,;|]/).map((t) => t.replace(/\s+/g, " ").trim()).filter(Boolean))];
+
+  function recipesFromCSV(text) {
+    const rows = parseCSV(text);
+    if (rows.length < 2) throw new Error("That file doesn't have any recipes in it. Use the template to see the layout.");
+    const key = (h) => h.toLowerCase().replace(/[^a-z]/g, "");
+    const col = {};
+    rows[0].forEach((h, i) => {
+      const k = key(h);
+      for (const [field, names] of Object.entries(IMPORT_COLUMNS)) {
+        if (col[field] === undefined && names.map(key).includes(k)) col[field] = i;
+      }
+    });
+    if (col.name === undefined) {
+      throw new Error("Couldn't find a Name column. Make sure the first row has headings like Name, Ingredients and Method (see the template).");
+    }
+    const get = (r, f) => (col[f] === undefined ? "" : (r[col[f]] ?? "").trim());
+    return rows.slice(1).map((r, i) => ({
+      line: i + 2,
+      name: get(r, "name").replace(/\s+/g, " "),
+      link: get(r, "link"),
+      serves: get(r, "serves"),
+      cook: get(r, "cook"),
+      tags: splitTags(get(r, "tags")),
+      lines: splitLines(get(r, "ingredients"), true),
+      method: splitLines(get(r, "method"), false),
+      photo: get(r, "photo"),
+    }));
+  }
+
+  // A file from "Download all my data": put its recipes back.
+  function recipesFromBackup(data) {
+    if (!Array.isArray(data?.recipes)) throw new Error("That file isn't a Home Butler backup or a spreadsheet.");
+    return data.recipes.map((r, i) => ({
+      line: i + 1,
+      name: String(r.name || "").trim(),
+      link: r.recipe_link || "",
+      serves: r.serves || "",
+      cook: r.cooking_minutes ?? "",
+      tags: Array.isArray(r.tags) ? r.tags : [],
+      rows: (r.ingredients || []).map((g) => ({ amount: g.amount, unit: g.unit, name: g.name, note: g.note, staple: g.always_have ?? null })),
+      method: Array.isArray(r.method) ? r.method : splitLines(r.method, false),
+      photo: r.photo || "",
+    }));
+  }
+
+  let importing = [];   // recipes found in the file, with .picked, .status and .note
+  let importBusy = false;
+
+  $("importFile").addEventListener("change", async () => {
+    const file = $("importFile").files[0];
+    $("importFile").value = "";
+    if (!file) return;
+    closeAddSheet();
+    closeSettings();
+    try {
+      const text = await file.text();
+      const isJson = /\.json$/i.test(file.name) || /^\s*\{/.test(text);
+      const found = isJson ? recipesFromBackup(JSON.parse(text)) : recipesFromCSV(text);
+      const have = new Set(meals.map((m) => m.name.trim().toLowerCase()));
+      const seen = new Set();
+      importing = found.map((r) => {
+        const lower = r.name.toLowerCase();
+        const fetch = !!r.link && /^https?:\/\/\S+\.\S+/i.test(r.link) && !(r.lines?.length || r.rows?.length);
+        let note = "", picked = true, problem = false;
+        if (!r.name && !fetch) { note = `Row ${r.line} has no name, so it'll be skipped`; picked = false; problem = true; }
+        else if (have.has(lower)) { note = "Already in your recipes"; picked = false; }
+        else if (lower && seen.has(lower)) { note = "Appears twice in the file"; picked = false; }
+        seen.add(lower);
+        return { ...r, fetch, picked, problem, note, status: "" };
+      });
+      if (!importing.length) throw new Error("That file doesn't have any recipes in it.");
+      renderImport();
+      $("importSheet").hidden = false;
+      $("importSheet").scrollTop = 0;
+      document.body.classList.add("sheet-open");
+    } catch (err) {
+      toast(err instanceof SyntaxError ? "That file couldn't be read. Save it as CSV and try again." : err.message);
+    }
+  });
+
+  function importDetail(r) {
+    if (r.status === "done") return ["Imported", "good"];
+    if (r.status === "failed") return [r.error, "bad"];
+    if (r.status === "working") return [r.fetch ? "Reading the recipe website…" : "Saving…", ""];
+    if (r.note) return [r.note, r.problem ? "bad" : "warn"];
+    const n = r.rows?.length ?? r.lines.length;
+    const bits = [
+      r.fetch ? "Ingredients from the website" : `${n} ingredient${n === 1 ? "" : "s"}`,
+      r.method.length ? `${r.method.length} step${r.method.length === 1 ? "" : "s"}` : "",
+      r.tags.length ? r.tags.join(", ") : "",
+    ];
+    return [bits.filter(Boolean).join(" · "), ""];
+  }
+  function renderImport() {
+    const picked = importing.filter((r) => r.picked).length;
+    const done = importing.filter((r) => r.status === "done").length;
+    const finished = importing.length && importing.every((r) => !r.picked || r.status === "done" || r.status === "failed") && done + importing.filter((r) => r.status === "failed").length > 0;
+    $("importSummary").textContent = finished
+      ? `Imported ${done} recipe${done === 1 ? "" : "s"}.` + (importing.some((r) => r.status === "failed") ? " Some couldn't be imported; see below." : "")
+      : `Found ${importing.length} recipe${importing.length === 1 ? "" : "s"}. Untick any you don't want.`
+        + (importing.some((r) => r.fetch) ? " Recipes with only a link get their ingredients from the website." : "");
+    $("importList").replaceChildren(...importing.map((r, i) => {
+      const li = document.createElement("li");
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "import-row";
+      b.dataset.i = i;
+      b.disabled = importBusy || r.problem || !!r.status;
+      b.setAttribute("aria-pressed", String(r.picked));
+      const strong = document.createElement("strong");
+      strong.textContent = r.name || (r.fetch ? r.link : `Row ${r.line}`);
+      const [text, tone] = importDetail(r);
+      const small = document.createElement("small");
+      small.textContent = text;
+      if (tone) small.className = tone;
+      b.append(strong, small);
+      li.append(b);
+      return li;
+    }));
+    $("importGo").disabled = importBusy || (!finished && !picked);
+    $("importGo").textContent = finished ? "Done" : importBusy ? $("importGo").textContent
+      : `Import ${picked} recipe${picked === 1 ? "" : "s"}`;
+    $("importCancel").hidden = finished;
+  }
+  $("importList").addEventListener("click", (e) => {
+    const b = e.target.closest(".import-row");
+    if (!b || b.disabled) return;
+    const r = importing[Number(b.dataset.i)];
+    r.picked = !r.picked;
+    renderImport();
+  });
+  function closeImport() {
+    if (importBusy) return;
+    $("importSheet").hidden = true;
+    importing = [];
+    if ([...document.querySelectorAll(".sheet")].every((el) => el.hidden)) document.body.classList.remove("sheet-open");
+  }
+  $("importCancel").addEventListener("click", closeImport);
+
+  $("importGo").addEventListener("click", async () => {
+    if (importBusy) return;
+    const todo = importing.filter((r) => r.picked && !r.status);
+    if (!todo.length) return closeImport(); // "Done"
+    importBusy = true;
+    let last = null, n = 0;
+    for (const r of todo) {
+      n++;
+      $("importGo").textContent = `Importing ${n} of ${todo.length}…`;
+      r.status = "working";
+      renderImport();
+      try {
+        const body = {
+          name: r.name, recipe_url: r.link, image_url: r.photo, servings: String(r.serves || ""),
+          cook_minutes: r.cook === "" ? "" : r.cook, method: r.method.join("\n"), tags: r.tags,
+        };
+        if (r.rows) body.rows = r.rows.filter((g) => g.name);
+        else if (r.fetch) {
+          const web = await api("import", { url: r.link });
+          if (!web.found && !web.name) throw new Error("Couldn't read a recipe from that link");
+          body.name = r.name || web.name;
+          body.recipe_url = web.recipe_url || r.link;
+          body.image_url = r.photo || web.image_url || "";
+          body.servings = body.servings || web.servings || "";
+          body.cook_minutes = body.cook_minutes || web.cook_minutes || "";
+          body.method = body.method || web.method || "";
+          body.ingredients = web.ingredients.map((g) => ({ line: g.original || g.line }));
+        } else {
+          body.ingredients = r.lines.map((line) => ({ line }));
+        }
+        if (!body.name) throw new Error("No name found");
+        last = await api("save_meal", body);
+        r.status = "done";
+      } catch (err) {
+        if (err instanceof AuthError) { importBusy = false; return handleError(err); }
+        r.status = "failed";
+        r.error = err instanceof TypeError ? "No connection" : err.message;
+      }
+    }
+    importBusy = false;
+    try { applyMeals(last ?? await api("meals")); } catch {}
+    renderImport();
+    const done = importing.filter((r) => r.status === "done").length;
+    toast(`Imported ${done} recipe${done === 1 ? "" : "s"}`);
+  });
 
   /* ---------- Download all my data (a backup file) ----------
      Everything the app can read, in one readable file (JSON). Recipe photos are kept as links. */
