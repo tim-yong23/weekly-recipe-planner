@@ -1991,6 +1991,12 @@
     </div>
     <p class="set-note">A clickable preview of the store app's first-time screens. Nothing in it is saved.</p>
 
+    <h3 class="set-h">Your data</h3>
+    <div class="set-group">
+      <button type="button" class="set-row link" id="setExport"><span>Download all my data</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10.5l5 5 5-5M5 19.5h14"/></svg></button>
+    </div>
+    <p class="set-note">Saves a backup file of your recipes, tags, ingredients, shopping list and meal plans to this phone.</p>
+
     <h3 class="set-h">This phone</h3>
     <div class="set-group">
       <button type="button" class="set-row link danger" id="lockBtn"><span>Lock this phone</span></button>
@@ -5096,6 +5102,72 @@
   $("setHousehold").addEventListener("click", () => { closeSettings(); $("householdBtn").click(); });
   $("setTags").addEventListener("click", () => { closeSettings(); openTagsSheet(); });
   $("plansBtn").addEventListener("click", () => toast("Plans are coming soon. Enjoy the free trial."));
+
+  /* ---------- Download all my data (a backup file) ----------
+     Everything the app can read, in one readable file (JSON). Recipe photos are kept as links. */
+
+  async function exportData() {
+    const btn = $("setExport");
+    if (btn.disabled) return;
+    btn.disabled = true;
+    const label = btn.querySelector("span");
+    label.textContent = "Preparing your backup…";
+    try {
+      const [list, library, weeks] = await Promise.all([api("list"), api("meals"), api("week")]);
+      const tagName = (id) => (library.tags ?? []).find((t) => t.id === id)?.name ?? null;
+      const recipeName = (id) => library.meals.find((m) => m.id === id)?.name ?? "Deleted recipe";
+      const plan = (p) => p && {
+        status: p.status,
+        locked_in: p.locked_at,
+        added_to_shopping_list: p.added_to_list_at ?? null,
+        meals: p.meal_ids.map(recipeName),
+      };
+      const backup = {
+        app: "The Home Butler",
+        backup_version: 1,
+        exported_at: new Date().toISOString(),
+        exported_by: myName || null,
+        counts: { recipes: library.meals.length, tags: (library.tags ?? []).length, shopping_list_items: list.items.length },
+        recipes: library.meals.map((m) => ({
+          name: m.name,
+          recipe_link: m.recipe_url,
+          photo: m.image_url,
+          serves: m.servings,
+          cooking_minutes: m.cook_minutes ?? null,
+          tags: (m.tag_ids ?? []).map(tagName).filter(Boolean),
+          ingredients: m.ingredients.map((i) => ({ amount: i.amount, unit: i.unit, name: i.name, note: i.note, always_have: i.staple })),
+          method: m.method ? m.method.split("\n") : [],
+        })),
+        tags: (library.tags ?? []).map((t) => ({ name: t.name, colour: t.colour, recipes: t.uses })),
+        household_ingredients: library.ingredients.map((i) => ({ name: i.name, section: sectionName(i.section), always_have: i.staple, recipes: i.uses })),
+        ingredient_aliases: library.aliases ?? {},
+        shopping_list: list.items.map((i) => ({
+          item: i.text, amount: i.qty, unit: i.unit, section: sectionName(i.section), in_trolley: i.ticked,
+          added_by: i.added_by, added: i.created_at, for_meals: (i.meals ?? []).map((m) => m.name),
+        })),
+        meal_plans: { this_week: plan(weeks.plan), last_week: plan(weeks.previous) },
+      };
+      const day = new Date().toLocaleDateString("en-CA"); // 2026-10-23
+      const file = `home-butler-backup-${day}.json`;
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = file;
+      document.body.append(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
+      toast(`Saved ${file}: ${backup.counts.recipes} recipes, ${backup.counts.shopping_list_items} list items`);
+    } catch (err) {
+      if (err instanceof AuthError) return handleError(err);
+      toast(err instanceof TypeError ? "No connection. Connect and try again." : `Couldn't make the backup: ${err.message}`);
+    } finally {
+      btn.disabled = false;
+      label.textContent = "Download all my data";
+    }
+  }
+  $("setExport").addEventListener("click", exportData);
 
   /* ---------- Welcome and sign-in PROTOTYPE (store apps) ----------
      Clickable only: no real accounts, nothing saved, nothing sent to the server. */
