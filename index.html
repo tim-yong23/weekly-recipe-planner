@@ -5301,8 +5301,33 @@
 
   /* ---------- Start ---------- */
 
+  /* New versions: phones keep the app running in the background, so coming back to it doesn't load a newer
+     version on its own. Each time the app comes back into view it asks the server whether the page has changed,
+     and if so reloads, but only when nothing is half-done (an open sheet, a box being typed in). */
+  let pageTag = null;
+  async function pageVersion() {
+    try {
+      const res = await fetch(location.pathname, { method: "HEAD", cache: "no-store" });
+      return res.ok ? res.headers.get("etag") || res.headers.get("last-modified") : null;
+    } catch { return null; }
+  }
+  const busyOnPage = () => document.querySelectorAll(".sheet:not([hidden]), .proto:not([hidden])").length > 0
+    || ["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName);
+  let updateWaiting = false;
+  async function checkForUpdate() {
+    if (location.protocol !== "https:") return;
+    const tag = await pageVersion();
+    if (!tag) return;
+    if (pageTag === null) { pageTag = tag; return; }
+    if (tag === pageTag) return;
+    updateWaiting = true;
+    if (!busyOnPage()) location.reload();
+  }
+  checkForUpdate();
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) return flushQty();
+    if (updateWaiting && !busyOnPage()) return location.reload();
+    checkForUpdate();
     refresh();
     if (recipeMeal) keepAwake(); // phones drop the screen-on request when the app is left
     if (currentTab === "dinners" && !draft) loadMeals();

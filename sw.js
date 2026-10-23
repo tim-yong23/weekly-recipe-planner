@@ -5,7 +5,7 @@
 // It never touches the shopping data itself: that goes to the server, and the page
 // queues changes made offline (see "Offline" in index.html).
 
-const CACHE = "home-butler-v1";
+const CACHE = "home-butler-v2";
 const APP_FILES = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 
 self.addEventListener("install", (event) => {
@@ -28,9 +28,11 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(req.url);
 
   // The app itself: newest version when online, the saved copy when offline.
+  // "no-cache" makes the browser check with the server every time instead of reusing a copy
+  // for up to 10 minutes (GitHub Pages' default), so a new version shows up straight away.
   if (req.mode === "navigate" || (url.origin === location.origin && url.pathname.endsWith(".html"))) {
     event.respondWith(
-      fetch(req)
+      fetch(req.url, { cache: "no-cache", credentials: "same-origin" })
         .then((res) => {
           const copy = res.clone();
           caches.open(CACHE).then((cache) => cache.put("./index.html", copy));
