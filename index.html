@@ -1552,6 +1552,16 @@
     .time-filter button { background: var(--surface-strong); border-color: var(--border); color: var(--text); }
     .time-filter button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent-line); color: var(--on-soft); }
   }
+  /* Messages ("Saved…", "Imported…"): brand green with white text, easy to read on any screen.
+     (The card style used to turn the background pale, leaving white text on light grey.) */
+  .toast, .toast.glass {
+    background: #19581F; color: #FFFFFF; border: 0;
+    font-size: 15px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.35; text-align: center;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  }
+  @media (prefers-color-scheme: dark) {
+    .toast, .toast.glass { background: #2F7A37; color: #FFFFFF; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5); }
+  }
 </style>
 </head>
 <body>
